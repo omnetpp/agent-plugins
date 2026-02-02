@@ -1,0 +1,2 @@
+- in a omnet++ project use the deepwiki mcp with omnetpp/omnetpp repo for documentation
+- in a inet framework project use the inet-framework/inet deepwiki mcp for inet specific information
