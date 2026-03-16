@@ -10,4 +10,5 @@ codemaps
 database
 mcp_config.json
 onboarding.json.lock
-user_settings.pb
+*.pb
+*.lock
