@@ -2,7 +2,7 @@
 name: omnetpp-dev
 description: Skills useful for OMNeT++ developers
 ---
-# Updating ChangeLogs and writing the WHATSNEW
+# Updating ChangeLogs
 
 The release process for OMNeT++ includes updating the ChangeLog files (every major folder contains one),
 and writing an entry in the top WHATSNEW.md. ChangeLog files serve as a main input for writing the WHATSNEW entry.
@@ -96,3 +96,22 @@ Similar rules as for the IDE. Refinements:
 - Prefix with component where helpful: "OmnetppResultFileLoader:", "opp_scavetool:",
   "CSV export:", "python:", etc.
 - Include nanobind/build changes as they affect the Python analysis workflow.
+
+# API Changes (doc/API-changes.txt):
+
+- Prerequisite: include/omnetpp/ChangeLog must be up to date.
+- Lists backward-compatibility-affecting changes to the public C++ API (include/omnetpp/).
+- Primary input: `git diff <last-release-tag> HEAD -- include/omnetpp/` for the actual
+  header changes (turn off the pager!). Use `include/omnetpp/ChangeLog` for context and narrative.
+- Each entry is tagged with an impact marker:
+  - `(+)` new feature (new class, method, etc.)
+  - `(!!!)` major incompatible change (old code will not compile or work)
+  - `(!)` minor incompatible change (affects rarely used features)
+  - `(-)` deprecated (possibly with a replacement)
+  - `(x)` removed a previously deprecated item
+  - `(i)` information
+- Only include changes that affect compiling and running models. Internal/implementation
+  changes do not belong here.
+- Entries should be indented with 8 spaces after the marker tag.
+- Entries often start with the class name, e.g. "(+)     cFoo: Added bar() method."
+- Related entries may be grouped (e.g. "This change is part of the X API.").
