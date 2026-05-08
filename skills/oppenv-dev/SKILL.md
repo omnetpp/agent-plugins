@@ -143,39 +143,53 @@ opp_env list --expand-all simu5g veins-5 | wc -l
 
 ### Step 4 – Test new project combinations
 
-For every project combo that now includes the new OMNeT++ version, do a full install + smoke test
-in a fresh workspace. The pattern is:
+#### Workspace reuse
+
+Many combos share the same `omnetpp` + `inet` base. Build that base **once** with `--init`, then
+reuse the same workspace for all projects on top of it — no `--init` needed for subsequent installs
+into an already-initialised workspace.
+
+Example: `inet-4.6.0 + omnetpp-6.5.0` is the common base for simu5g, veins, etc.:
 
 ```bash
-# Each combo gets its own fresh workspace (--init is only needed once per workspace):
+# Build the shared base once:
 WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
 opp_env install -w $WORKSPACE --init inet-4.6.0 omnetpp-6.5.0 --smoke-test
 
-WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
-opp_env install -w $WORKSPACE --init simu5g-git --smoke-test
-
-WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
-opp_env install -w $WORKSPACE --init simu5g-1.4.3 --smoke-test
-
-WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
-opp_env install -w $WORKSPACE --init veins-git --smoke-test
+# Reuse the same workspace — omnetpp and inet are already built:
+opp_env install -w $WORKSPACE simu5g-1.4.3 --smoke-test
+opp_env install -w $WORKSPACE veins-5.3.1 --smoke-test
 ```
 
-The `--smoke-test` flag runs the project's own `make smoketest` target after building.
-You can also run the smoke test on an already-installed workspace:
+Only create a new workspace when the required `omnetpp` or `inet` version differs from what is
+already in the current workspace.
 
-```bash
-opp_env run -w $WORKSPACE --smoke-test
-```
+#### Debug-first strategy
 
-To find exactly which new combos were added, compare before/after:
+**Always run all combinations in DEBUG mode first.** DEBUG builds are faster (roughly half the
+time) and surface the same compatibility problems as RELEASE builds. Only move on to RELEASE
+testing after all combos pass in DEBUG — if DEBUG is clean, RELEASE failures are very unlikely.
+
+For RELEASE, reuse the **same workspaces** that were used for DEBUG — no need to reinstall from
+scratch.
+
+Record which mode was used in the testing log.
+
+#### Finding new combos and running smoke tests
+
+To find exactly which new combos were added:
 
 ```bash
 opp_env list --expand-all | grep "omnetpp-6.5" | sort > /tmp/new_combos.txt
 ```
 
-Then test one representative combination per project family (the git/latest version with the new
-omnetpp).
+Test one representative combination per project family (the git/latest version with the new
+omnetpp). The `--smoke-test` flag runs the project's own `make smoketest` target after building.
+You can also run the smoke test on an already-installed workspace:
+
+```bash
+opp_env run -w $WORKSPACE --smoke-test
+```
 
 **Record every result in the testing log** (see "Testing log" section below).
 
@@ -218,7 +232,9 @@ Always put an explanatory comment directly above the `sed` command:
 "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if ...,
 ```
 
-After adding the patch, re-run the install from scratch (workspace already exists, no --init):
+**Patch commands are applied at install time.** If you modify `patch_commands`, you must delete
+the project from the workspace and reinstall — the existing build will not pick up the change:
+
 ```bash
 rm -rf $WORKSPACE/<project-folder>
 opp_env install -w $WORKSPACE <project> --smoke-test
@@ -265,12 +281,15 @@ Record every combination tested, the outcome, any patches added, and any dropped
 # Test results for omnetpp-6.5.0 support (YYYY-MM-DD)
 
 ## inet-4.6.0 + omnetpp-6.5.0
+- **Mode:** DEBUG
 - **Result:** PASS (install + smoke test)
 
-## simu5g-git + inet-4.6.0 + omnetpp-6.5.0
+## simu5g-git + inet-4.6.0 + omnetpp-6.5.0 (shared workspace)
+- **Mode:** DEBUG
 - **Result:** PASS
 
-## simu5g-1.4.3 + inet-4.6.0 + omnetpp-6.5.0
+## simu5g-1.4.3 + inet-4.6.0 + omnetpp-6.5.0 (shared workspace)
+- **Mode:** DEBUG
 - **Result:** FAIL (build error)
 - **Error:** `error: 'cFoo' was not declared in this scope` in `src/stack/mac/LteMacEnbD2D.cc`
 - **Assessment:** trivial — single symbol rename
@@ -278,12 +297,17 @@ Record every combination tested, the outcome, any patches added, and any dropped
   `sed -i 's|cFoo|cBar|' src/stack/mac/LteMacEnbD2D.cc`
 - **Re-test:** PASS after patch
 
-## veins-5.3.1 + inet-4.6.0 + omnetpp-6.5.0
+## veins-5.3.1 + inet-4.6.0 + omnetpp-6.5.0 (shared workspace)
+- **Mode:** DEBUG
 - **Result:** FAIL (smoke test crash)
 - **Error:** segfault inside `TraCI::connect()` — reproducible
 - **Assessment:** non-trivial (SUMO API incompatibility, would require significant veins_inet changes)
 - **Action:** removed `"6.5.*"` from veins-5.3.1 entry; added comment in `veins.py`:
   `# omnetpp-6.5 not supported: segfault in TraCI::connect() due to SUMO API incompatibility`
+
+## RELEASE mode (after all DEBUG tests pass)
+- inet-4.6.0 + omnetpp-6.5.0: **PASS**
+- simu5g-1.4.3 + inet-4.6.0 + omnetpp-6.5.0: **PASS**
 ```
 
 ### Step 5 – Commit
