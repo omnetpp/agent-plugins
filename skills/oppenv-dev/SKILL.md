@@ -1,5 +1,5 @@
 ---
-name: opp_env
+name: oppenv-dev
 description: Maintaining the opp_env project database, especially adding new OMNeT++ versions
 ---
 
@@ -147,12 +147,17 @@ For every project combo that now includes the new OMNeT++ version, do a full ins
 in a fresh workspace. The pattern is:
 
 ```bash
+# Each combo gets its own fresh workspace (--init is only needed once per workspace):
 WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
-opp_env install -w $WORKSPACE --init <project-combo> --smoke-test
-# e.g.:
 opp_env install -w $WORKSPACE --init inet-4.6.0 omnetpp-6.5.0 --smoke-test
+
+WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
 opp_env install -w $WORKSPACE --init simu5g-git --smoke-test
+
+WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
 opp_env install -w $WORKSPACE --init simu5g-1.4.3 --smoke-test
+
+WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
 opp_env install -w $WORKSPACE --init veins-git --smoke-test
 ```
 
@@ -182,8 +187,8 @@ Read it carefully and decide whether it is a trivial fix.
 **Diagnosing the error:**
 
 ```bash
-# Re-run without smoke-test to get a cleaner build log:
-opp_env install -w $WORKSPACE --init <project> 2>&1 | tail -50
+# Re-run without smoke-test to get a cleaner build log (workspace already initialised, no --init):
+opp_env install -w $WORKSPACE <project> 2>&1 | tail -50
 
 # Or enter the environment interactively to try things:
 opp_env shell -w $WORKSPACE <project>
@@ -213,7 +218,7 @@ Always put an explanatory comment directly above the `sed` command:
 "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if ...,
 ```
 
-After adding the patch, re-run the install from scratch:
+After adding the patch, re-run the install from scratch (workspace already exists, no --init):
 ```bash
 rm -rf $WORKSPACE/<project-folder>
 opp_env install -w $WORKSPACE <project> --smoke-test
