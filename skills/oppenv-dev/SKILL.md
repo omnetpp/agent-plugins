@@ -156,9 +156,9 @@ Example: `inet-4.6.0 + omnetpp-6.5.0` is the common base for simu5g, veins, etc.
 WORKSPACE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
 opp_env install -w $WORKSPACE --init inet-4.6.0 omnetpp-6.5.0 --smoke-test
 
-# Reuse the same workspace — omnetpp and inet are already built:
-opp_env install -w $WORKSPACE simu5g-1.4.3 --smoke-test
-opp_env install -w $WORKSPACE veins-5.3.1 --smoke-test
+# Reuse the same workspace — omnetpp and inet are already built
+opp_env install -w $WORKSPACE simu5g-1.4.3 inet-4.6.0 omnetpp-6.5.0 --smoke-test
+opp_env install -w $WORKSPACE veins-5.3.1 inet-4.6.0 omnetpp-6.5.0 --smoke-test
 ```
 
 Only create a new workspace when the required `omnetpp` or `inet` version differs from what is
@@ -166,9 +166,10 @@ already in the current workspace.
 
 #### Debug-first strategy
 
-**Always run all combinations in DEBUG mode first.** DEBUG builds are faster (roughly half the
-time) and surface the same compatibility problems as RELEASE builds. Only move on to RELEASE
-testing after all combos pass in DEBUG — if DEBUG is clean, RELEASE failures are very unlikely.
+**Always run all combinations in DEBUG mode first.** The default is to build both DEBUG and
+RELEASE modes, so doing DEBUG builds spare roughly half the time. Only move on to RELEASE
+testing after all combos pass in DEBUG. DEBUG and RELEASE builds typically surface the same
+compatibility problems as RELEASE builds, so DEBUG is clean, RELEASE failures are very unlikely.
 
 For RELEASE, reuse the **same workspaces** that were used for DEBUG — no need to reinstall from
 scratch.
@@ -183,13 +184,61 @@ To find exactly which new combos were added:
 opp_env list --expand-all | grep "omnetpp-6.5" | sort > /tmp/new_combos.txt
 ```
 
-Test one representative combination per project family (the git/latest version with the new
-omnetpp). The `--smoke-test` flag runs the project's own `make smoketest` target after building.
-You can also run the smoke test on an already-installed workspace:
+Test ALL new combinations. The `--smoke-test` flag runs the project's own `make smoketest` target
+after building. You can also run the smoke test on an already-installed workspace:
 
 ```bash
 opp_env run -w $WORKSPACE --smoke-test
 ```
+
+#### Running all tests as a single script
+
+Write all install+smoke-test invocations as **a single shell script** and execute it. This allows
+the user to watch live progress while all output is preserved in per-project log files. Evaluate
+the logs afterwards — do not try to read results inline during the run.
+
+Key rules for the script:
+
+- **Do not use `set -e`** — the script must continue even when individual tests fail.
+- **Tee every test to its own log file** and use `${PIPESTATUS[0]}` to capture the `opp_env` exit
+  code (not `tee`'s).
+- **Reuse workspaces** where the base is already built. Group tests by their `omnetpp` version;
+  within each group, reuse the same workspace across all projects. Only create a new workspace when
+  the required omnetpp version (or inet version) differs from the current one.
+- **Only use `--init`** on the very first `opp_env install` for a workspace.
+
+Example structure for a script testing all new omnetpp-6.5.0 combos:
+
+```bash
+#!/usr/bin/env bash
+# Run all omnetpp-6.5.0 install+smoke tests. Does NOT stop on failure.
+LOGDIR=/tmp/opp_env_test_6.5.0
+mkdir -p $LOGDIR
+
+# --- Base: omnetpp-6.5.0 only ---
+WS_BASE=$(mktemp -d /tmp/opp_env_test_XXXXXX)
+opp_env install -w $WS_BASE --init omnetpp-6.5.0 --build-modes debug --smoke-test \
+    2>&1 | tee $LOGDIR/omnetpp-6.5.0.log; echo "EXIT:${PIPESTATUS[0]}" >> $LOGDIR/omnetpp-6.5.0.log
+
+# --- Base: inet-4.6.0 + omnetpp-6.5.0 ---
+WS_INET46=$(mktemp -d /tmp/opp_env_test_XXXXXX)
+opp_env install -w $WS_INET46 --init inet-4.6.0 omnetpp-6.5.0 --build-modes debug --smoke-test \
+    2>&1 | tee $LOGDIR/inet-4.6.0.log; echo "EXIT:${PIPESTATUS[0]}" >> $LOGDIR/inet-4.6.0.log
+
+# Reuse WS_INET46 for all projects that need inet-4.6.0 + omnetpp-6.5.0:
+opp_env install -w $WS_INET46 simu5g-1.4.3 --build-modes debug --smoke-test \
+    2>&1 | tee $LOGDIR/simu5g-1.4.3.log; echo "EXIT:${PIPESTATUS[0]}" >> $LOGDIR/simu5g-1.4.3.log
+
+opp_env install -w $WS_INET46 inetgpl-4.6.0 --build-modes debug --smoke-test \
+    2>&1 | tee $LOGDIR/inetgpl-4.6.0.log; echo "EXIT:${PIPESTATUS[0]}" >> $LOGDIR/inetgpl-4.6.0.log
+
+# ... more projects on WS_INET46 ...
+
+echo "All tests done. Logs in $LOGDIR"
+```
+
+After the script finishes, check each log's last line for `EXIT:0` (pass) or `EXIT:1` (fail),
+then update `tests/results/omnetpp-X.Y.Z.md` with all results at once.
 
 **Record every result in the testing log** (see "Testing log" section below).
 
@@ -227,6 +276,7 @@ Examples from `inet.py`:
 ```
 
 Always put an explanatory comment directly above the `sed` command:
+
 ```python
 # fix "error: flexible array member in union" in sctphdr.h — C11 tightened the rule
 "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if ...,
@@ -275,6 +325,7 @@ opp_env shell -w $WORKSPACE <project>
 ### Step 4c – Testing log
 
 Keep a log file at `tests/results/omnetpp-X.Y.Z.md` (create the `results/` dir if needed).
+**This file does NOT need to be committed to the repo** — it is a local scratch log only.
 Record every combination tested, the outcome, any patches added, and any dropped support. Format:
 
 ```markdown
