@@ -79,8 +79,12 @@ Never mutate the source branch. Always work on a new branch.
 ### 2.2 Start the rebase
 
 ```bash
-GIT_EDITOR=true git rebase --onto <new_base> <old_base>
+GIT_EDITOR=true git rebase --empty=keep --onto <new_base> <old_base>
 ```
+
+The `--empty=keep` flag is critical: it preserves commits that become empty
+after conflict resolution. Without it, fingerprint-update commits whose CSV
+changes are subsumed by an earlier regeneration will be silently dropped.
 
 ### 2.3 Conflict resolution
 
@@ -99,12 +103,16 @@ When a conflict occurs, resolve autonomously using these strategies
 
 Never drop commits, leave at least an empty marker commit in place with
 a commit message that explains what got dropped and why.
-For commits that only update fingerprint test results, it's acceptable
-to just overwrite the changed upstream results with ones coming from the
-topic branch under rebase - but take care not to drop any new test cases
-that might have been added between the old and new base.
-Also, don't pointlessly reintroduce test cases that were dropped between
-the old and new base.
+For commits that only update fingerprint test results, resolve the conflict
+by taking the version from the commit being rebased (`--theirs` in rebase
+terminology). Do NOT resolve by taking `--ours` (the already-applied side),
+because that makes the commit empty. Even with `--empty=keep`, an empty
+fingerprint commit is confusing — it's better to keep a meaningful diff so
+that Phase 4 regeneration can amend it with the correct values.
+
+Take care not to drop any new test cases that might have been added between
+the old and new base. Also, don't pointlessly reintroduce test cases that
+were dropped between the old and new base.
 
 **Confidence-based fallback**: If a conflict cannot be resolved with high
 confidence (e.g., the correct resolution is ambiguous, or multiple semantic
