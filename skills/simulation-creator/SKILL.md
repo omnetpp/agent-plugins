@@ -6,7 +6,7 @@ description: skill to create new simulation scenarios or debug existing ones
 - dont assume something works a certain way in INET, check the ned and the source code
 - dont assume the parameter names of modules, check the ned file
 - dont assume some module is available, check the ned files
-- its ok to add a PCAP recorder/routingtablerecorder to the simulation if you need it to understand whats happening with tcpdump
+- its ok to add a PCAP recorder/routingtablerecorder to the simulation if you need it to understand whats happening with tcpdump. this needs checksumMode and fcsMode set to computed.
 - use analog-model agnostic radio/radiomedium, and set analog model from ini
 if available for the specific technology; use analog-model specific one if possible instead of configuring RadioMedium from scratch.
 - use network node types appropriate for the simulation, e.g. wireless or adhoc hosts if there is wireless, etc.
@@ -16,4 +16,5 @@ if available for the specific technology; use analog-model specific one if possi
 position
 - dont use automatic positioning such as ring in the display string,
 but position the nodes manually
-- you can check if the simulation works by running it and checking for errors. how to run a simulation is described in running.md.
+- never write behavioral claims based on assumptions about protocol standards — check the actual INET implementation in the .cc files (e.g. INET may use INIT-REBOOT instead of full DORA after a DHCP client restart, which differs from what you might assume from the RFC)
+- you can check if the simulation works by running it and checking for errors. how to run a simulation is described in the omnetpp skill.

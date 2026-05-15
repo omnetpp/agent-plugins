@@ -127,3 +127,13 @@ Provide:
 - Run command: `inet` (or `inet -c ConfigName` if multiple configs)
 
 Do not modify files outside the new showcase except required `index.rst` wiring.
+
+# Documentation Writing Principles
+
+- Goals should answer "why does this feature exist?" before "what does it do?" — structure as: problem → solution → what we demonstrate
+- Separate domain knowledge (the protocol/standard) from tool knowledge (INET configuration) — use an "About X" section for protocol background before The Model, and an "X in INET" subsection inside The Model for module/parameter overview
+- Never reference a concept before defining it — follow dependency order (e.g. define "lease" before describing the DORA exchange that grants one)
+- Explain the *why* behind each mechanism, not just the *what* (e.g. why Renewing uses unicast but Rebinding uses broadcast)
+- When a parameter appears in multiple places, the mechanism must be described the same way, not just the outcome (e.g. don't describe `numReservedAddresses` differently in the module overview vs the results section)
+- Abstract models (state machines, protocol layers) need explicit grounding in previously described concrete steps
+- For each config/scenario, identify the primary reader question and answer it explicitly in the Results section (e.g. "does the client get the same IP after reboot?")
