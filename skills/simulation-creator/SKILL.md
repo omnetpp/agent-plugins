@@ -1,6 +1,6 @@
 ---
 name: simulation-creator
-description: skill to create new simulation scenarios
+description: skill to create new simulation scenarios or debug existing ones
 ---
 
 - dont assume something works a certain way in INET, check the ned and the source code
@@ -16,3 +16,4 @@ if available for the specific technology; use analog-model specific one if possi
 position
 - dont use automatic positioning such as ring in the display string,
 but position the nodes manually
+- you can check if the simulation works by running it and checking for errors. how to run a simulation is described in running.md.
