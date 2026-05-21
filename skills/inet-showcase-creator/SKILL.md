@@ -47,8 +47,22 @@ Ask only what's essential. Infer defaults from existing model and template showc
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
+- Which configs to run for verification
 
 Wait for explicit user confirmation (until the user switches to code mode)
+
+## Phase 1.5: Check existing examples for enrichment
+
+After the showcase plan is established, search `examples/` and `showcases/` for
+existing simulations that use the same modules or features. Check if they contain
+anything worth incorporating:
+- Interesting configurations or edge cases not yet in the plan
+- Working parameter values that could serve as sanity checks
+- Results or behaviors worth referencing or contrasting
+
+This is not about copying — the showcase design comes first. This step is about
+finding extras that make the showcase more complete or interesting. Update the plan
+if you find something valuable, and mention it to the user.
 
 ## Phase 2: Implement (after confirmation)
 
@@ -117,11 +131,39 @@ Add entry to appropriate `index.rst`:
 - Nested (TSN): `showcases/tsn/<subcategory>/index.rst` → add `<name>/doc/index`
 - New subcategory: may require creating intermediate `index.rst` and wiring to parent
 
-### 2.5 Verify
+### 2.5 Static checks
 
 - NED `package` matches folder path
 - All `:download:` links reference existing files
 - No broken `:doc:` or `:ned:` references
+
+### 2.6 Run and verify
+
+Run every config in the showcase to confirm it works. Use opp_repl MCP if available,
+otherwise fall back to command-line execution (see the `omnetpp` skill for details).
+
+**Steps:**
+1. Build if needed: `make MODE=debug -j$(nproc)` in the INET root
+2. For each `[Config ...]` section in `omnetpp.ini`:
+   - Run: `inet -u Cmdenv -c <ConfigName>`
+   - Check exit code and output for errors
+   - If it fails: fix the issue and re-run (do not skip)
+3. Verify that expected result files are produced (e.g. `.sca`, `.vec`, `.pcap`)
+4. If the showcase documentation makes claims about specific results (e.g. "host A
+   receives 100 packets"), spot-check them against actual output using `opp_scavetool`
+
+**If a simulation fails to run, do not proceed to the output phase.** Fix the root
+cause first. Common issues:
+- Missing NED imports
+- Wrong parameter names (always check the NED source, never guess)
+- Missing module types
+- Incorrect network topology connections
+
+**Debugging tips** (from the `simulation-creator` skill):
+- Add a PCAP recorder with `checksumMode = "computed"` and `fcsMode = "computed"` to
+  inspect traffic with tcpdump
+- Use `--debug-on-error=true` for stack traces
+- Use `--cmdenv-express-mode=false --cmdenv-log-level=detail` for verbose logs
 
 # Output
 
@@ -129,6 +171,7 @@ Provide:
 - Final showcase path
 - List of created/modified files
 - Run command: `inet` (or `inet -c ConfigName` if multiple configs)
+- Verification status: confirm that all configs ran successfully
 
 Do not modify files outside the new showcase except required `index.rst` wiring.
 
