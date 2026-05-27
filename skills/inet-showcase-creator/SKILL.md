@@ -79,10 +79,12 @@ Create `showcases/<category>/<showcaseName>/` and `doc/` subdirectory (if not ye
 
 **Conventions:**
 - Network name: `<Feature>Showcase` (e.g., `HandoverShowcase`)
+- Use WiredNetworkBase/WirelessNetworkBase for the network
 - Use `extends = ...` for config inheritance
 - Add `description = "..."` to configs
 - When literalincluding network files, only include the relevant parts (e.g. no license header or package and import statements))
 - Don't use image captions but describe the image either before or after the image
+- Include a network screenshot and briefly describe the network, including relevant node types. Don't literalinclude the network NED (unless specifically necessary)
 - Network screenshot: use `area="module_rectangle"` and `margin=5`
 - Most of the time we don't need :width: 100% for figures
 

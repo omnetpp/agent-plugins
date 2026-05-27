@@ -63,6 +63,41 @@ After the sequential pass:
 4. **Try-it-yourself path** — Could the reader actually follow the instructions to run this
    themselves? Are there missing steps?
 
+## Phase 2b: Deep Verification (Optional, INET/OMNeT++ showcases)
+
+When reviewing INET showcases or tutorials, these additional verification steps are
+available and should be used when the document makes specific behavioral claims
+(packet counts, state transitions, timing, routing decisions, etc.):
+
+### Rendered HTML output
+
+The Sphinx-built HTML lives at `doc/src/_build/html/` (relative to INET root).
+Use it to verify:
+- `.. literalinclude::` blocks render the correct ini/NED lines
+- Figures and images display correctly
+- Cross-references and links resolve
+
+To rebuild (from `doc/src/`): `make html`
+To launch a live-reload server: `make server` (serves on port 8000)
+
+### Running the simulation (omnetpp-mcp-sim skill)
+
+Use the `omnetpp-mcp-sim` skill to launch the showcase's simulation configs and
+verify behavioral claims directly. This turns "this might be wrong" into
+"this IS wrong" or "confirmed correct."
+
+**What you can verify:**
+- Claimed packet counts → check via `get_module_log`, result scalars
+- State machine transitions → inspect logs for specific state changes
+- Routing table contents → query module parameters/watches
+- Timing claims → check simulation time vs. event sequence
+
+Refer to the `omnetpp-mcp-sim` skill for launch instructions and available tools.
+
+**When to use:** When the document asserts specific numeric results, claims about
+protocol behavior ("no branches are pruned", "adjacency never reaches Full"), or
+describes observable sequences that can be verified in logs.
+
 ## Phase 3: Report
 
 Structure the output as:
