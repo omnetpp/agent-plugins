@@ -186,3 +186,21 @@ Do not modify files outside the new showcase except required `index.rst` wiring.
 - When a parameter appears in multiple places, the mechanism must be described the same way, not just the outcome (e.g. don't describe `numReservedAddresses` differently in the module overview vs the results section)
 - Abstract models (state machines, protocol layers) need explicit grounding in previously described concrete steps
 - For each config/scenario, identify the primary reader question and answer it explicitly in the Results section (e.g. "does the client get the same IP after reboot?")
+
+### Clarity and precision
+
+- **Qualify ambiguous nouns on first use**: "group" → "multicast group", "entry" → "entry in the router's forwarding table". Every noun needs enough context to be unambiguous at its first appearance.
+- **Replace vague qualifiers with concrete consequences**: Don't say "expensive" or "costly" — name the actual effect (e.g. extra header overhead, processing bottleneck, wasted bandwidth).
+- **Explain what named protocol messages do**: When introducing a protocol message type, state its action as a verb — "Register message" → "*registers* the source with the RP"; "Join message" → "asks routers to create a forwarding entry."
+- **Unaware participants**: When an entity (e.g. the source host) is unaware of the protocol being described, say so explicitly — "the source sends a normal multicast packet — it has no knowledge of PIM."
+
+### Structure and notation
+
+- **Standard notation gets its own paragraph**: If the protocol has standard notation (e.g. `(S,G)`, `(*,G)` in PIM), define it in a dedicated paragraph *before* first use, not inline mid-sentence.
+- **Two-context terms need both contexts stated**: When a term appears in two roles (e.g. `(S,G)` as a forwarding table entry AND as a Join message type), explain both explicitly. Don't assume the reader will infer the second meaning.
+- **Label temporary vs. steady-state**: When a mechanism has phases (e.g. bootstrap → normal operation), explicitly label what is temporary and what is the final state. Don't let the reader mistake the bootstrap for the normal mode.
+
+### Readability
+
+- **Dense paragraphs → bullet lists**: When a paragraph contains more than two sequential steps or more than three distinct concepts, break it into a bulleted or numbered list.
+- **Problem→solution at every level**: Not just in the Goals section — each new mechanism should motivate *why it's needed* before explaining *what it does* (e.g. "receivers don't know the source → that's why we need an RP").
