@@ -87,6 +87,8 @@ Create `showcases/<category>/<showcaseName>/` and `doc/` subdirectory (if not ye
 - Include a network screenshot and briefly describe the network, including relevant node types. Don't literalinclude the network NED (unless specifically necessary)
 - Network screenshot: use `area="module_rectangle"` and `margin=5`
 - Most of the time we don't need :width: 100% for figures
+- Add visualizers for understanding when relevant. You can use the inet-visualization skill for that. Not all showcases need
+visualizers, e.g. in some showcases, the interesting behavior is in the charts, eventlogs, etc. For example, the wireless/qos showcase.
 
 ### 2.3 Documentation page
 
