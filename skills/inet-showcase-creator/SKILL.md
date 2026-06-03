@@ -85,7 +85,7 @@ Create `showcases/<category>/<showcaseName>/` and `doc/` subdirectory (if not ye
 - When literalincluding network files, only include the relevant parts (e.g. no license header or package and import statements))
 - Don't use image captions but describe the image either before or after the image
 - Include a network screenshot and briefly describe the network, including relevant node types. Don't literalinclude the network NED (unless specifically necessary)
-- Network screenshot: use `area="module_rectangle"` and `margin=5`
+- Network screenshot: use `area="module_rectangle"` and `margin=5`. Use the `omnetpp-mcp-sim` skill's `get_canvas_image` tool to capture screenshots.
 - Most of the time we don't need :width: 100% for figures
 - Add visualizers for understanding when relevant. You can use the inet-visualization skill for that. Not all showcases need
 visualizers, e.g. in some showcases, the interesting behavior is in the charts, eventlogs, etc. For example, the wireless/qos showcase.
@@ -115,7 +115,7 @@ Configuration
 
 Results
 -------
-[Observations, screenshots, plots]
+[Choose evidence types based on what makes the showcase's behavior visible and interesting]
 
 Sources: :download:`omnetpp.ini <../omnetpp.ini>`, :download:`*.ned <../*.ned>`
 
@@ -127,6 +127,17 @@ Discussion
 ----------
 Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting on this showcase.
 ```
+
+**Results section guidance:** Think about what makes the showcase's behavior visible and interesting. Choose from these evidence types based on the showcase's focus:
+
+- **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video.
+- **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
+- **Charts/plots** — best for performance-oriented showcases (throughput, latency, packet loss, queue lengths). Use the OMNeT++ Analysis Tool or export to generate clean plots.
+- **Routing/forwarding table screenshots** — best for routing protocol showcases. Show how tables change over time or differ between nodes.
+- **Eventlog excerpts or sequence charts** — best for protocol handshakes or message exchanges where the exact ordering matters.
+- **Network screenshots with visualizer overlays** — annotated snapshots at key moments (e.g., "after prune" vs "after graft"). Useful when a video would be overkill but a static image captures the state well.
+
+Think about which moments or artifacts are most surprising, educational, or confirming for the reader. The Results section should provide evidence that the described behavior actually happens — not just restate the config section's predictions.
 
 ### 2.4 Wire into toctree
 
