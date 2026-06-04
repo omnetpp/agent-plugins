@@ -105,13 +105,29 @@ Goals
 | Verified with INET version: ``X.Y``
 | Source files location: `inet/showcases/... <GitHub URL>`__
 
+About [Protocol/Feature]
+------------------------
+[Protocol/feature background — pure domain knowledge, no INET specifics.
+ Explain the problem being solved, the protocol's approach, key terminology,
+ and relevant RFCs. Write as if INET didn't exist.]
+
+[Protocol/Feature] in INET
+---------------------------
+[How the protocol/feature maps to INET modules and parameters:
+ - Key node types (explain before first use in network descriptions)
+ - Module structure (include module interior screenshot if helpful)
+ - Configuration parameters with rationale (explain once here, not per-config)
+ - Implementation-specific behavior and limitations]
+
 The Model
 ---------
-[Explanation of concepts and approach]
+[Network topologies and scenario descriptions only.
+ Should be clean and focused — INET mechanics already covered above.]
 
-Configuration
-~~~~~~~~~~~~~
-[Use .. literalinclude:: ../omnetpp.ini blocks]
+[Config Name] Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Use .. literalinclude:: ../omnetpp.ini blocks.
+ Focus on scenario walkthrough and expected behavior, not re-explaining parameters.]
 
 Results
 -------
@@ -128,9 +144,17 @@ Discussion
 Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting on this showcase.
 ```
 
+**Document structure guidance:**
+
+- **Three-layer separation for protocol showcases:** protocol background → INET implementation → specific scenarios. This prevents INET details from being scattered across config sections. Simpler showcases (e.g., a feature demo with no protocol background) can merge or skip layers.
+- **Explain key node types before first use:** If the network uses a specialized node type (e.g., MulticastRouter, TsnDevice), explain what it is and what it adds before describing the network topology.
+- **Module interior screenshots:** For showcases where the internal module structure matters (e.g., protocol implementations, QoS queues), include a screenshot of the relevant compound module's interior in the INET section. Use `get_canvas_image` with the submodule path.
+- **Configuration parameters explained once:** Explain parameters (with rationale for non-obvious choices) in the INET section. Per-config sections should just show the literalinclude and walk through the scenario behavior.
+- **Implementation notes/limitations:** Place near the implementation description in the INET section, not at the end or scattered in config sections.
+
 **Results section guidance:** Think about what makes the showcase's behavior visible and interesting. Choose from these evidence types based on the showcase's focus:
 
-- **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video.
+- **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video. Use the `video-recording` skill for the recording workflow.
 - **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
 - **Charts/plots** — best for performance-oriented showcases (throughput, latency, packet loss, queue lengths). Use the OMNeT++ Analysis Tool or export to generate clean plots.
 - **Routing/forwarding table screenshots** — best for routing protocol showcases. Show how tables change over time or differ between nodes.
