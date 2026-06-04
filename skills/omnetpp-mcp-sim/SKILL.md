@@ -56,43 +56,101 @@ No auth token needed — the simulation MCP server is unauthenticated.
 
 ### Available simulation MCP tools
 
-| Tool | What it does |
-|---|---|
-| `get_network_topology` | Module tree and connections |
-| `get_module_hierarchy` | Full module hierarchy |
-| `get_module_info` | Info on a specific module |
-| `get_module_connections` | Gate connections of a module |
-| `get_simulation_state` | Current sim time, event number, state |
-| `get_module_parameters` | Parameter values of a module |
-| `get_module_watches` | Watch variables |
-| `run_simulation` | Advance sim by time/event limit |
-| `stop_simulation` | Stop the running simulation |
-| `get_module_log` | Log output of a module |
-| `get_module_message_log` | Message log of a module |
-| `execute_cpp` | Execute C++ expression in the live sim |
-| `find_modules` | Search modules by pattern |
-| `find_objects` | Search cObject tree |
-| `get_object_children` | Children of a cObject |
-| `get_object_details` | Details of a cObject |
-| `set_stop_condition` | Set a stop condition |
-| `set_debugger_break_condition` | Set a debugger break condition |
-| `get_config` | Current INI config |
-| `get_canvas_image` | Screenshot of a module canvas (base64 PNG) |
-| `get_fes` | Future Event Set contents |
-| `get_channel_parameters` | Channel parameters |
-| `read_pcap` | Read PCAP capture file |
-| `list_result_files` | List result files |
+`Qtenv?` column: **Y** = the tool requires Qtenv and returns "not available" under Cmdenv.
+`Clang?` column: **Y** = the tool requires the JIT C++ interpreter (only available when OMNeT++ was built with `WITH_CLANG_INTERPRETER=yes`; can be disabled at runtime).
+
+**Simulation control**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `run_simulation` | Advance sim by time/event limit, optional run mode (normal/fast/express) | | |
+| `request_stop_simulation` | Stop the currently running simulation after the current event | | |
+| `set_stop_condition` | Set a C++ lambda stop condition (persists across `run_simulation` calls) | | Y |
+| `clear_stop_condition` | Clear the C++ stop condition | | |
+| `set_debugger_break_condition` | Trap into gdb/lldb when a C++ condition fires | | Y |
+| `clear_debugger_break_condition` | Clear the C++ debugger-break condition | | |
+| `request_debugger_break` | Force a debugger break on the next event | | |
+
+**Configuration & lifecycle**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `get_config` | Active INI config (full snapshot or single option value) | | |
+| `list_configs` | List configs declared in the .ini file with run counts | | |
+| `setup_config` | Switch to a different config / run number (tears down + sets up fresh network) | Y | |
+| `rebuild_network` | Restart current config from event #0 (reseeds RNGs, resets stats) | Y | |
+
+**State queries**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `get_simulation_state` | Current sim time, event number, state, next-event info | | |
+| `get_fes` | Future Event Set contents | | |
+| `get_statistics` | Live values of `@statistic` recorders for a module | | |
+| `list_result_files` | List files in the result directory (.sca / .vec / .elog / .pcap) | | |
+
+**Module & object queries**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `find_modules` | Search modules by name / NED type pattern | | |
+| `find_objects` | Search cObject tree by class name / path pattern | | |
+| `get_network_topology` | Whole network topology as a nested JSON tree | | |
+| `get_module_hierarchy` | Submodule list + parent info for a module | | |
+| `get_module_info` | Module type, NED type, info string | | |
+| `get_module_connections` | Gate connections of a module with peer paths | | |
+| `get_module_parameters` | Current parameter values of a module | | |
+| `get_module_watches` | `WATCH()` variables and their current values | | |
+| `get_module_log` | `EV <<` log output for a module (from Qtenv log buffer) | Y | |
+| `get_module_message_log` | Message / packet traffic log for a module | Y | |
+| `get_channel_parameters` | Channel properties for a module's connections | | |
+| `get_object_children` | Direct child objects of any cObject | | |
+| `get_object_details` | Full reflection details for a cObject | | |
+
+**Pcap analysis**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `read_pcap` | Analyze a PCAP/PCAPNG file via tshark (filters, fields, decode hints) | | |
+
+**Visualization (Qtenv canvas + inspectors)**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `get_canvas_image` | Render a module's `cCanvas` to a PNG (base64-encoded) | Y | |
+| `open_inspector` | Open a Qtenv inspector window for any cObject by full path | Y | |
+| `get_inspector_screenshot` | Capture the inspector widget as a PNG (with optional resize) | Y | |
+| `expand_inspector_tree` | Expand tree nodes in object / object-tree inspectors before screenshotting | Y | |
+
+**Video recording (Qtenv)**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `start_video_recording` | Begin frame-by-frame PNG capture of the main window | Y | |
+| `stop_video_recording` | Stop capture and return a ready-to-run ffmpeg command | Y | |
+| `record_video` | One-shot wrapper: start + run_simulation + stop | Y | |
+
+See the `video-recording` skill for the recommended workflow.
+
+**Arbitrary code execution**
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `execute_cpp` | JIT-compile and run a C++ snippet inside the live simulation process | | Y |
 
 ### Available simulation MCP resources
 
+The server exposes a few read-only resources for static context that doesn't change during a run. Note the URI scheme is `simulation://`, not `omnetpp://`.
+
 | URI | Content |
 |---|---|
-| `omnetpp://network-topology` | Network topology as text |
-| `omnetpp://ned-source` | NED source of network |
-| `omnetpp://config-ini` | Active INI configuration |
-| `omnetpp://module/{path}/parameters` | Module parameters |
-| `omnetpp://module/{path}/statistics` | Module statistics |
-| `omnetpp://result-scalars` | Scalar results |
+| `simulation://config/run` | Run identity: OMNeT++ version, run ID, config name, run number, network, experiment, seed set, result dir, iteration variables, timestamps |
+| `simulation://config/ini` | Active INI configuration: config name, run number, all key-value entries (text/plain) |
+| `simulation://types/modules` | All registered NED module types in the current network (fully qualified name, C++ class, simple/compound) |
+| `simulation://types/channels` | All registered NED channel types |
+| `simulation://ned/{typeName}` | NED source code for a specific type (e.g. `inet.node.inet.StandardHost`) |
+| `simulation://modules/{path}/parameters` | Parameter *metadata* for a module (name, type, volatile). For current values use `get_module_parameters`. |
+| `simulation://modules/{path}/statistics` | Registered `@statistic` declarations and recorders. For live values use `get_statistics`. |
 
 ## Layer 2 — opp_repl MCP (optional, for workflow automation)
 
@@ -171,8 +229,8 @@ for item in resp.get('result',{}).get('content',[]):
 
 ## Qtenv vs Cmdenv for MCP
 
-- **Qtenv**: needed for `get_canvas_image`; sim starts paused, use `run_simulation` to advance; requires a display (`DISPLAY` or `WAYLAND_DISPLAY`)
-- **Cmdenv**: no display needed, auto-runs to completion; `get_canvas_image` not available; good for querying state/logs mid-run via stop conditions
+- **Qtenv**: sim starts paused, use `run_simulation` to advance; requires a display (`DISPLAY` or `WAYLAND_DISPLAY`). Required for any tool marked **Qtenv? Y** in the table above — broadly: canvas / inspector screenshots, video recording, log retrieval from the Qtenv buffer, and config / run lifecycle (`setup_config`, `rebuild_network`).
+- **Cmdenv**: no display needed, auto-runs to completion. Qtenv-only tools return "not available". Good for querying state/objects/results mid-run via stop conditions, or for batch automation that doesn't need visuals.
 
 ## run_simulation behavior
 
