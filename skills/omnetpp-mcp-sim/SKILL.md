@@ -80,6 +80,13 @@ No auth token needed — the simulation MCP server is unauthenticated.
 | `setup_config` | Switch to a different config / run number (tears down + sets up fresh network) | Y | |
 | `rebuild_network` | Restart current config from event #0 (reseeds RNGs, resets stats) | Y | |
 
+**Dialogs** — normally empty during MCP work. While an MCP request is processed, Qtenv routes `confirm()` / `displayException()` (errors, end-of-sim notices) to the log buffer instead of a blocking `QMessageBox`. Use these for the rare dialog that bypasses that path.
+
+| Tool | What it does | Qtenv? | Clang? |
+|---|---|---|---|
+| `list_dialogs` | List visible top-level modal dialogs (index, title, text, buttons, kind) | Y | |
+| `dismiss_dialog` | Click a button on a visible dialog (default: accept / OK on topmost) | Y | |
+
 **State queries**
 
 | Tool | What it does | Qtenv? | Clang? |
