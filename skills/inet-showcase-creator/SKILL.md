@@ -19,6 +19,52 @@ description: |
 4. Check the relevant category `index.rst` for toctree structure.
 5. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 
 
+## Phase 0.5: Assess implementation completeness (before scope discussion)
+
+Before committing to build a showcase, evaluate whether the INET implementation is
+complete and faithful enough to credibly demonstrate the intended feature. A showcase
+built on a half-implemented protocol will embarrass the project — readers expect that
+what's described in the doc actually works in the simulator. Do this assessment even
+when the user seems confident about the topic; gaps are often invisible from the NED
+level.
+
+**Read the implementation, not just the interface:**
+- C++ source for the relevant modules (`.cc`/`.h`), not only `.ned`
+- Code comments and `EV` logs mentioning `TODO`, `FIXME`, "not implemented",
+  "ignored", "simplified", "for now", "assume"
+- NED parameters that are declared but not read anywhere in the C++
+- The relevant RFC / standard section list vs. what the code actually handles
+- Existing GitHub issues for the module if known
+
+**Flag as showcase-blockers (not nitpicks):**
+- Core protocol mechanisms missing (e.g. DHCP lease expiration/renewal not modeled,
+  no retransmission, no state timeout)
+- Parameters declared in NED but ignored in C++
+- Hard-coded values where the standard requires them to be configurable or negotiated
+- State-machine transitions absent that the protocol relies on
+- "Simplified" handling that diverges from the real protocol in ways a knowledgeable
+  reader would immediately notice
+- Behaviors the user's intended claim *depends on* being correct
+
+**Report findings to the user before Phase 1:**
+Produce a brief written assessment with:
+- What the implementation does correctly
+- What is missing, hard-coded, stubbed, or diverges from the standard
+- For each gap, whether it impacts the showcase's intended claim
+- An overall verdict: *suitable as-is*, *suitable with scope changes*, *suitable only
+  with caveat notes*, or *not suitable — implementation needs work first*
+
+**Then ask the user how to proceed.** Options to offer:
+- Narrow the showcase scope to features that are actually implemented
+- Pick a different protocol/feature where the implementation is more complete
+- Document the limitations openly inside the showcase (only acceptable for minor gaps)
+- Fix the implementation first, then resume the showcase
+- Abandon this showcase idea
+
+Do not proceed to Phase 1 until the user has seen the assessment and explicitly chosen
+how to handle the gaps. Whether a limitation is "small enough to ignore" is the user's
+call, not the assistant's — surface it and let them decide.
+
 ## Phase 1: Clarify scope (do not create files yet)
 
 Ask only what's essential. Infer defaults from existing model and template showcase.
