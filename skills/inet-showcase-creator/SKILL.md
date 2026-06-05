@@ -19,51 +19,89 @@ description: |
 4. Check the relevant category `index.rst` for toctree structure.
 5. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 
 
-## Phase 0.5: Assess implementation completeness (before scope discussion)
+## Phase 0.5: Assess implementation vs. the showcase's claim
 
-Before committing to build a showcase, evaluate whether the INET implementation is
-complete and faithful enough to credibly demonstrate the intended feature. A showcase
-built on a half-implemented protocol will embarrass the project — readers expect that
-what's described in the doc actually works in the simulator. Do this assessment even
-when the user seems confident about the topic; gaps are often invisible from the NED
-level.
+Before committing to build a showcase, check whether the INET implementation actually
+supports the specific claim the showcase will make. The risk this catches: writing a
+showcase that *names* a protocol while skipping mechanisms a knowledgeable reader
+would immediately ask about (the DHCP showcase nearly shipped without lease
+expiration).
 
-**Read the implementation, not just the interface:**
-- C++ source for the relevant modules (`.cc`/`.h`), not only `.ned`
-- Code comments and `EV` logs mentioning `TODO`, `FIXME`, "not implemented",
-  "ignored", "simplified", "for now", "assume"
-- NED parameters that are declared but not read anywhere in the C++
-- The relevant RFC / standard section list vs. what the code actually handles
-- Existing GitHub issues for the module if known
+Run these steps in order. Don't skip ahead — the order is what prevents
+"read the code and judge reasonableness" creep.
 
-**Flag as showcase-blockers (not nitpicks):**
-- Core protocol mechanisms missing (e.g. DHCP lease expiration/renewal not modeled,
-  no retransmission, no state timeout)
-- Parameters declared in NED but ignored in C++
-- Hard-coded values where the standard requires them to be configurable or negotiated
-- State-machine transitions absent that the protocol relies on
-- "Simplified" handling that diverges from the real protocol in ways a knowledgeable
-  reader would immediately notice
-- Behaviors the user's intended claim *depends on* being correct
+### Step 1: Pin down the claim
 
-**Report findings to the user before Phase 1:**
-Produce a brief written assessment with:
-- What the implementation does correctly
-- What is missing, hard-coded, stubbed, or diverges from the standard
-- For each gap, whether it impacts the showcase's intended claim
-- An overall verdict: *suitable as-is*, *suitable with scope changes*, *suitable only
-  with caveat notes*, or *not suitable — implementation needs work first*
+The claim is the one-sentence answer to "what will a reader see this showcase prove?"
+— usually inferable from the user's initial request, or from the template showcase.
+If unclear, ask one focused question before continuing.
 
-**Then ask the user how to proceed.** Options to offer:
-- Narrow the showcase scope to features that are actually implemented
-- Pick a different protocol/feature where the implementation is more complete
-- Document the limitations openly inside the showcase (only acceptable for minor gaps)
-- Fix the implementation first, then resume the showcase
-- Abandon this showcase idea
+### Step 2: Enumerate the protocol's required mechanisms as a checklist (before reading code)
 
-Do not proceed to Phase 1 until the user has seen the assessment and explicitly chosen
-how to handle the gaps. Whether a limitation is "small enough to ignore" is the user's
-call, not the assistant's — surface it and let them decide.
+Write down what the RFC / standard *requires* the protocol to do, as a flat checklist,
+**before** opening any C++. For DHCP this would include: DORA, retransmission with
+backoff, lease expiration at server, T1/T2 renewal/rebind at client, INIT-REBOOT,
+DECLINE, RELEASE, INFORM, relay support, …
+
+This list comes from the standard, not from intuition or from what looks easy to
+demo. The point is to have a mechanical reference the audit grades against, so the
+assessment can't drift into "the parts that look implemented look fine."
+
+For trivial / well-trodden cases (e.g. a basic Ethernet topology demo) the checklist
+may be one or two items — that's fine, the discipline is the same.
+
+### Step 3: Grade each checklist item against the C++
+
+For each item in the Step 2 checklist, check the actual code:
+- Read the relevant `.cc`/`.h`, not just `.ned`
+- Grep for `TODO`, `FIXME`, "not implemented", "ignored", "simplified", "for now"
+- Check that NED parameters the mechanism relies on are actually read in the C++
+- Mark each item: **implemented**, **partial/simplified**, or **missing/stubbed**
+
+### Step 4: Classify each gap on two independent axes
+
+For every item that isn't fully implemented, record **both**:
+
+- **Blocker by definition (Y/N):** Is this mechanism something a knowledgeable reader
+  of a showcase on this protocol would expect to be modeled? (Lease expiration in a
+  DHCP showcase: Y. Obscure DHCP option handling: typically N.)
+- **Impacts current scope (Y/N):** Does the showcase's current claim/scenarios
+  actually exercise this mechanism?
+
+**Do not collapse these into a single severity.** A gap can be a blocker-by-definition
+even if the current narrow scope dodges it — that's exactly the case that gets
+embarrassing later, and merging the axes hides it.
+
+### Step 5: Report findings, then issue a verdict (constrained by the gap table)
+
+Present the user with:
+- The claim (Step 1)
+- The required-mechanisms checklist with each item's status (Steps 2–3)
+- A gap table with two columns: *blocker by definition* and *impacts current scope*
+- A verdict from the menu in Step 6
+
+### Step 6: Verdict menu — gated by the gap table
+
+Pick one:
+
+- **Suitable as-is** — available **only if no gap in the table has _blocker by
+  definition = Y_**. Otherwise this verdict is off the menu, regardless of whether
+  the current scope happens to dodge the gap.
+- **Suitable with claim narrowed to X** — describe the narrower claim explicitly,
+  and confirm that under it no remaining gap has _blocker by definition = Y_.
+  Narrowing the claim changes what a reader of *this showcase* will expect, which
+  can dissolve a blocker; it does not retroactively reclassify gaps.
+- **Not suitable — implementation needs work first** — always available.
+
+"Document the limitations openly" is **not** a verdict. A blocker-by-definition is
+by construction something a knowledgeable reader will expect to be modeled; a
+footnote does not change that expectation. (Open-noted caveats remain appropriate
+for *non*-blocker gaps inside an otherwise-suitable showcase — not as a way to ship
+past a blocker.)
+
+After issuing the verdict, ask the user how to proceed — they may accept it, push to
+narrow further, fix the implementation first, or abandon. Do not proceed to Phase 1
+until they have chosen.
 
 ## Phase 1: Clarify scope (do not create files yet)
 
