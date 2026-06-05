@@ -109,10 +109,13 @@ No auth token needed — the simulation MCP server is unauthenticated.
 | `get_module_parameters` | Current parameter values of a module | | |
 | `get_module_watches` | `WATCH()` variables and their current values | | |
 | `get_module_log` | `EV <<` log output for a module (from Qtenv log buffer) | Y | |
-| `get_module_message_log` | Message / packet traffic log for a module | Y | |
+| `get_module_message_log` | Message / packet traffic log for a module (text view) | Y | |
+| `list_logged_packets` | Structured packet list from Qtenv's log buffer with `path: logged:<tree_id>` handles | Y | |
 | `get_channel_parameters` | Channel properties for a module's connections | | |
 | `get_object_children` | Direct child objects of any cObject | | |
 | `get_object_details` | Full reflection details for a cObject | | |
+
+**Packet inspection (Wireshark-style)** — `list_logged_packets` returns a `path` field of the form `logged:<tree_id>` for each entry. Pass that path to `open_inspector`, `expand_inspector_tree`, and `get_inspector_screenshot` to drill into a packet's nested chunk structure (INET Packet → SequenceChunk / IPv4Header / TcpHeader etc.) and screenshot the result.
 
 **Pcap analysis**
 
