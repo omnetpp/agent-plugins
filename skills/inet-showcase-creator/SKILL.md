@@ -105,7 +105,7 @@ until they have chosen.
 
 ## Phase 1: Clarify scope (do not create files yet)
 
-Ask only what's essential. Infer defaults from existing model and template showcase.
+Raise all doubts, discuss every important aspect with the user. Infer defaults from existing model and template showcase.
 
 **Core questions:**
 - **Source**: What is the source of the showcase? If a base model is not present, what other example should it be based on?
