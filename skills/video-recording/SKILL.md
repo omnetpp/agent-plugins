@@ -53,3 +53,82 @@ Record simulation videos via the MCP server's `record_video` / `start_video_reco
 | 500 | 50s | 33s | 100s |
 
 Target: 10–30s per video for showcase documentation.
+
+## Recipes — making a video reproducible
+
+Every `.. video::` in a showcase should be immediately followed by a **recipe**: an
+RST comment recording exactly how the clip was captured, so it can be regenerated
+after a visualization or config change. The recipe is written for an AI to *replay*
+via the MCP tools — no separate script is required (though one could consume the
+same fields).
+
+**Why redo is usually cheap:** the simulation is deterministic for a given
+config+seed, and visualization settings (which visualizers, packet filters, colors,
+the interface-table format) do **not** consume RNG. A visualization-only change is
+therefore a pure replay — same trajectory, same event times, new overlay. Only a
+change that consumes RNG differently (seed, module/host count, traffic or timing
+params, scenario XML) shifts the timeline and forces re-tuning.
+
+### Format
+
+Place directly after the directive. A `..` on its own line makes the block a
+comment; its content is never parsed as RST, so colons and directive-like text are
+safe.
+
+```
+.. video:: media/basicdhcp.mp4
+   :align: center
+
+..
+   VIDEO RECIPE (redo via the "video-recording" skill)
+   config:   <[Config] name in ../omnetpp.ini>
+   seed:     <"default", or the explicit seed-set/num-rngs the config sets>
+   shows:    <one or two lines: what the clip must depict>
+   anchors:  <the determinism self-check — see below>
+   window:   <record sim-time start → end; express-run target; fade wait y/n>
+   anim:     playback_speed=<n>        # set_animation_parameters, normal profile
+   capture:  fps=<n>, crop_area=with_padding   # re-read crop_rect; canvas was <W×H>
+   encode:   ffmpeg -r <n> -vcodec libx264 -pix_fmt yuv420p (pad to even dims)
+   post:     <bubble-freeze steps, or "none">
+   stamp:    recorded <YYYY-MM>, INET <ver>
+```
+
+Field notes:
+- **anchors** — the structural facts the clip depends on, each stated as a
+  *mechanism* (which must hold) plus the *last observed* sim time (which is
+  seed-dependent). E.g. "all 3 clients BOUND within the first ~2–3s
+  (startTime=uniform(0,2)); last observed bind ~t=2.1s." These double as the redo
+  oracle, so phrase them as something you can re-check by reading the message log.
+- **window** — express-run lands just before the segment; record `time_limit` is
+  the segment end. Note whether a channel visualizer with `fadeOutMode=realTime` is
+  present (→ wait ~2s after the step-flush) or not (→ skip).
+- **seed** — record "default" unless the config sets `seed-set`/`num-rngs`
+  explicitly; an explicit seed is RNG-affecting, so a change to it invalidates the
+  anchors just like a traffic-param change.
+- **capture** — never hardcode the crop rectangle; store only the last-known canvas
+  size as a hint and re-read `crop_rect` from the `start_video_recording` response
+  at capture time. If it differs, a layout-affecting visualization change happened —
+  update the ffmpeg crop and the recorded size.
+- **anim / encode** — `playback_speed` is the pacing knob and persists across runs,
+  so re-assert it and verify via `get_simulation_state` → `animation`; ffmpeg `-r`
+  is the playback rate.
+
+### Redoing from a recipe (the AI workflow)
+
+1. **Classify the change.** Diff the current `[Config]` against what the recipe
+   assumes. Only visualization keys changed → expect a pure replay. Any
+   RNG-affecting key changed → expect re-tuning.
+2. **Replay setup → verify anchors.** Open the config, express-run to the window
+   start, read the actual event times (message log / FES), and compare against the
+   recipe's anchors:
+   - **Anchors hold** → replay with the stored `anim`/`capture`/`encode` values.
+   - **Anchors moved** → the timeline shifted. Re-derive the window/times, re-record,
+     and **rewrite the recipe's anchors + window** (and canvas size if it changed),
+     noting it in `stamp`.
+3. **Capture** per the stored procedure, re-reading `crop_rect`.
+4. **Encode** with the stored ffmpeg line (refresh crop `W:H:X:Y` from the fresh
+   `crop_rect`).
+5. **Verify** the first frame has no stale overlay, then clean up frames.
+
+The anchors are the point: they let the AI decide *for itself* whether the recipe is
+still valid or needs updating, instead of blindly replaying a stale procedure.

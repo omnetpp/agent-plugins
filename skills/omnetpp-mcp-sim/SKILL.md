@@ -237,6 +237,59 @@ for item in resp.get('result',{}).get('content',[]):
 - `get_canvas_image` requires **Qtenv** — it returns "not available" under Cmdenv
 - `area` options: `all_elements` (bounding box of all graphics), `module_rectangle`, `viewport`
 
+## Recipe comments for showcase figures (canvas & inspector)
+
+Every canvas/topology or module-inspector `.. figure::` in a showcase should be
+immediately followed by a **FIGURE RECIPE** comment, so the image can be regenerated
+after a config or visualization change. The recipe records only the deltas specific
+to that figure; the capture procedure is the `get_canvas_image` /
+`open_inspector` + `get_inspector_screenshot` flow above. The anchor / self-check
+philosophy — why a visualization-only change is a cheap deterministic replay, and
+how the anchor lets the AI decide replay-vs-re-tune — is written once in the
+`video-recording` skill and applies identically here.
+
+Format (RST comment — `..` on its own line, content never parsed as RST):
+
+```
+.. figure:: media/network.png            ← canvas / topology
+..
+   FIGURE RECIPE (redo via the "omnetpp-mcp-sim" skill)
+   type:     canvas
+   config:   BasicDHCP   # ../omnetpp.ini
+   seed:     default
+   shows:    network topology — dhcpServer, switch, client[0..2] on 100 Mbps Ethernet
+   anchor:   initial state (t=0, before run). No timing — the self-check is
+             structural: if the module set/links differ, the NED changed.
+   capture:  get_canvas_image, area=all_elements; was 728×478
+   stamp:    captured 2026-06, INET 4.6
+
+.. figure:: media/lease_table.png        ← module inspector
+..
+   FIGURE RECIPE (redo via the "omnetpp-mcp-sim" skill)
+   type:     inspector
+   config:   BasicDHCP   # ../omnetpp.ini
+   seed:     default
+   shows:    server's `leased` map — three IP→client-MAC bindings (.10/.11/.12)
+   target:   dhcpServer → module inspector → `leased` field
+   anchor:   after all 3 clients BOUND (~t=2–3s; same anchor as basicdhcp.mp4).
+             Fewer/more bindings ⇒ client count or timing changed.
+   capture:  open_inspector(dhcpServer) → get_inspector_screenshot, cropped; was 720×170
+   stamp:    captured 2026-06, INET 4.6
+```
+
+Fields:
+- **type** — `canvas` (a `get_canvas_image` render of a module's cCanvas) or
+  `inspector` (a `get_inspector_screenshot` of an inspector window).
+- **anchor** — for a timed shot (inspector state, or a canvas overlay after an
+  event) the sim time to advance to before capturing, re-checkable via the message
+  log / `get_simulation_state`. For a pure topology shot there is no timing — the
+  anchor is "initial/structural" and the self-check is whether the NED topology
+  still matches.
+- **target** (inspector only) — which module and which inspector/field to
+  `open_inspector` (plus `expand_inspector_tree` if the field is a nested object).
+- **capture** — `area` for canvas (`all_elements` etc.) and the last screenshot dims
+  as a resolution hint.
+
 ## Qtenv vs Cmdenv for MCP
 
 - **Qtenv**: sim starts paused, use `run_simulation` to advance; requires a display (`DISPLAY` or `WAYLAND_DISPLAY`). Required for any tool marked **Qtenv? Y** in the table above — broadly: canvas / inspector screenshots, video recording, log retrieval from the Qtenv buffer, and config / run lifecycle (`setup_config`, `rebuild_network`).

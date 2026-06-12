@@ -81,6 +81,50 @@ set_timeline_mode        {mode: "NONLINEAR"}
 screenshot               {}
 ```
 
+## Recipe comments for showcase sequence charts
+
+Every sequence-chart `.. figure::` in a showcase should be immediately followed by a
+**FIGURE RECIPE** comment, so the chart can be regenerated after a config or
+visualization change. The recipe records only the deltas specific to that chart; the
+redo procedure itself is the canonical recipe above. The anchor / self-check
+philosophy — why a redo is usually a cheap deterministic replay, and how the anchor
+lets the AI decide whether to replay or re-tune — is written once in the
+`video-recording` skill and applies identically here.
+
+Format (RST comment — `..` on its own line, content never parsed as RST):
+
+```
+.. figure:: media/client_crash.png
+..
+   FIGURE RECIPE (redo via the "omnetpp-ide-mcp" skill)
+   type:     seqchart
+   config:   ClientCrash               # ../omnetpp.ini, record-eventlog=true
+   seed:     default
+   shows:    the INIT-REBOOT exchange — client[0]'s broadcast DHCPREQUEST
+             reaching dhcpServer via switch, answered by a DHCPACK
+   source:   results/ClientCrash-*.elog (produced by record-eventlog=true)
+   axes:     client[0] · switch · dhcpServer        (this top-to-bottom order)
+   anchor:   REQUEST→ACK at t≈60s (client crashes t=30s, restarts t=60s).
+             If the exchange moves off ~60s, the scenario/timing changed →
+             re-capture and rewrite this recipe.
+   capture:  Sequence Chart screenshot, NONLINEAR timeline, cropped to the
+             exchange; was 963×578
+   stamp:    captured 2026-06, INET 4.6
+```
+
+Fields specific to sequence charts:
+- **source** — the `.elog` the chart is drawn from, plus how to produce it
+  (`record-eventlog=true` on that config). On redo the AI re-runs the config to
+  regenerate the eventlog, then `open_eventlog`s it.
+- **axes** — the module set + top-to-bottom order for `set_open_axis_modules` /
+  `set_manual_axis_order`. Always include physical transit modules (switch/router)
+  or the arrows vanish (see Pitfalls).
+- **anchor** — the protocol exchange and its sim time. On redo, `find_events` for
+  the message pattern and confirm it still lands near that time before
+  screenshotting; if it moved, re-derive and rewrite.
+- **capture** — timeline mode (usually NONLINEAR) and the last screenshot dims (a
+  resolution hint, not a hard crop).
+
 ## Pitfalls (read before debugging an empty chart)
 
 1. **`set_open_axis_modules` resets display-mode flags as a side effect.** If you set display mode first then change axes, the display mode reverts. Always: axes → manual order → `set_display_mode` → zoom → screenshot.
