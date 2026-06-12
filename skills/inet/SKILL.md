@@ -39,3 +39,51 @@ Ideas of what to display for different types of modules:
 - queue-like elements: queue size (pks/bytes); drop count; etc
 - displaying the count of remaining packets/requests etc is usually not enough, because
   it does not tell how many were already done -- both are needed for a good picture
+
+
+  ## Code documentation
+
+Use Javadoc-style (`/** ... */`) Doxygen comments for:
+- **Every major class** — describe what it represents, its role in the architecture, and key
+  design aspects.
+- **Every method in interface (abstract) classes** — briefly describe important aspects;
+  that may include the intended operation, parameters, preconditions, and postconditions.
+
+Implementation class methods generally do NOT need Doxygen comments unless non-obvious.
+
+### Class-level comments
+
+Every class that represents a significant concept (protocol module, data structure,
+interface) must have a Doxygen comment immediately before the class declaration.
+The comment should state what the class represents and give a brief overview of how
+it works. For module classes, include a reference to the NED documentation:
+"See the corresponding NED file for more details."
+
+Example (protocol module):
+```cpp
+/**
+ * Implements the TCP protocol. Usage and compliance with various RFCs are
+ * discussed in the corresponding NED documentation.
+ *
+ * **Communication with clients**
+ *
+ * This section describes the interface between the Tcp module and its clients...
+ */
+class INET_API Tcp : public TransportProtocolBase
+{
+  ...
+};
+```
+
+Related methods in a class can be grouped using the `@name` tag and `//@{ ... //@}`:
+
+```cpp
+/** @name Routing functions (query the route table) */
+//@{
+/**
+ * The routing function. Performs longest prefix match...
+ */
+virtual IRoute *findBestMatchingRoute(const L3Address& dest) const = 0;
+...
+//@}
+```
