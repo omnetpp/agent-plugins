@@ -5,7 +5,7 @@ description: Drive the OMNeT++ IDE's Sequence Chart programmatically via the in-
 
 # OMNeT++ IDE MCP Server
 
-A custom MCP server lives inside the OMNeT++ IDE as plugin `org.omnetpp.mcp`. When the IDE is running, the server exposes 17 JSON-RPC tools for driving the Sequence Chart programmatically — open eventlogs, search events, configure axes/zoom/timeline, take PNG screenshots.
+A custom MCP server lives inside the OMNeT++ IDE as plugin `org.omnetpp.mcp`. When the IDE is running, the server exposes 19 JSON-RPC tools for driving the Sequence Chart programmatically — open eventlogs, search events, configure axes/zoom/timeline, filter what gets drawn, take PNG screenshots.
 
 ## When to use
 
@@ -60,8 +60,7 @@ This is the recipe the agent should follow for any "show me protocol X in eventl
                                                       INCLUDING physical transit modules
                                                       (switches, routers, wire junctions)
 4. set_manual_axis_order                            → top-to-bottom order
-5. set_display_mode NETWORK_COMMUNICATION           → MUST come AFTER set_open_axis_modules
-                                                      (axis changes reset display-mode flags)
+5. set_display_mode NETWORK_COMMUNICATION           → required when axes are network nodes
 6. zoom_to_simulation_time_range                    → exchange bounds
 7. set_timeline_mode NONLINEAR                      → readable arrow spacing for dense exchanges
 8. screenshot                                       → PNG content block
@@ -127,17 +126,50 @@ Fields specific to sequence charts:
 
 ## Pitfalls (read before debugging an empty chart)
 
-1. **`set_open_axis_modules` resets display-mode flags as a side effect.** If you set display mode first then change axes, the display mode reverts. Always: axes → manual order → `set_display_mode` → zoom → screenshot.
+1. **NETWORK_COMMUNICATION mode needs physical transit modules visible.** A DHCP packet physically traverses the switch even though logically it goes "client to server". If you remove the switch from the open axis set, the arrows disappear because the chart can't draw an arrow whose physical path leaves the visible axes. Keep switches/routers/wire junctions in the axis set.
 
-2. **NETWORK_COMMUNICATION mode needs physical transit modules visible.** A DHCP packet physically traverses the switch even though logically it goes "client to server". If you remove the switch from the open axis set, the arrows disappear because the chart can't draw an arrow whose physical path leaves the visible axes. Keep switches/routers/wire junctions in the axis set.
+2. **`use_network_node_axes` is the safest starting point** when you don't know the topology — it opens every `@networkNode` and `@wireJunction` module AND sets NETWORK_COMMUNICATION mode in one call. From there, narrow with `set_open_axis_modules`, then re-call `set_display_mode NETWORK_COMMUNICATION` if you've changed display mode in between.
 
-3. **`use_network_node_axes` is the safest starting point** when you don't know the topology — it opens every `@networkNode` and `@wireJunction` module AND sets NETWORK_COMMUNICATION mode in one call. From there, you can narrow with `set_open_axis_modules` (and re-apply `set_display_mode`).
+3. **Eventlog files don't auto-refresh.** If the user just ran the simulation from CLI, the IDE's workspace cache may still think the file is absent. `open_eventlog` does a `refreshLocal` on the parent folder, so passing the workspace path (e.g. `/inet/showcases/.../foo.elog`) always works. Absolute paths under the workspace root also work.
 
-4. **Eventlog files don't auto-refresh.** If the user just ran the simulation from CLI, the IDE's workspace cache may still think the file is absent. `open_eventlog` does a `refreshLocal` on the parent folder, so passing the workspace path (e.g. `/inet/showcases/.../foo.elog`) always works. Absolute paths under the workspace root also work.
+4. **Screenshot reflects the visible widget.** To change resolution, call `resize_window` to grow the IDE window before screenshotting. The chart widget is one part of the window, so the screenshot is smaller than the requested window size.
 
-5. **Screenshot reflects the visible widget.** To change resolution, call `resize_window` to grow the IDE window before screenshotting. The chart widget is one part of the window, so the screenshot is smaller than the requested window size.
+5. **Filenames with `#` are workspace-legal.** OMNeT++ generates filenames like `BasicDHCP-#0.elog`. JSON handles `#` fine; no URL-encoding needed.
 
-6. **Filenames with `#` are workspace-legal.** OMNeT++ generates filenames like `BasicDHCP-#0.elog`. JSON handles `#` fine; no URL-encoding needed.
+## Trimming a busy chart with `set_event_filter`
+
+In wireless traces, the chart fills with infrastructure traffic (Beacons, 802.11 ACKs) that obscures the protocol exchange you actually want to show. `set_event_filter` is the headless equivalent of the IDE's "Filter Eventlog" button.
+
+Discovery first: `list_message_names {handle}` returns the distinct set of message names found in this eventlog — the same data the dialog's "by name" tab shows as checkboxes. Look at what's there, then write the filter.
+
+**Inclusion (preferred when possible):** list the message families you want to keep. Anything not in any of these patterns is dropped.
+
+```jsonc
+set_event_filter {
+  handle: "...",
+  message_names: ["DHCP*", "Beacon", "Auth*", "Assoc*", "Probe*"]
+}
+```
+
+This is cleaner than exclusion and matches naturally with the chart's OR'd filter dimensions.
+
+**Exclusion via match expression:** when the noise pattern is small and the keep-set is open-ended, use `message_expression` with OMNeT++ match-expression syntax (NOT Lucene/Elasticsearch). The grammar:
+
+```
+WlanAck                     literal — matches default field (message name)
+NOT WlanAck                 negation
+WlanAck*                    glob
+field(value)                explicit field selector
+NOT (A AND B)               combinators
+```
+
+So to hide every 802.11 ACK: `message_expression: "NOT WlanAck"`.
+
+**Other dimensions:** `module_paths` / `module_ned_types` for module filtering; `from_event_number` / `to_event_number` / `from_simulation_time` / `to_simulation_time` for slicing.
+
+**Clear:** `set_event_filter {handle, clear: true}` removes the filter.
+
+Filter dimensions are OR'd internally (any matching field includes the event), so for AND-of-conditions use a single `message_expression` with `AND` operators rather than mixing fields.
 
 ## Tool surface (current as of session memory)
 
@@ -149,6 +181,7 @@ Open the chart and navigate:
 Inspect:
 - `list_modules` (full module tree, optionally network-nodes only)
 - `list_axes` (currently visible axes in display order)
+- `list_message_names` (distinct message names — or `kind:"class"` for class names — that appear in the eventlog; the same data the IDE Filter dialog's checkbox lists show)
 - `find_events` (paginated; filter by message name regex, module path regex, time range, event range)
 - `get_event` (single event with cause + consequences)
 - `get_view_state` (zoom, time bounds, timeline mode, axis ordering, widget size)
@@ -159,6 +192,7 @@ Configure the view:
 - `set_axis_ordering_mode` (MODULE_ID / MODULE_FULL_PATH / MINIMIZE_CROSSINGS / MANUAL)
 - `set_timeline_mode` (SIMULATION_TIME / EVENT_NUMBER / STEP / NONLINEAR)
 - `set_display_mode` (ALL / DEFAULT / NETWORK_COMMUNICATION)
+- `set_event_filter` (filter which events/messages get drawn — by name, class, module, event/time range, or free-form match expression; same machinery as the IDE's Filter Eventlog dialog)
 - `use_network_node_axes` (preset: all network nodes + wire junctions, NETWORK_COMMUNICATION on)
 
 Output:

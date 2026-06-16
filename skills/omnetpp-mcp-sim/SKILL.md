@@ -91,7 +91,7 @@ No auth token needed — the simulation MCP server is unauthenticated.
 
 | Tool | What it does | Qtenv? | Clang? |
 |---|---|---|---|
-| `get_simulation_state` | Current sim time, event number, state, next-event info | | |
+| `get_simulation_state` | Current sim time, event number, state, next-event info; under Qtenv also an `animation` object mirroring the Animation Parameters dialog (active profile, model-driven animation_speed, and both `normal`/`fast` profiles' playback speed + min/max animation clamps) | | |
 | `get_fes` | Future Event Set contents | | |
 | `get_statistics` | Live values of `@statistic` recorders for a module | | |
 | `list_result_files` | List files in the result directory (.sca / .vec / .elog / .pcap) | | |
@@ -139,8 +139,15 @@ No auth token needed — the simulation MCP server is unauthenticated.
 | `start_video_recording` | Begin frame-by-frame PNG capture of the main window | Y | |
 | `stop_video_recording` | Stop capture and return a ready-to-run ffmpeg command | Y | |
 | `record_video` | One-shot wrapper: start + run_simulation + stop | Y | |
+| `set_animation_parameters` | Set a profile's playback-speed slider and/or min/max animation-speed clamps (mirrors the Animation Parameters dialog) | Y | |
 
-See the `video-recording` skill for the recommended workflow.
+See the `video-recording` skill for the recommended workflow. `set_animation_parameters` mirrors
+Qtenv's "Animation Parameters" dialog: pick a `profile` (`normal`/`fast`) and set any of
+`playback_speed` (clipped to 0.01–100 in normal mode), `min_animation_speed`, `max_animation_speed`
+(0 clears a clamp). Read the current values back from the `animation` object in
+`get_simulation_state`. During recording, sim-time-per-frame = `(1/fps) × animation_speed ×
+playback_speed`, so a lower playback speed captures more frames (slow-motion / finer detail) and a
+higher one captures fewer (coarser / faster coverage).
 
 **Arbitrary code execution**
 

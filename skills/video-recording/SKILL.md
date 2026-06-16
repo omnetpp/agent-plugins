@@ -5,7 +5,7 @@ description: Record videos of OMNeT++/INET simulations for showcase documentatio
 
 # Video Recording for Simulation Showcases
 
-Record simulation videos via the MCP server's `record_video` / `start_video_recording` + `stop_video_recording` tools, then encode with ffmpeg.
+Record simulation videos via the MCP server's `record_video` / `start_video_recording` + `stop_video_recording` tools, then encode with ffmpeg. Optionally adjust capture pacing with `set_animation_parameters` (see below).
 
 ## Workflow
 
@@ -33,7 +33,51 @@ Record simulation videos via the MCP server's `record_video` / `start_video_reco
 |-----------|-------|
 | `crop_area` | Always use `'with_padding'` (network canvas + border + 10px) |
 | `fps` | Capture density parameter. Default 2. Actual frame count depends on animation steps in normal mode. |
+| `playback_speed` | The pacing/length knob (set via `set_animation_parameters` before recording). Higher = shorter video, packets stay visible; lower = slow-motion. Default 1. See below. |
 | ffmpeg `-r` | Playback rate. 10fps is a good starting point. Adjust based on video duration vs content density. |
+
+## Capture Speed (`set_animation_parameters`)
+
+During recording, one frame is captured every `(1/fps) × animation_speed × playback_speed` of
+simulated time (`animation_speed` is the model-driven speed — from NED display strings / message
+animations). If a model defines *no* animation speed, recording falls back to one frame per event
+and `playback_speed` has no effect — but most INET showcases animate, so it applies. Three levers:
+
+- **`fps`** (capture) — higher = more frames per unit of animated sim time (smoother, more frames).
+- **`playback_speed`** (capture, via `set_animation_parameters`) — **the knob for pacing/length.**
+  Lower = more frames (slow-motion, finer detail); higher = fewer frames (shorter video). Packets
+  stay fully visible across the useful range (tested on BasicDHCP: pb=1 → 69s, pb=2 → 41s, pb=4 →
+  25s, packets present in every frame). Clipped to 0.01–100 in normal mode.
+- **ffmpeg `-r`** (encode) — real-time playback rate of the final video.
+
+**To shorten a recording, raise `playback_speed`** (or lower `fps` / raise ffmpeg `-r`). Set it once
+before `record_video` against the `normal` profile; verify via the `animation` object in
+`get_simulation_state`. It persists across runs (same toolbar slider / "Animation Parameters" dialog).
+
+⚠️ **Do NOT use the `min_animation_speed` clamp to shorten.** It bounds the model's animation speed,
+but for events with tiny sim-time (fast LAN exchanges — a 100 Mbps DHCP DORA spans *microseconds*)
+clamping even slightly above the model's natural speed collapses the message-animation holds and the
+packets stop animating — they teleport. Tested: `min_animation_speed=0.16` on BasicDHCP → packets
+vanished, while `playback_speed=4` kept them. The min/max clamps only bound a model that animates
+pathologically fast/slow; they are not a length knob.
+
+### Bubbles are wall-clock-timed — no speed setting affects them
+
+`cComponent::bubble()` notifications (e.g. "Got IP …") use a hardcoded **1-second real-wall-clock
+timer** in Qtenv (`BubbleItem::startTimer(1000)`), decoupled from sim/animation/playback speed.
+During recording they render to only **~10–11 frames** (~0.37 s at 30 fps) regardless of any setting,
+and the **last** event's bubble is clipped to ~3 frames (after the final event the sim races to the
+time limit, so the wall-clock bubble catches almost nothing). Consequences:
+
+- No `set_animation_parameters` value can lengthen a bubble.
+- **ffmpeg re-timing decimates bubbles further** — `setpts`/`fps` speed-ups drop frames uniformly,
+  crushing an already-brief bubble below readability. If you must shorten, record natively at a
+  higher `playback_speed` (the wall-clock bubble keeps its ~10 frames) rather than re-timing a
+  natural-speed video.
+- To make a bubble readable (~1 s) in a *shortened* video, **freeze/hold its frames in post** —
+  rebuild the frame sequence: fast-forward the action, repeat the bubble's representative frame ~33×
+  at 30 fps. That's the only way to get readable bubbles *and* a short video; it's a Qtenv
+  limitation, not optional polish. Detect bubble frames by their fill color `RGB(248,248,216)`.
 
 ## Guidelines
 
