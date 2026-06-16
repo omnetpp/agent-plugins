@@ -128,6 +128,12 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
 
 **Summarize before proceeding:**
 - The general scope and the planned outline and claims of the showcase
+- The **expected observables**: for each config/scenario, concrete *falsifiable*
+  statements of what the run will show when it works — checked later in Phase 2.7.
+  Tie them to time and place, not just existence (e.g. "the client's IP goes
+  0.0.0.0 → a leased address around t≈2 s in `host[0]`"; "queue length at
+  `router.eth[0]` exceeds N at some point"; "node B's RSSI crosses the threshold
+  and it reassociates around t≈10 s"). Write at least one per claim.
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
@@ -242,10 +248,10 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
 - **Charts/plots** — best for performance-oriented showcases (throughput, latency, packet loss, queue lengths). Use the OMNeT++ Analysis Tool or export to generate clean plots.
 - **Routing/forwarding table screenshots** — best for routing protocol showcases. Show how tables change over time or differ between nodes.
-- **Eventlog excerpts or sequence charts** — best for protocol handshakes or message exchanges where the exact ordering matters.
+- **Eventlog excerpts or sequence charts** — best for protocol handshakes or message exchanges where the exact ordering matters. Use the `omnetpp-ide-mcp` skill to drive the IDE's Sequence Chart tool: it can open an `.elog`, search for the relevant exchange by message-name pattern, configure axes/zoom/timeline, and return a PNG — all without manual clicking. Particularly useful when you want a tight frame around a specific protocol exchange (e.g. a DORA handshake) on a chosen subset of axes.
 - **Network screenshots with visualizer overlays** — annotated snapshots at key moments (e.g., "after prune" vs "after graft"). Useful when a video would be overkill but a static image captures the state well.
 
-Think about which moments or artifacts are most surprising, educational, or confirming for the reader. The Results section should provide evidence that the described behavior actually happens — not just restate the config section's predictions.
+Think about which moments or artifacts are most surprising, educational, or confirming for the reader. The Results section should provide evidence that the described behavior actually happens — not just restate the config section's predictions. Capture these artifacts only after Phase 2.7 confirms the run actually demonstrates the claim; capturing earlier risks recording the wrong behavior.
 
 ### 2.4 Wire into toctree
 
@@ -287,6 +293,88 @@ cause first. Common issues:
   inspect traffic with tcpdump
 - Use `--debug-on-error=true` for stack traces
 - Use `--cmdenv-express-mode=false --cmdenv-log-level=detail` for verbose logs
+
+### 2.7 Critically review the simulation's behavior (gate before capturing results)
+
+Phase 2.6 confirms the simulation *runs* — clean exit, result files produced, stated
+numbers match output. It cannot tell you whether the run actually *exhibits the
+phenomenon the showcase is about*. A simulation can pass 2.6 while the interesting thing
+never happens, or happens so trivially that no reader would notice. This step is the
+behavioral gate that 2.6 is not.
+
+The risk this catches: the showcase's prose describes the *intended* story, an artifact
+gets captured, and nobody confirms the artifact shows that story rather than a flat line.
+A lease-expiration showcase whose `sim-time-limit` is shorter than the lease never expires
+a lease; a handover showcase whose tx power keeps the node inside one cell never hands
+over — both run green.
+
+Run these steps in order. **Do not capture any Results artifact (video, chart, packet
+screenshot, eventlog) until this step issues a clean verdict** — capturing first means
+recording the wrong behavior and noticing later.
+
+#### Step 1: Retrieve the predicted observables
+
+Pull the expected-observables list registered in Phase 1. If none exists yet, write it
+**now, before observing the run**, so the check can't drift into rationalizing whatever
+happened. Each observable must be falsifiable and tied to a time/place, not just existence.
+
+#### Step 2: Observe the actual run against each prediction
+
+For each predicted observable, find the evidence in the actual run:
+- module logs, recorded statistics (`opp_scavetool`), the eventlog
+- live inspection via the `omnetpp-mcp-sim` skill — pause at the predicted time and look at
+  module state, watches, and the FES; this is where you actually *watch what's happening*
+- for a time-located prediction, confirm *when* it happens, not just *that* it happens
+
+#### Step 3: Classify each observable
+
+Mark each one:
+- **Observed and legible** — happens, at the right magnitude and time, and would be visible
+  to a reader
+- **Absent** — the predicted phenomenon never occurs in this run
+- **Degenerate / trivial** — technically occurs but in a way no reader would learn from:
+  the event of interest fires at t=0 before the scenario is set up, a metric that flatlines
+  or is a single data point, a counter that ticks once and never again, saturation so total
+  that nothing varies (0% or 100% throughout), or a transient that is over before the
+  simulation warms up
+- **Present but uncaptured** — it happens, but no statistic / visualizer / log surfaces it,
+  so there is nothing to show
+
+Independently of the predictions, sanity-check magnitudes: throughput near link capacity?
+latencies physically plausible? counts the right order of magnitude? Implausible numbers
+mean a misconfiguration that "runs fine."
+
+#### Step 4: Verdict
+
+Pick one:
+- **Demonstrates the claim cleanly** — every observable is *observed and legible* and
+  magnitudes are plausible. **Only this verdict unlocks Results artifact capture.**
+- **Needs tuning** — the phenomenon is absent or degenerate because of parameters (load,
+  power, positions, durations, `sim-time-limit`). Adjust **within realistic, representative
+  ranges**, re-run, repeat from Step 2. Tuning that only makes the phenomenon appear by
+  pushing parameters to contrived values is itself a failure — a showcase must demonstrate
+  its claim under parameters a reader would accept as representative, not under values
+  reverse-engineered to force the result.
+- **Claim must change** — the run is correct but shows something narrower or different than
+  the doc claims. This is a scope change: **present it to the user and let them decide**
+  (narrow the claim, re-scope, or abandon), the same way Phase 0.5 hands its verdict back.
+  Do not silently rewrite the claim. If narrowed, revisit the prediction list.
+- **Something is wrong in the model** — implausible magnitudes or impossible behavior point
+  at a config or model bug. **Surface it to the user** before continuing; if it traces to
+  the implementation, it may reopen the Phase 0.5 assessment.
+
+"Capture it anyway and describe what we hoped to see" is **not** a verdict. The Results
+section must show evidence the behavior happened — a caption describing intent over an
+artifact that shows nothing is the exact failure this step exists to prevent.
+
+**Bound the loop.** Loop Steps 2–4 only while the verdict stays *Needs tuning* and the
+tuning stays within representative ranges. If two or three rounds of honest tuning don't
+produce a clean run — or if you find yourself reaching for contrived values to force it —
+stop and surface the situation to the user rather than spin or fake it. A *Claim must
+change* or *Something is wrong in the model* verdict also exits the loop to the user.
+
+Only a *Demonstrates the claim cleanly* verdict lets you proceed to capture Results
+artifacts (the evidence types in §2.3) and finalize the Results section.
 
 # Output
 
