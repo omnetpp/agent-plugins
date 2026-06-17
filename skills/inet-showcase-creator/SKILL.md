@@ -265,6 +265,7 @@ Add entry to appropriate `index.rst`:
 - NED `package` matches folder path
 - All `:download:` links reference existing files
 - No broken `:doc:` or `:ned:` references
+- ``literalinclude`` markers actually slice what you expect. `:start-at:` + `:end-before:` are order-sensitive: if the ini's section order doesn't match the doc's subsection order, the slice silently extends past the intended config, or worse, swallows the next one too. Default rule: **keep ini section order matching doc subsection order** (helps direct ini readers too). Verify by rendering or by reading the rendered output.
 
 ### 2.6 Run and verify
 
@@ -402,14 +403,33 @@ Do not modify files outside the new showcase except required `index.rst` wiring.
 - **Replace vague qualifiers with concrete consequences**: Don't say "expensive" or "costly" — name the actual effect (e.g. extra header overhead, processing bottleneck, wasted bandwidth).
 - **Explain what named protocol messages do**: When introducing a protocol message type, state its action as a verb — "Register message" → "*registers* the source with the RP"; "Join message" → "asks routers to create a forwarding entry."
 - **Unaware participants**: When an entity (e.g. the source host) is unaware of the protocol being described, say so explicitly — "the source sends a normal multicast packet — it has no knowledge of PIM."
+- **No C++ function/method/type names in user-facing prose.** `recordLease`, `bindLease`, `getLeaseByMac`, `handleStopOperation`, `Ieee80211MgmtSta` — none of these belong. State names, protocol message names, NED parameter names are fine and routinely cited; *implementation symbol names are not.*
+- **Implementation flavor leaks even without identifiers.** Phrases like "expiry timer", "stop handler", "lifecycle teardown", "in-memory lease" don't name C++ symbols but still frame the prose around how INET implements the protocol rather than what the protocol does. Heuristic: read the sentence as if INET didn't exist — if it only makes sense inside INET, rephrase. Example: *"the server's expiry timer reclaims the address"* → *"the server reclaims the address once the lease expires."*
+- **No implementation-history parentheticals.** "(introduced for RFC 2131 compliance)", "(added in 4.6)" tells the reader nothing actionable and implies the rest is non-compliant or otherwise different. Just describe current behavior.
+- **No `§4.4.x`-style RFC section citations inline.** Readers don't go look them up; the surrounding prose carries the meaning. Keep one high-level "RFC NNNN" pointer per protocol if useful; drop section numbers.
+- **No ad-hoc "this is current" assertions.** Lines like "all figures still current", "captured with the default seed", "verified for this commit" go stale silently and get believed; a stale assertion is worse than no assertion. The standard `| Verified with INET version: X.Y` boilerplate is an exception — it's a template convention with a defined update protocol (bump on re-verification). Invented current-state lines on top of that don't have a convention behind them; they're just hopes. Per-figure or per-config TODOs go inline at the point of use (e.g. a `.. TODO:` comment next to the figure that needs re-capturing), where a maintainer editing that thing will see them — not in a top-of-file list nobody reads.
 
 ### Structure and notation
 
 - **Standard notation gets its own paragraph**: If the protocol has standard notation (e.g. `(S,G)`, `(*,G)` in PIM), define it in a dedicated paragraph *before* first use, not inline mid-sentence.
 - **Two-context terms need both contexts stated**: When a term appears in two roles (e.g. `(S,G)` as a forwarding table entry AND as a Join message type), explain both explicitly. Don't assume the reader will infer the second meaning.
 - **Label temporary vs. steady-state**: When a mechanism has phases (e.g. bootstrap → normal operation), explicitly label what is temporary and what is the final state. Don't let the reader mistake the bootstrap for the normal mode.
+- **Define acronyms, state names, and protocol-message names on first use** unless they're obviously well-known to the showcase's expected audience. ACK is everywhere; NAK isn't. DORA is jargon outside DHCP-aware readers. The bar is *"would I gloss this in a hallway conversation with the target reader?"*. A short parenthetical (`DHCPNAK — "negative acknowledgement"`) usually does it.
+- **Avoid forward references by default.** "(explained below)" isn't a substitute for explaining — the reader feels they're missing something even if they're not. Exceptions are fine when the inline gloss carries enough context that the forward pointer is *informational* rather than load-bearing: e.g. *"a server identifier — described under DHCP in INET — that the client uses to direct its REQUEST"* tells you what a server identifier is without making you go look first. If you can't write the term cleanly in place, reorder the doc instead of pointing forward.
 
 ### Readability
 
 - **Dense paragraphs → bullet lists**: When a paragraph contains more than two sequential steps or more than three distinct concepts, break it into a bulleted or numbered list.
 - **Problem→solution at every level**: Not just in the Goals section — each new mechanism should motivate *why it's needed* before explaining *what it does* (e.g. "receivers don't know the source → that's why we need an RP").
+- **State machines and similar reference material aren't narrative.** Dense state-machine prose walkthroughs, ASCII transition diagrams, formal grammar dumps, decision-tree tables — anything that reads like a reference-manual page belongs in the protocol's RFC/textbook (or, if needed, in INET's per-module reference doc). The showcase's job is "watch this specific scenario unfold", not "here is the whole spec." Introduce only the states/transitions/notation the per-config sections actually demonstrate.
+- **Bullet-list parameter dumps.** When introducing a module, listing its parameters as a comma-separated, parenthetical-laden paragraph is unscannable. One bullet per parameter, short description per bullet. The cost is a handful of extra lines; the gain is something a reader can actually skim.
+
+### Figures and screenshots
+
+- **Every visible element on a figure should be explainable from the caption or surrounding text** — especially the elements that would prompt "wait, what's that?" from a first-time reader. Sequence charts and canvas screenshots routinely show things that surprise readers but are protocol-correct: 802.11 broadcast echoes, link-layer ACKs, ARP exchanges before any unicast, retransmits that cross each other on the wire, the same packet appearing on multiple axes as it traverses internal modules. Anticipate the question and answer it before the reader asks.
+
+  Corollary: the deciding question is *"is this element relevant to what the figure is showing?"* — not *"can I explain it?"*. If it's not relevant, strip it via axis filter, event filter, or tighter time range; explaining noise costs the reader attention for nothing. If it is relevant, explain it — and don't ship the figure without that explanation.
+
+- **Silence is a feature.** A network node whose lifeline stays empty across the frame of a sequence chart tells the reader "this node is not involved in the path being shown." The Roaming chart in the DHCP showcase uses this: `dhcpServer1`'s empty lifeline below the active path makes it visually obvious that the roam DORA does not touch the old subnet. Use that on purpose.
+
+- **Default to noise removal, not noise tolerance.** When the protocol of interest produces ten arrows and the link-layer / management chatter produces a hundred, the chart's reader can't see the ten. Filter aggressively. The result should be: the reader's eye lands on the protocol arrows immediately, not after a manual subtraction pass.
