@@ -84,8 +84,11 @@ time limit, so the wall-clock bubble catches almost nothing). Consequences:
 - **Keep videos short** — record only the interesting events + 2 packets (or equivalent) after the state change to confirm the new behavior.
 - **Separate videos for separate events** — never put a time jump in a single video. If interesting events are far apart in sim time, make separate videos.
 - **Frame numbering** — if using `start/stop_video_recording` across multiple segments with the same output_dir, frame numbers continue. Use `-start_number N` in ffmpeg.
+- **Stale frames may linger** — if a prior recording was killed mid-way and its `output_dir` is the same as the current one, the new recording overwrites frames 0..N but anything numbered past N from the prior run is still on disk. ffmpeg's `%04d` glob will silently encode the stragglers too. Check what's already in the dir before recording (or use a fresh per-recording subdir).
 - **Preserve iterations** — move superseded videos to `media/unused/` rather than deleting, in case you need to go back.
-- **Verify first frame** — read the first frame PNG to confirm no stale visualizer overlays before encoding.
+- **Verify the frames** — read sample frames before encoding, and check two distinct things:
+  - **No stale overlays from a prior run** — read the *first* frame; nothing should be left over from earlier capture activity. The first frame is the right anchor for this check because it's deterministically before any new overlay has fired.
+  - **The overlays you *added* are actually present** — when the recording exists *because* of a specific visualizer (a `DataLinkVisualizer` arrow, a `RoutingTableVisualizer` overlay, a packet-drop marker), the overlay won't be in the first frame — it appears only at the moment the underlying event fires. Sample frames at that event time: use the message log / FES / known protocol timing to pick frames where the packet is in flight (data-link arrows usually persist for 1 s of sim time after the send, so any frame within that window should show them). Layout being correct, labels updating, and the playground being clean are *adjacent* indicators, not the feature itself. "Looks right" ≠ "is right" — an explicit check catches the wrong-selector / visualizer-off-by-default bugs that adjacent indicators silently pass. Don't declare done without it.
 
 ## Playback Rate Selection
 
