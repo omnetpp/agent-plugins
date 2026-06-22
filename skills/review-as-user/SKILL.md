@@ -15,8 +15,9 @@ that the *author* can't see because they already know the material.
 
 ## Phase 0: Preparation
 
-1. **Read the entire document** and all referenced/inlined files (literalinclude targets,
-   linked source files, referenced images).
+1. **Read the entire document** and resolve every directive to its source (see "Resolving
+   RST directives" below): open and view referenced images, read literalinclude targets
+   clipped to the slice the reader sees, and follow linked files.
 2. **Verify assets exist** — check that all referenced images, downloads, and links are
    actually present. Note any broken references immediately.
 3. **Establish the persona.** Either the user specifies it or infer from context. Define:
@@ -26,6 +27,25 @@ that the *author* can't see because they already know the material.
    - **Reading style** — sequential, first time, moderately attentive
 
    If the persona is unclear, ask the user one short question to calibrate.
+
+### Resolving RST directives
+
+The document is `.rst` source; figures and code blocks are directives, not rendered output.
+The reader sees the *resolved* result, so resolve each before judging it:
+
+- **`.. figure::` / `.. image::`** — the path (e.g. `media/x.png`) is relative to the `.rst`
+  file. **Open and view the image** and ask the reader's questions: is it legible, does it
+  actually show what the caption/prose says, does it help here — and is a visual *missing*
+  where one is needed?
+- **`.. literalinclude::`** — path is relative to the `.rst`. Read the file, then clip to
+  the slice the reader sees (`:start-at:`/`:end-at:`, `:start-after:`/`:end-before:`,
+  `:lines:`). Judge only that fragment: is the right part shown, is there enough context,
+  is everything the prose discusses actually visible in it?
+- **`.. video::`** — you cannot watch it. If it (or a figure) is followed by a `..` **VIDEO
+  / FIGURE RECIPE** comment, you can replay the sim per its `config:`/`seed:` and confirm
+  the `anchors:` still hold (see Phase 2b) to check the clip really shows what the prose
+  says. Either way, note where a video is the *only* evidence for a claim and whether the
+  surrounding text stands on its own without it.
 
 ## Phase 1: Sequential Reading
 
@@ -85,6 +105,12 @@ To launch a live-reload server: `make server` (serves on port 8000)
 Use the `omnetpp-mcp-sim` skill to launch the showcase's simulation configs and
 verify behavioral claims directly. This turns "this might be wrong" into
 "this IS wrong" or "confirmed correct."
+
+When a `.. video::`/`.. figure::` has a **VIDEO/FIGURE RECIPE** comment, that recipe is
+your replay spec: it names the `config:` and `seed:` to run, the `window:` to express-run
+to, and the `anchors:` (mechanism + last-observed sim time) to check in the message log.
+Replay it to confirm the clip — which you can't watch — actually shows what the prose
+claims, rather than taking the text on faith.
 
 **What you can verify:**
 - Claimed packet counts → check via `get_module_log`, result scalars

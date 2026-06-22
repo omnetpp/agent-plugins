@@ -19,12 +19,37 @@ document's credibility or educational value.
 
 1. **Identify the domain.** Determine the protocol, algorithm, or system the document
    describes (e.g., DHCP, OSPF, TCP congestion control, a scheduling algorithm).
-2. **Read the entire document** and all referenced/inlined files (config files, NED files,
-   scripts, scenario files).
+2. **Read the entire document** and resolve every directive to its source (see
+   "Resolving RST directives" below) — config files, NED files, scripts, scenario files,
+   included code fragments, and figures/charts.
 3. **Locate the implementation.** Find and read the relevant source code files that
    implement the behavior the document describes. This is essential — never evaluate
    claims from memory or general knowledge alone.
 4. **Identify the reference standard** (RFC, IEEE spec, textbook definition) if applicable.
+
+### Resolving RST directives
+
+The document is `.rst` source, so figures and code appear as directives, not rendered
+output. Resolve each one before judging it:
+
+- **`.. figure::` / `.. image::`** — the target (e.g. `media/x.png`) is relative to the
+  `.rst` file's directory. **Open and view the image.** For a diagram, check it matches the
+  topology/prose; for a chart, check the plotted values and trend match the claimed
+  behavior. A chart that contradicts the text is a factual error, not a cosmetic one.
+- **`.. literalinclude::`** — the path is relative to the `.rst` file. Read the source
+  file, then clip to the slice the reader actually sees: `:start-at:`/`:end-at:`,
+  `:start-after:`/`:end-before:`, or `:lines:`. Verify the shown fragment against the prose
+  (parameter names, values, types) and confirm it is still current with the file it
+  includes from — a stale slice is a real error.
+- **`.. video::`** — cannot be watched. **Only if** it (or a figure) is immediately
+  followed by a `..` comment holding a **VIDEO RECIPE / FIGURE RECIPE** (`config:`, `seed:`,
+  `shows:`, `anchors:`): re-run that config (via the `omnetpp-mcp-sim` / `video-recording`
+  skills), express-run to the recipe's `window:`, and confirm the **anchors** still hold in
+  the message log — each anchor is a *mechanism* plus a *last-observed sim time*, so it
+  doubles as the oracle for "does the clip still depict what `shows:` and the prose claim";
+  an anchor that moved or prose the replay contradicts is a factual error. **No recipe
+  (older showcases have none) → don't replay the sim for the video;** just review the
+  surrounding prose on its own terms.
 
 ## Phase 1: Claim Verification
 
