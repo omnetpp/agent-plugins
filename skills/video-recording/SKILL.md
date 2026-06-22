@@ -86,9 +86,107 @@ time limit, so the wall-clock bubble catches almost nothing). Consequences:
 - **Frame numbering** — if using `start/stop_video_recording` across multiple segments with the same output_dir, frame numbers continue. Use `-start_number N` in ffmpeg.
 - **Stale frames may linger** — if a prior recording was killed mid-way and its `output_dir` is the same as the current one, the new recording overwrites frames 0..N but anything numbered past N from the prior run is still on disk. ffmpeg's `%04d` glob will silently encode the stragglers too. Check what's already in the dir before recording (or use a fresh per-recording subdir).
 - **Preserve iterations** — move superseded videos to `media/unused/` rather than deleting, in case you need to go back.
-- **Verify the frames** — read sample frames before encoding, and check two distinct things:
-  - **No stale overlays from a prior run** — read the *first* frame; nothing should be left over from earlier capture activity. The first frame is the right anchor for this check because it's deterministically before any new overlay has fired.
-  - **The overlays you *added* are actually present** — when the recording exists *because* of a specific visualizer (a `DataLinkVisualizer` arrow, a `RoutingTableVisualizer` overlay, a packet-drop marker), the overlay won't be in the first frame — it appears only at the moment the underlying event fires. Sample frames at that event time: use the message log / FES / known protocol timing to pick frames where the packet is in flight (data-link arrows usually persist for 1 s of sim time after the send, so any frame within that window should show them). Layout being correct, labels updating, and the playground being clean are *adjacent* indicators, not the feature itself. "Looks right" ≠ "is right" — an explicit check catches the wrong-selector / visualizer-off-by-default bugs that adjacent indicators silently pass. Don't declare done without it.
+- **Verify before encoding** — confirm the recording *shows what you intended* (crop good, the intended overlay present, no stale or unwanted artifacts). See **Verifying the recording** below. Don't declare done without it.
+
+## Verifying the recording
+
+Before encoding, verify the recording **shows what you intended** — *not* by pixel-matching overlay
+colors. Visualizer overlays have no fixed color to match: a data-link arrow's color is palette-cycled
+by index (default `lineColor="dark"`, a color *group*), width-3, anti-aliased, and opacity-faded
+during fade-out (`PathCanvasVisualizerBase.cc:142,169`), so exact-RGB scanning is unreliable. Two
+methods that compose — **A** is the default, **B** the oracle:
+
+**A. Look at the frames (general, no setup).** The Read tool renders a PNG as an image, so just
+*look* — for any overlay (arrows, comm ranges, routing tables, packet-drop markers, labels) and for
+crop quality, with no per-visualizer knowledge. Read:
+- the **first** frame — crop encloses the whole canvas with padding, nothing clipped; no stale
+  overlay from a prior run (the first frame is deterministically before any new overlay fires); and
+  no unwanted built-in message animation (see below) if the clip should show only the visualizer
+  overlay.
+- **1–2 frames at the event's sim time** (pick from the message log / anchors; a data-link arrow
+  persists ~1 s sim-time, so any frame in that window catches it) — the intended overlay is present
+  and labelled. *Seeing* the arrow is the real check; clean layout / updated labels are only
+  *adjacent* indicators that silently pass the wrong-filter / visualizer-off-by-default bugs.
+
+**B. Count the overlay figures (oracle — for certainty or recipe redo).** INET canvas visualizers
+draw their overlays as children of a named `cGroupFigure` on the network canvas, so the child count
+*is* the live-overlay count — deterministic and immune to color/AA/fade. `count 0` at the event time
+pins the failure to "visualizer off / wrong filter". Query via `execute_cpp`:
+
+```cpp
+void check_overlays() {
+    const char* groups[] = {"paths","packet drops","link breaks","communication",
+                            "routing tables","links","trees"};
+    auto canvas = getSimulation()->getSystemModule()->getCanvas();
+    struct R { static cFigure* find(cFigure* f, const char* n) {
+        if (!strcmp(f->getName(), n)) return f;
+        for (int i = 0; i < f->getNumFigures(); i++)
+            if (auto* r = find(f->getFigure(i), n)) return r;
+        return nullptr;
+    }};
+    for (auto* g : groups) if (auto* f = R::find(canvas->getRootFigure(), g))
+        std::cout << g << "=" << f->getNumFigures() << "  ";
+    std::cout << std::endl;
+}
+check_overlays();
+```
+
+Group → visualizer: `paths` = all path/arrow visualizers (DataLink, NetworkRoute, PhysicalLink —
+they *share* this name, so the count is across them; read a child figure's label text to
+disambiguate), `packet drops` = PacketDrop, `link breaks` = LinkBreak, `communication` = Medium
+(ranges/signals), `routing tables` = RoutingTable, `links` = link/connection, `trees` = Tree. The
+canvas belongs to `visualizationTargetModule` (usually the network — adjust if a submodule).
+`execute_cpp` needs `opp_sandbox`; wrap the body in a uniquely-named function (top-level decls
+persist), only `std::cout` is captured, and a bad snippet crashes the sim — recover by deterministic
+replay (see the packet-dissection capture recipe).
+
+*Disambiguating shared `paths` groups.* When more than one path visualizer is enabled they each get
+their own `cGroupFigure("paths")`, all sharing the name (the count above sums across them). Each arrow
+is a `LabeledPolylineFigure` (itself a group) whose label is a nested `cTextFigure` named `label`
+(`labelFormat` default `"%n"` = packet name). Read that text to tell the groups apart — a plain
+`dynamic_cast<cTextFigure*>` reaches it, no INET headers needed:
+
+```cpp
+void list_path_overlays() {
+    auto canvas = getSimulation()->getSystemModule()->getCanvas();
+    struct R {
+        static const char* label(cFigure* f) {                 // first cTextFigure under f
+            if (auto* t = dynamic_cast<cTextFigure*>(f)) return t->getText();
+            for (int i = 0; i < f->getNumFigures(); i++)
+                if (auto* s = label(f->getFigure(i))) return s;
+            return nullptr;
+        }
+        static void walk(cFigure* f) {
+            if (!strcmp(f->getName(), "paths")) {
+                std::cout << "paths(" << f->getNumFigures() << "):";
+                for (int i = 0; i < f->getNumFigures(); i++) {
+                    auto* s = label(f->getFigure(i));
+                    std::cout << " [" << (s ? s : "") << "]";
+                }
+                std::cout << std::endl;
+                return;                                          // don't descend into the arrows
+            }
+            for (int i = 0; i < f->getNumFigures(); i++) walk(f->getFigure(i));
+        }
+    };
+    R::walk(canvas->getRootFigure());
+}
+list_path_overlays();
+```
+
+One line per `paths` group, listing each arrow's packet label — so the labels identify what each
+group visualizes (your DHCP frame names for the data-link arrows vs. an IP packet name for a route
+overlay). With a single path visualizer enabled there's only one group and no ambiguity.
+
+**Built-in message animation.** Qtenv's built-in animation (`Qtenv::opt->animationEnabled`, default
+**on** — the message dot/line moving along connections) is separate from the INET visualizers. If a
+clip should show only the clean visualizer overlay, the built-in animation is redundant clutter: spot
+it in the first frame (packet dots traversing wires) and turn it off when unwanted —
+`getQtenv()->opt->animationEnabled = false;` via `execute_cpp`, or Preferences → "Animate messages".
+Disabling it does **not** remove visualizer arrows; their fade-out drives its own canvas animation.
+
+The **bubble** color check (`RGB(248,248,216)`, above) is the one place pixel-matching is correct —
+bubble fill genuinely *is* a fixed color.
 
 ## Playback Rate Selection
 
@@ -175,7 +273,8 @@ Field notes:
 3. **Capture** per the stored procedure, re-reading `crop_rect`.
 4. **Encode** with the stored ffmpeg line (refresh crop `W:H:X:Y` from the fresh
    `crop_rect`).
-5. **Verify** the first frame has no stale overlay, then clean up frames.
+5. **Verify** the recording shows what you intended (see *Verifying the recording* — frames for the
+   intended overlay + crop, figure-count oracle for certainty), then clean up frames.
 
 The anchors are the point: they let the AI decide *for itself* whether the recipe is
 still valid or needs updating, instead of blindly replaying a stale procedure.
