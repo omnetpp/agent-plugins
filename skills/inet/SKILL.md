@@ -15,7 +15,7 @@ status-by-folder convention:
 
 When implementing a plan, work through it incrementally:
 
-- Always do the implementation work in a dedicated git worktree, not the main checkout.
+- Ask whether to do the implementation work in a dedicated git worktree or in the main checkout.
 - Mark each part done in the plan as you implement it.
 - Create a git commit as you complete each step of the plan.
 - Update the plan as you go with the actual design decisions and facts discovered during implementation.
