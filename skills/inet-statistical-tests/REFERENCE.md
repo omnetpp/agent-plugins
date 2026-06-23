@@ -106,8 +106,9 @@ git -C "$STATS" ls-files '*.csv' '*.diff' | xargs -r git -C "$STATS" rm --cached
 git -C "$STATS" add '*.sca' .gitignore
 ```
 
-Commit message: short area-prefixed subject + the INET HEAD description in the body (see SKILL.md
-Phase 4). House-style examples from the repo history:
+Commit message: short area-prefixed subject + the INET HEAD short hash and *only its first line, in
+quotes* in the body — not the full commit body (see SKILL.md Phase 4). House-style examples from the
+repo history:
 
 - `update mipv6/mipv6roaming results after fixing MIPv6 Home Address option length`
 - `eigrp, mpls: follow number format change (printf %.17 to round-trip precision)`

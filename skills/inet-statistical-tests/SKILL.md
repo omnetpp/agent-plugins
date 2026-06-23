@@ -88,16 +88,16 @@ update_statistical_test_results(simulation_project=inet_project,
    ```bash
    git -C statistics add '*.sca' .gitignore
    ```
-3. **Commit with INET HEAD embedded.** Build the message from INET's HEAD so the statistics commit
-   records which INET change it follows:
+3. **Commit with the INET HEAD subject embedded.** Reference INET's HEAD by its short hash and
+   *only its first line, in quotes* (not the full body) so the statistics commit records which INET
+   change it follows:
    ```bash
    INET=/home/andras/projects/inet
    SUBJ=$(git -C "$INET" log -1 --format='%s')
    HASH=$(git -C "$INET" rev-parse --short HEAD)
    git -C "$INET/statistics" commit \
      -m "<areas>: update statistics after $SUBJ" \
-     -m "Re-recorded against INET $HASH:" \
-     -m "$(git -C "$INET" log -1 --format='%B')"
+     -m "Recorded against INET $HASH: \"$SUBJ\""
    ```
    (Match the statistics repo's house style — short area-prefixed subject describing *what* and
    *why*, e.g. "update mipv6 results after fixing Home Address option length".)
