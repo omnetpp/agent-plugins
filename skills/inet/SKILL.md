@@ -2,6 +2,25 @@
 name: inet
 description: Developing INET modules
 ---
+
+# Plans
+
+Always keep design/implementation plans as Markdown files in a `plan/` folder, 
+creating it (`plan/pending/`) if the project has none yet. Follow this 
+status-by-folder convention:
+
+- Save a **new plan** in `plan/pending/`.
+- When a plan has been **executed to completion**, move it to `plan/done/`
+  (e.g. `git mv plan/pending/<name>.md plan/done/<name>.md`).
+
+When implementing a plan, work through it incrementally:
+
+- Always do the implementation work in a dedicated git worktree, not the main checkout.
+- Mark each part done in the plan as you implement it.
+- Create a git commit as you complete each step of the plan.
+- Update the plan as you go with the actual design decisions and facts discovered during implementation.
+- Move the plan to plan/done/ once it is fully implemented.
+
 # Coding guidelines
 
 ## Display strings
