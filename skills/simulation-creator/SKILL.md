@@ -6,7 +6,10 @@ description: skill to create new simulation scenarios or debug existing ones
 - dont assume something works a certain way in INET, check the ned and the source code
 - dont assume the parameter names of modules, check the ned file
 - dont assume some module is available, check the ned files
-- its ok to add a PCAP recorder/routingtablerecorder to the simulation if you need it to understand whats happening with tcpdump. this needs checksumMode and fcsMode set to computed.
+- pcap capture is a debugging aid, not part of the model. Only commit pcap config if the showcase/tutorial text actually refers to it (e.g. OSPF tutorial Step 25). Otherwise add it to capture/inspect, then remove it — don't commit it.
+- to capture, use the per-node built-in recorder (no NED edits needed): `*.<node>.numPcapRecorders = 1` and `*.<node>.pcapRecorder[0].pcapFile = "${resultdir}/${configname}.pcap"`. The recorder sits inside the host, so its default moduleNamePatterns (`eth[*] ppp[*] wlan[*]`) already match that host's interfaces. this needs checksumMode and fcsMode set to computed.
+- gotcha: a top-level PcapRecorder submodule whose moduleNamePatterns starts with `.` (e.g. `.^`) is NOT a silencer — the leading dot subscribes it to its parent (the whole network), so it captures everything. To actually disable such a recorder, set moduleNamePatterns to "" or remove the submodule.
+- a routingtablerecorder can likewise be added ad-hoc to watch routing-table changes.
 - use analog-model agnostic radio/radiomedium, and set analog model from ini
 if available for the specific technology; use analog-model specific one if possible instead of configuring RadioMedium from scratch.
 - use network node types appropriate for the simulation, e.g. wireless or adhoc hosts if there is wireless, etc.

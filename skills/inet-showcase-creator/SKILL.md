@@ -290,8 +290,9 @@ cause first. Common issues:
 - Incorrect network topology connections
 
 **Debugging tips** (from the `simulation-creator` skill):
-- Add a PCAP recorder with `checksumMode = "computed"` and `fcsMode = "computed"` to
-  inspect traffic with tcpdump
+- Add a PCAP recorder (per-node `numPcapRecorders`) with `checksumMode = "computed"` and
+  `fcsMode = "computed"` to inspect traffic with tcpdump. Only commit it if the page text
+  refers to it; otherwise capture ad-hoc and don't commit. (See the `simulation-creator` skill.)
 - Use `--debug-on-error=true` for stack traces
 - Use `--cmdenv-express-mode=false --cmdenv-log-level=detail` for verbose logs
 
