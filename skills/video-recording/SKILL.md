@@ -86,7 +86,7 @@ time limit, so the wall-clock bubble catches almost nothing). Consequences:
 - **Frame numbering** — if using `start/stop_video_recording` across multiple segments with the same output_dir, frame numbers continue. Use `-start_number N` in ffmpeg.
 - **Stale frames may linger** — if a prior recording was killed mid-way and its `output_dir` is the same as the current one, the new recording overwrites frames 0..N but anything numbered past N from the prior run is still on disk. ffmpeg's `%04d` glob will silently encode the stragglers too. Check what's already in the dir before recording (or use a fresh per-recording subdir).
 - **Preserve iterations** — move superseded videos to `media/unused/` rather than deleting, in case you need to go back.
-- **Verify before encoding** — confirm the recording *shows what you intended* (crop good, the intended overlay present, no stale or unwanted artifacts). See **Verifying the recording** below. Don't declare done without it.
+- **Verify before encoding** — confirm the recording *shows what you intended* (crop good, the intended overlay present, no stale or unwanted artifacts) **and is *watchable*** (packet/message labels readable at playback rate, no dead air). See **Verifying the recording** → **Pacing & legibility** below. Don't declare done without it.
 
 ## Verifying the recording
 
@@ -188,6 +188,42 @@ Disabling it does **not** remove visualizer arrows; their fade-out drives its ow
 The **bubble** color check (`RGB(248,248,216)`, above) is the one place pixel-matching is correct —
 bubble fill genuinely *is* a fixed color.
 
+### Pacing & legibility (playback, not content)
+
+Methods A/B confirm the overlay is *present*; they don't confirm the clip is *watchable*. Pacing has
+two opposite failure modes — check both before declaring done:
+
+- **Too fast → labels unreadable.** A packet/arrow whose name flashes by can't be read. Estimate its
+  on-screen *playback* time: `(frames the label is visible) ÷ ffmpeg -r`. A data-link arrow persists
+  ~1 s sim-time, so at `playback_speed=1` it spans ~`fps` frames, i.e. `fps ÷ -r` seconds on screen.
+  Aim for **≥ ~0.7–1 s of playback per readable label**. If it's less, the fix is *more frames over
+  that packet* — lower `playback_speed` (or raise `fps`) so the animation is sampled more densely —
+  **not** just a slower `-r`, which stretches everything including the dead parts. Verify by reading
+  the actual frames over the event window and counting how many carry the label. (Microsecond LAN
+  exchanges are the trap: clamping `min_animation_speed` to "fix" them collapses the holds and the
+  packets teleport — see the warning above. Never use it for legibility.)
+- **Too slow → dead air.** "Boring" is *dead frames*, not raw length. Scan a handful of evenly-spaced
+  frames (or diff consecutive frames); a span of visually-identical frames is the symptom.
+  Continuously, visibly-evolving behavior is **not** dead air even when it runs long.
+
+  Dead frames are only a *symptom* — the fix depends on the cause. Diagnose, then fix, in this order:
+
+  1. **Idle lead-in / trail-out** (dead span at the very start or end) → **tighten the `window`**:
+     record only the events + ~2 packets after the state change. No speed change. Check this first —
+     it's the most common cause and the cheapest fix.
+  2. **A real time-gap between two separated events** (active, then a long quiet stretch, then active
+     again) → **split into two videos**. This is the *"separate videos for separate events — never put
+     a time jump in a single video"* guideline. The trigger is the gap *itself*, not readability:
+     compressing real idle time into a blur misrepresents the timeline, so you split even if speeding
+     up wouldn't hurt labels.
+  3. **Uniformly under-driven** (the whole clip, active parts included, crawls) → **raise
+     `playback_speed`** globally.
+  4. **Speed-up blocked by the too-fast check** — `playback_speed` is a *single global knob*. If one
+     region is dense (labels must stay readable → wants slow) and another is sparse (dead air → wants
+     fast), no single value satisfies both: speeding up the dead part blurs the dense part. Resolution
+     is **two videos**, each speed-tuned to its own content. (A post-production per-segment re-time is
+     possible but decimates bubbles — see above — so a native re-record per segment is cleaner.)
+
 ## Playback Rate Selection
 
 | Frame count | At 10fps | At 15fps | At 5fps |
@@ -197,7 +233,12 @@ bubble fill genuinely *is* a fixed color.
 | 350 | 35s | 23s | 70s |
 | 500 | 50s | 33s | 100s |
 
-Target: 10–30s per video for showcase documentation.
+Target: **10–30s** per video for showcase documentation — a guideline, **not a hard cap**. Some
+behavior genuinely can't be shown in 30s (a slow-converging protocol, a multi-phase exchange,
+a long-period failover); a ~1 min clip is fine **when the extra length is all informative** — i.e.
+it passes the *dead-air* check (every span shows visible change), not merely the clock. Shorten only
+by removing dead frames or tightening the `window`, **never** by speeding up past label-readability
+(the *too-fast* check above). When length is warranted, keep it long.
 
 ## Recipes — making a video reproducible
 
