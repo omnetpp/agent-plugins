@@ -377,6 +377,51 @@ change* or *Something is wrong in the model* verdict also exits the loop to the 
 Only a *Demonstrates the claim cleanly* verdict lets you proceed to capture Results
 artifacts (the evidence types in §2.3) and finalize the Results section.
 
+## Phase 3: Review and revise (after Results are captured)
+
+Once `doc/index.rst` and its Results artifacts are complete (Phase 2.7 passed), put the
+finished document through an independent review before declaring done.
+
+### Subagents required — do not review inline
+
+This phase depends on *isolated* review: a reviewer that has not seen the authoring
+conversation. `review-as-user` in particular simulates a first-time reader, which is
+meaningless run in the same context that just wrote the doc — it already knows every intent.
+
+- **If you can spawn subagents:** run the review (below).
+- **If you cannot spawn subagents:** do **not** attempt the review inline — a same-context
+  review is contaminated and gives false confidence. Instead, tell the user the showcase is
+  complete and recommend they run `review-as-user` and `review-as-pro` on `doc/index.rst`
+  themselves, then stop. Skipping the automated review here is acceptable; faking it inline
+  is not.
+
+### Running the review (subagent path)
+
+Each round, spawn **two fresh subagents in parallel, both on the Opus model** (not Sonnet):
+
+- one loads the `review-as-user` skill, the other `review-as-pro`.
+- give each subagent only the path to `doc/index.rst` plus the target persona / domain —
+  **not** the authoring rationale or this conversation. The blindness is the whole point.
+- re-spawn fresh each round (don't reuse a subagent): a blind re-read of the revised doc is
+  more honest than a reviewer anchored on its own prior findings.
+
+### Iterate — capped at 3 rounds
+
+1. Collect both reports and triage by their severity grades:
+   - **review-as-user:** High / Medium / Low
+   - **review-as-pro:** Error / Missing / Minor
+2. Fix every **High**, **Error**, and **Missing** finding. Collect Medium / Low / Minor but
+   do **not** loop on them — apply them once at the end or hand them to the user.
+3. Re-run the review on the revised doc.
+4. **Stop when** a round surfaces no High / Error / Missing findings, **or** after **3
+   rounds**, whichever comes first.
+5. **On recurrence** — a reviewer re-flags something you already addressed — stop the loop
+   and surface it to the user. That's author-vs-reviewer disagreement, a human call, not
+   something to churn on (same hand-back as the Phase 0.5 / 2.7 verdicts).
+
+Report which rounds ran, what was fixed each round, and any unresolved Medium/Low items or
+disagreements left for the user.
+
 # Output
 
 Provide:
