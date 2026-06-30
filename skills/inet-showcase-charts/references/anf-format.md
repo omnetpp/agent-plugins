@@ -20,7 +20,7 @@ Root `<analysis version="2">` with two children: `<inputs>` then `<charts>`.
 | `<chart …>` | one chart (attributes below) |
 | `<script><![CDATA[ … ]]></script>` | the Python chart script (required) |
 | `<property name value/>` | zero or more; exactly what `chart.get_properties()` returns |
-| `<dialogPage id label><![CDATA[ <xswt>… ]]></dialogPage>` | IDE config-form tabs. **Optional** — omit for hand-authored matplotlib charts; the IDE falls back to the template's pages. |
+| `<dialogPage id label><![CDATA[ <xswt>… ]]></dialogPage>` | IDE config-form tabs. **Showcase charts keep the full set** (~8 pages, the IDE writes them) so the chart stays editable in the IDE. Easiest to obtain by copying a sibling chart of the same template. |
 
 `<chart>` attributes: `id` (unique), `name`, `type` (`LINE`/`BAR`/`HISTOGRAM`/`MATPLOTLIB`),
 `template` (a template id — provenance only; the embedded `<script>` is authoritative),
@@ -34,9 +34,24 @@ created in the IDE they are seeded from the template's xswt-widget defaults. The
 `props[...]`; it never defines defaults. So to change a chart, edit its `<property>` values (and/or
 the script). `opp_charttool templates --properties` dumps a template's default property set.
 
-## Minimal working skeleton (matplotlib)
+## Common properties
 
-Verified to render via `opp_charttool imageexport`. Also in `assets/starter.anf`.
+Beyond per-template styling keys, these recur across showcase charts:
+
+- `filter` — the result filter expression the script queries with.
+- `image_export_width` / `image_export_height` — figure size in **inches** (house: 12×8 wide,
+  9×6, or 6×4 compact). This, not dpi, controls the committed PNG size.
+- `image_export_filename` — output PNG name; set **only** when the chart name is ambiguous/duplicated
+  (most charts rely on the sanitized chart-name fallback).
+- rc-params (house default `savefig.transparent: True`, often `+ bbox: tight`) — carried as a
+  property and applied by `utils.preconfigure_plot`. Inherited when you copy a sibling.
+
+## Minimal skeleton (for understanding the structure)
+
+The smallest `.anf` that renders headlessly — useful only to understand the structure.
+**Production showcase charts are not authored this way:** they copy a template-derived sibling that
+carries the full `<dialogPage>` blocks and house property set (see SKILL.md, "Author by copying a
+sibling"). This skeleton omits dialogPages, so it renders headlessly but is **not** house-standard.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -71,16 +86,18 @@ utils.export_image_if_needed(props)
     </charts>
 </analysis>
 ```
-Render: `opp_charttool imageexport file.anf -i 0 -f png --dpi 150 -d out/` → `out/my-chart.png`.
+Render: `opp_charttool imageexport file.anf -i 0 -f png -d out/` → `out/my-chart.png` (size comes
+from the chart's `image_export_width`/`height` properties; add them to control it).
 
 ## Authoring a native chart
 
 For an explorable chart (zoom/pan/toggle in the IDE), use `type="LINE"` (or `BAR`/`HISTOGRAM`) and
-`template="linechart_native"` (etc.). Embed the template's script (see idiom 1) and the `<property>`
-tags it reads — at minimum `filter`, `vector_operations` (can be empty), and the styling/axis props
-you care about, plus `image_export_filename`. You can omit `<dialogPage>` blocks; the IDE uses the
-referenced template's pages. After authoring, **export and eyeball** — the headless PNG is
-Matplotlib-emulated and may differ slightly from the on-screen native widget.
+`template="linechart_native"` (etc.). The practical route is to **copy a sibling chart of that
+template** from another showcase — it brings the script, the `<property>` tags it reads (`filter`,
+`vector_operations`, styling/axis props, `image_export_width`/`height`), and the full `<dialogPage>`
+blocks — then edit the filter, script, and name. Keep the dialogPages so the chart stays editable in
+the IDE. After authoring, **export and eyeball** — the headless PNG is Matplotlib-emulated and may
+differ slightly from the on-screen native widget.
 
 To discover the exact property names a native template expects, run
 `opp_charttool templates --properties` and copy the relevant keys.

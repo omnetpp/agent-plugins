@@ -29,7 +29,8 @@ default_colors = inet.scave.plot.default_colors
 | **Custom / multi-dimensional legend** | `plt.legend` by hand | `create_custom_legend(...)` |
 | **Faded color families** (related series in shades of one color) | manual | `get_faded_color_cycle`, `fade_color`, `scale_lightness` |
 
-If none of these apply, use the stock helpers.
+If none of these apply, use the stock helpers. (In the surveyed showcases, `default_colors` and
+`add_to_dataframe` are by far the most-used — most charts use nothing else from this module.)
 
 ## Core pattern — ordering + per-row styling
 
