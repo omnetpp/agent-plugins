@@ -28,18 +28,28 @@ carries the script, the `<dialogPage>` config forms, the house `<property>` set,
 **Templates evolve, so start new charts from the current template — not from an old sibling frozen on
 a stale template version.** Two ways to get a current template-derived chart:
 
-- **In the IDE (preferred):** create a new chart from the template (chart gallery → from template).
-  It assembles the latest script + dialog pages + defaults. Then hand-edit the query/script and
-  properties, and render headless.
-- **Headless, from the template dir** `org.omnetpp.scave.templates/charttemplates/<id>`: its
-  `scriptFile` (current script), its `dialogPage.N.xswtFile` forms (wrapped as `<dialogPage>` blocks),
-  and the defaults from `opp_charttool templates --properties`.
+- **Headless (no IDE) — preferred:** run `scripts/new_chart_from_template.py`. It loads the latest
+  template from the template dir and writes a house-conforming chart (current script + full
+  `<dialogPage>` blocks + defaults) into the `.anf`, via the same `omnetpp.scave` library
+  `opp_charttool` uses:
+  ```bash
+  . "$HOME/omnetpp-dev/setenv"
+  scripts/new_chart_from_template.py --list                         # available template ids
+  scripts/new_chart_from_template.py Foo.anf --template linechart_native \
+      --name "End-to-end delay [s]" --filter 'name =~ "endToEndDelay:vector"' --width 8 --height 6
+  ```
+  Then hand-edit the script body / properties for anything beyond the filter, name, and size.
+  (`Foo.anf` is created if missing — with `results/*.sca` + `*.vec` inputs — or appended to if it
+  exists. Pass `--template-dir inet/charttemplates` to reach INET's custom templates.)
+- **In the IDE (alternative):** create a new chart from the template (chart gallery → from template),
+  then hand-edit. Same result, but needs the IDE.
 
 ```
 1. Pick the chart type/template (see the decision below)
-2. Create the chart from the LATEST template (IDE new-from-template, or assemble from the template dir)
+2. Create the chart from the LATEST template — headless: scripts/new_chart_from_template.py
+   (or IDE new-from-template)
 3. Edit: the result filter / query, custom script logic, name=, image_export_filename,
-   and the size props (image_export_width=8, image_export_height=6, image_export_dpi=150)
+   and the size props (image_export_width=8, image_export_height=6); dpi is set at export (--dpi 150)
 4. Render:  . /home/user/omnetpp-dev/setenv
             opp_charttool imageexport Foo.anf -n "<chart name>" -f png --dpi 150 -d <showcase>/doc/media/
 5. Verify:  open the PNG; for a NATIVE chart this is the Matplotlib-emulated render — confirm it looks right
@@ -113,10 +123,11 @@ opp_charttool imageexport Foo.anf -i 0 -f png --dpi 150 -d <showcase>/doc/media/
 ```
 
 - Select the chart with `-n <name-substring>` or `-i <index>` (not both). `info` shows indices.
-- **Default size: 8×6 inches at 150 dpi** (→ 1200×900 px). Set the chart's `image_export_width=8`,
-  `image_export_height=6` properties and pass `--dpi 150` (or set `image_export_dpi=150`). Copying a
-  sibling inherits *its* size/dpi — override these to the 8×6 / 150 default unless a specific showcase
-  deliberately uses another size. (Older committed PNGs are ~80 dpi / 12×8 etc. — don't match those.)
+- **Default size: 8×6 inches at 150 dpi** (→ 1200×900 px). Set the chart's `image_export_width=8` and
+  `image_export_height=6` properties; **dpi is not a chart property — pass it at export with
+  `--dpi 150`**. A chart created from a template inherits *its* width/height — override to 8×6 unless a
+  specific showcase deliberately uses another size. (Older committed PNGs are ~80 dpi / 12×8 — don't
+  match those.)
 - **Output filename** = the chart's `image_export_filename` property, else a sanitized chart name.
   `-o <name>` overrides; the format adds the extension. Set the property only when the chart name is
   ambiguous or shared (most showcase charts rely on the name fallback).
@@ -172,6 +183,8 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
 
 Read as needed — detailed contracts kept out of this file to stay lean:
 
+- **scripts/new_chart_from_template.py** — headless "new chart from the latest template" (no IDE);
+  `--list` shows template ids. See "Start from the latest template" above.
 - **references/chart-script-api.md** — the `omnetpp.scave` API cheatsheet: `results` getters + filter
   grammar, `chart`, the `utils` plotting/pivot/export helpers, `ideplot`, and `vectorops`.
 - **references/anf-format.md** — the `.anf` XML format, the element/attribute reference, a minimal

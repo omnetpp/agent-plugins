@@ -40,8 +40,8 @@ Beyond per-template styling keys, these recur across showcase charts:
 
 - `filter` — the result filter expression the script queries with.
 - `image_export_width` / `image_export_height` — figure size in **inches**. Default **8×6**.
-- `image_export_dpi` — raster resolution. Default **150** (8×6 @ 150 → 1200×900 px). Older committed
-  showcase PNGs are ~80 dpi / 12×8 — don't match those for new charts.
+  DPI is **not** a chart property — set it at export with `opp_charttool --dpi 150` (8×6 @ 150 →
+  1200×900 px). Older committed showcase PNGs are ~80 dpi / 12×8 — don't match those for new charts.
 - `image_export_filename` — output PNG name; set **only** when the chart name is ambiguous/duplicated
   (most charts rely on the sanitized chart-name fallback).
 - rc-params (house default `savefig.transparent: True`, often `+ bbox: tight`) — carried as a
