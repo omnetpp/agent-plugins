@@ -198,11 +198,12 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
 - **Line charts with few data points** — add markers so each point reads clearly; house choice is the
   **square** marker. Set the chart's `marker` property (Lines page in the dialog; matplotlib code `s`),
   not in the script.
-- **Bar charts** — grid *behind* the bars, *dashed*, and *vertical lines only*. Dashed + behind via
-  rc-params (`grid.linestyle: --`, `axes.axisbelow: True`); the dialog grid covers both axes, so
-  restrict it to the vertical lines in the script after `postconfigure_plot`:
-  `ax = plt.gca(); ax.grid(False); ax.grid(True, axis="x")`. (Axis-specific grid is the rare
-  presentation detail with no dialog control — the one allowed exception to "grid from the dialog".)
+- **Bar charts** — grid *behind* the bars, *dashed*, and *horizontal lines only* (the value-axis
+  lines, to read bar heights). Dashed + behind via rc-params (`grid.linestyle: --`,
+  `axes.axisbelow: True`); the dialog grid covers both axes, so restrict it to the horizontal lines in
+  the script after `postconfigure_plot`: `ax = plt.gca(); ax.grid(False); ax.grid(True, axis="y")`.
+  (Axis-specific grid is the rare presentation detail with no dialog control — the one allowed
+  exception to "grid from the dialog".)
 - **House rc-params**: `savefig.transparent: True` (and often `bbox: tight`) for clean doc embedding —
   near-universal; inherited from the template.
 - **Default size 8×6 inches at 150 dpi** — `image_export_width=8` / `height=6` properties; dpi is the
