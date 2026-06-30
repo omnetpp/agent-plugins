@@ -32,6 +32,11 @@ default_colors = inet.scave.plot.default_colors
 If none of these apply, use the stock helpers. (In the surveyed showcases, `default_colors` and
 `add_to_dataframe` are by far the most-used — most charts use nothing else from this module.)
 
+**Anti-pattern:** calling `inet.scave.plot.plot_bars` / `plot_vectors` when you are *not* using their
+`order` / `additional_style` extras — the stock `utils.plot_bars` / `utils.plot_vectors` produce the
+identical result. Import this module only for a helper with **no stock equivalent** (e.g.
+`annotate_barchart` for bar value labels), or for `add_to_dataframe` ordering/styling.
+
 ## Core pattern — ordering + per-row styling
 
 The main value-add is attaching `order` and `additional_style` columns to the DataFrame, then using

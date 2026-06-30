@@ -81,10 +81,13 @@ to fall back on**; choose by purpose. Set the chart's `type` attribute according
 
 `inet.scave.plot` (INET helpers): **default to the stock `omnetpp.scave` tools** — custom Matplotlib
 can do anything, and this module may later fold into the OMNeT++ tools, so don't build hard
-dependencies on it. In practice the only widely-used helpers are **`default_colors`** (the house
-palette) and **`add_to_dataframe`** (per-row color/marker styling); `create_custom_legend` shows up
-for richer legends. Full how-to (and when each beats the stock equivalent) is in
-**references/inet-scave-plot.md** — read it before using or recommending it.
+dependencies on it. The genuinely useful helpers are **`default_colors`** (the house palette),
+**`add_to_dataframe`** (per-row color/marker styling), **`annotate_barchart`** (bar value labels — no
+stock equivalent), and **`create_custom_legend`** (richer legends). **Draw with the stock
+`utils.plot_*`; do NOT call `inet.scave.plot.plot_bars` / `plot_vectors` unless you are actually using
+their ordering/styling extras — otherwise the stock plotter is identical.** Import `inet.scave.plot`
+only for a helper with no stock equivalent. Full how-to in **references/inet-scave-plot.md** — read it
+before using or recommending it.
 
 ## The chart-script contract
 
@@ -192,6 +195,14 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
 - **Let the dialog drive presentation** — use `utils.plot_*` + `postconfigure_plot`; don't hardcode
   title, axis labels/limits, legend placement, grid, ticks, or cosmetics in the script (see "Let the
   dialog drive presentation" above). Drop to raw matplotlib only for what the helpers can't do.
+- **Line charts with few data points** — add markers so each point reads clearly; house choice is the
+  **square** marker. Set the chart's `marker` property (Lines page in the dialog; matplotlib code `s`),
+  not in the script.
+- **Bar charts** — grid *behind* the bars, *dashed*, and *vertical lines only*. Dashed + behind via
+  rc-params (`grid.linestyle: --`, `axes.axisbelow: True`); the dialog grid covers both axes, so
+  restrict it to the vertical lines in the script after `postconfigure_plot`:
+  `ax = plt.gca(); ax.grid(False); ax.grid(True, axis="x")`. (Axis-specific grid is the rare
+  presentation detail with no dialog control — the one allowed exception to "grid from the dialog".)
 - **House rc-params**: `savefig.transparent: True` (and often `bbox: tight`) for clean doc embedding —
   near-universal; inherited from the template.
 - **Default size 8×6 inches at 150 dpi** — `image_export_width=8` / `height=6` properties; dpi is the
