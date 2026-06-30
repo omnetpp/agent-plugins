@@ -1,11 +1,13 @@
 ---
 name: omnetpp-ide-mcp
-description: Drive the OMNeT++ IDE's Sequence Chart programmatically via the in-IDE MCP server. Use when asked to take a screenshot of a protocol exchange (DORA, TCP handshake, etc.) from a .elog file, drive the Sequence Chart from outside the workbench, or operate the IDE without manual clicking. Server listens on http://127.0.0.1:5077/mcp (loopback, JSON-RPC over HTTP POST).
+description: Drive the OMNeT++ IDE's Sequence Chart and Analysis (Scave) tools programmatically via the in-IDE MCP server. Use when asked to screenshot a protocol exchange (DORA, TCP handshake, etc.) from a .elog file, OR to render/screenshot a result chart from a .anf analysis file, drive these tools from outside the workbench, or operate the IDE without manual clicking. Server listens on http://127.0.0.1:5077/mcp (loopback, JSON-RPC over HTTP POST).
 ---
 
 # OMNeT++ IDE MCP Server
 
-A custom MCP server lives inside the OMNeT++ IDE as plugin `org.omnetpp.mcp`. When the IDE is running, the server exposes 19 JSON-RPC tools for driving the Sequence Chart programmatically — open eventlogs, search events, configure axes/zoom/timeline, filter what gets drawn, take PNG screenshots.
+A custom MCP server lives inside the OMNeT++ IDE as plugin `org.omnetpp.mcp`. When the IDE is running, the server exposes 23 JSON-RPC tools across two IDE tools: the **Sequence Chart** (open eventlogs, search events, configure axes/zoom/timeline, filter what gets drawn, take PNG screenshots) and the **Analysis / Scave editor** (open `.anf` files, list charts, render result charts to PNG — both headless and WYSIWYG).
+
+> This skill is about **operating** charts that already exist. For **authoring** result charts (creating the `.anf`, defining charts, writing/editing chart scripts, using templates so they render in the IDE and headless via `opp_charttool`), that is a separate concern.
 
 ## When to use
 
@@ -15,7 +17,9 @@ The user is asking to:
 - Programmatically inspect events, modules, or axes in a simulation eventlog
 - Repeat a sequence-chart configuration across many runs
 
-If the user is just opening an `.elog` interactively and using the chart by hand, this skill isn't needed.
+- Render a result chart from an existing `.anf` analysis to a PNG (`open_analysis` → `list_charts` → `render_chart`/`screenshot_chart`)
+
+If the user is just opening an `.elog` or `.anf` interactively and using it by hand, this skill isn't needed.
 
 ## Check the server is up
 
@@ -197,6 +201,14 @@ Configure the view:
 
 Output:
 - `screenshot` (PNG, base64, current viewport)
+
+Analysis / Scave editor (drive the `.anf` result-chart editor):
+- `open_analysis` → handle (loads the analysis' input `.sca`/`.vec`, so charts have data)
+- `list_charts` (id, name, type ∈ {LINE, BAR, HISTOGRAM, MATPLOTLIB}, folder)
+- `render_chart` (headless PNG via the IDE's Export-Charts machinery; deterministic, works for native + matplotlib, no visible page needed; identify the chart by id or name, optional `dpi`)
+- `screenshot_chart` (WYSIWYG PNG of the on-screen chart viewer)
+
+Use `render_chart` to regenerate a showcase figure deterministically; use `screenshot_chart` only when you specifically want what the on-screen viewer shows. Both need the IDE's Python bridge (py4j, hardcoded port 3724), so only one IDE instance per machine can render charts.
 
 Misc:
 - `resize_window` (resize the IDE main window)
