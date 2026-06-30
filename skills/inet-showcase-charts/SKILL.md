@@ -1,6 +1,6 @@
 ---
 name: inet-showcase-charts
-description: Author and render OMNeT++ Analysis (.anf) result charts for INET showcases — create charts by starting from the latest chart template, write/adjust the Python chart script, render to PNG headlessly with opp_charttool, choose native vs matplotlib, use the inet.scave.plot helpers, and add a FIGURE RECIPE comment. Use when asked to create, add, edit, or regenerate a result chart/graph/plot (line, bar, histogram, scatter) for an INET showcase from .sca/.vec results, to work with a .anf analysis file, or to produce a chart image for showcase documentation. NOT for sequence charts from .elog files — use the omnetpp-ide-mcp skill for those.
+description: Author and render OMNeT++ Analysis (.anf) result charts for INET showcases — create charts data-first (pick the results, plot native or matplotlib from the matching template, configure presentation in the dialog), edit the Python chart script only when needed, render to PNG headlessly with opp_charttool, use the inet.scave.plot helpers, and add a FIGURE RECIPE comment. Use when asked to create, add, edit, or regenerate a result chart/graph/plot (line, bar, histogram, scatter) for an INET showcase from .sca/.vec results, to work with a .anf analysis file, or to produce a chart image for showcase documentation. NOT for sequence charts from .elog files — use the omnetpp-ide-mcp skill for those.
 ---
 
 # INET showcase charts
@@ -21,53 +21,50 @@ self-contained** — an embedded Python `<script>` plus `<property>` values plus
 The committed showcase PNG is produced **headlessly with `opp_charttool`** (the doc build just
 consumes the PNG, committed under the showcase's `doc/media/`).
 
-## Start from the latest template — don't copy a stale sibling
+## How a chart is made — data first
 
-A chart is created from a chart *template* (recorded in its `template="<id>"` attribute), which
-carries the script, the `<dialogPage>` config forms, the house `<property>` set, and rc-params.
-**Templates evolve, so start new charts from the current template — not from an old sibling frozen on
-a stale template version.** Two ways to get a current template-derived chart:
+A chart is data-first: you start from the *data* you want to plot, not from a template id. This
+mirrors the IDE workflow, with a headless equivalent for each step.
 
-- **Headless (no IDE) — preferred:** run `scripts/new_chart_from_template.py`. It loads the latest
-  template from the template dir and writes a house-conforming chart (current script + full
-  `<dialogPage>` blocks + defaults) into the `.anf`, via the same `omnetpp.scave` library
-  `opp_charttool` uses:
-  ```bash
-  . "$HOME/omnetpp-dev/setenv"
-  scripts/new_chart_from_template.py --list                         # available template ids
-  scripts/new_chart_from_template.py Foo.anf --template linechart_native \
-      --name "End-to-end delay [s]" --filter 'name =~ "endToEndDelay:vector"' --width 8 --height 6
-  ```
-  Then hand-edit the script body / properties for anything beyond the filter, name, and size.
-  (`Foo.anf` is created if missing — with `results/*.sca` + `*.vec` inputs — or appended to if it
-  exists. Pass `--template-dir inet/charttemplates` to reach INET's custom templates.)
-- **In the IDE (alternative):** create a new chart from the template (chart gallery → from template),
-  then hand-edit. Same result, but needs the IDE.
+1. **Pick the data.** Decide which results to plot. In the IDE you select them in the **Browse Data**
+   page; what identifies them is a `filter` expression, e.g.
+   `name =~ "throughput:last" AND module =~ "*.app[0]"`.
+2. **Plot it — native or matplotlib.** In the IDE: right-click the selection → **Plot using
+   "<template>"** and choose the native or matplotlib variant. It creates the chart from that
+   template (latest version) and **auto-fills `filter` from your selection**. Pick the template by
+   data type × backend:
 
-```
-1. Pick the chart type/template (see the decision below)
-2. Create the chart from the LATEST template — headless: scripts/new_chart_from_template.py
-   (or IDE new-from-template)
-3. Edit: the result filter / query, custom script logic, name=, image_export_filename,
-   and the size props (image_export_width=8, image_export_height=6); dpi is set at export (--dpi 150)
-4. Render:  . /home/user/omnetpp-dev/setenv
-            opp_charttool imageexport Foo.anf -n "<chart name>" -f png --dpi 150 -d <showcase>/doc/media/
-5. Verify:  open the PNG; for a NATIVE chart this is the Matplotlib-emulated render — confirm it looks right
-6. (optional) preview in the IDE; for an EXISTING chart use Compare to Template to spot drift
-7. Commit:  the .anf + the exported PNG (PNG → doc/media/)
-8. Recipe:  add a FIGURE RECIPE comment next to the .. figure:: in the .rst (below)
-```
+   | data | native | matplotlib |
+   |---|---|---|
+   | vectors | `linechart_native` | `linechart_mpl` |
+   | scalars → bars | `barchart_native` | `barchart_mpl` |
+   | scalars vs iteration variable | `scatterchart_itervars_native` | `scatterchart_itervars_mpl` |
+   | histograms | `histogramchart_native` | `histogramchart_mpl` |
+   | statistics → box/whiskers | — | `boxwhiskers` |
+   | arbitrary X/Y | `generic_xyplot_native` | `generic_mpl` |
 
-**Keep existing charts current** with the IDE's template actions (right-click a chart in the
-Analysis editor):
-- **Compare to Template** — reports how the chart's script and dialog pages differ from its current
-  template, so you can see what has drifted.
-- **Reset to Template** — pulls the chart's script and/or dialog pages back to the current template.
+   Headless equivalent (writes the same template-derived chart into the `.anf`, no IDE):
+   ```bash
+   . "$HOME/omnetpp-dev/setenv"
+   scripts/new_chart_from_template.py --list                          # template ids
+   scripts/new_chart_from_template.py Foo.anf --template linechart_native \
+       --name "End-to-end delay [s]" --filter 'name =~ "endToEndDelay:vector"' --width 8 --height 6
+   ```
+   (`Foo.anf` is created if missing — `results/*.sca` + `*.vec` inputs — or appended to. Use
+   `--template-dir inet/charttemplates` for INET's custom templates. See "Choose the chart backend".)
+3. **Configure in the dialog.** Set title, axis titles/limits, legend, grid, size — these are chart
+   **properties** (the *Configure Chart* dialog, or `--prop`/`--width`/`--height` headless).
+   Presentation lives here, **not in the script** — see "Let the dialog drive presentation".
+4. **Edit the script only if needed** — for custom *data aggregation* the dialog can't express. Keep
+   presentation in properties and plot through `utils.plot_*` (see the contract).
+5. **Render & commit.** `opp_charttool imageexport Foo.anf -n "<name>" -f png --dpi 150 -d
+   <showcase>/doc/media/` → check the PNG (native ⇒ it's the Matplotlib-emulated render) → commit the
+   `.anf` + PNG → add the FIGURE RECIPE comment (below).
 
-Copying an existing showcase chart of the same template is a quick shortcut, but it inherits *that
-chart's* template version — if you copy one, run **Compare to Template** first to confirm it isn't
-stale. The full `.anf` element reference and a from-scratch skeleton are in
-**references/anf-format.md**.
+A chart is made from a template, which carries the **latest** script + `<dialogPage>` config forms +
+defaults. Keep an existing chart current with the IDE's **Compare to Template** (diffs a chart's
+script + dialog pages against its template) and **Reset to Template** (syncs them back). The full
+`.anf` element reference is in **references/anf-format.md**.
 
 ## Choose the chart backend
 
