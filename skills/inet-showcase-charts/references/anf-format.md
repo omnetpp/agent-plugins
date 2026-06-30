@@ -39,8 +39,9 @@ the script). `opp_charttool templates --properties` dumps a template's default p
 Beyond per-template styling keys, these recur across showcase charts:
 
 - `filter` — the result filter expression the script queries with.
-- `image_export_width` / `image_export_height` — figure size in **inches** (house: 12×8 wide,
-  9×6, or 6×4 compact). This, not dpi, controls the committed PNG size.
+- `image_export_width` / `image_export_height` — figure size in **inches**. Default **8×6**.
+- `image_export_dpi` — raster resolution. Default **150** (8×6 @ 150 → 1200×900 px). Older committed
+  showcase PNGs are ~80 dpi / 12×8 — don't match those for new charts.
 - `image_export_filename` — output PNG name; set **only** when the chart name is ambiguous/duplicated
   (most charts rely on the sanitized chart-name fallback).
 - rc-params (house default `savefig.transparent: True`, often `+ bbox: tight`) — carried as a
@@ -92,12 +93,14 @@ from the chart's `image_export_width`/`height` properties; add them to control i
 ## Authoring a native chart
 
 For an explorable chart (zoom/pan/toggle in the IDE), use `type="LINE"` (or `BAR`/`HISTOGRAM`) and
-`template="linechart_native"` (etc.). The practical route is to **copy a sibling chart of that
-template** from another showcase — it brings the script, the `<property>` tags it reads (`filter`,
-`vector_operations`, styling/axis props, `image_export_width`/`height`), and the full `<dialogPage>`
-blocks — then edit the filter, script, and name. Keep the dialogPages so the chart stays editable in
-the IDE. After authoring, **export and eyeball** — the headless PNG is Matplotlib-emulated and may
-differ slightly from the on-screen native widget.
+`template="linechart_native"` (etc.). **Create it from the latest template** (IDE new-from-template,
+or assemble from `charttemplates/linechart_native`) so the script and dialog pages are current — it
+brings the `<property>` tags the script reads (`filter`, `vector_operations`, styling/axis props,
+`image_export_width`/`height`) and the full `<dialogPage>` blocks; then edit the filter, script, name,
+and size props. (Copying a sibling works too, but **Compare to Template** first to confirm it isn't
+stale.) Keep the dialogPages so the chart stays editable in the IDE. After authoring, **export and
+eyeball** — the headless PNG is Matplotlib-emulated and may differ slightly from the on-screen native
+widget.
 
 To discover the exact property names a native template expects, run
 `opp_charttool templates --properties` and copy the relevant keys.

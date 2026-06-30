@@ -1,6 +1,6 @@
 ---
 name: inet-showcase-charts
-description: Author and render OMNeT++ Analysis (.anf) result charts for INET showcases — create or edit charts by copying a template-derived sibling, write/adjust the Python chart script, render to PNG headlessly with opp_charttool, choose native vs matplotlib, use the inet.scave.plot helpers, and add a FIGURE RECIPE comment. Use when asked to create, add, edit, or regenerate a result chart/graph/plot (line, bar, histogram, scatter) for an INET showcase from .sca/.vec results, to work with a .anf analysis file, or to produce a chart image for showcase documentation. NOT for sequence charts from .elog files — use the omnetpp-ide-mcp skill for those.
+description: Author and render OMNeT++ Analysis (.anf) result charts for INET showcases — create charts by starting from the latest chart template, write/adjust the Python chart script, render to PNG headlessly with opp_charttool, choose native vs matplotlib, use the inet.scave.plot helpers, and add a FIGURE RECIPE comment. Use when asked to create, add, edit, or regenerate a result chart/graph/plot (line, bar, histogram, scatter) for an INET showcase from .sca/.vec results, to work with a .anf analysis file, or to produce a chart image for showcase documentation. NOT for sequence charts from .elog files — use the omnetpp-ide-mcp skill for those.
 ---
 
 # INET showcase charts
@@ -21,30 +21,43 @@ self-contained** — an embedded Python `<script>` plus `<property>` values plus
 The committed showcase PNG is produced **headlessly with `opp_charttool`** (the doc build just
 consumes the PNG, committed under the showcase's `doc/media/`).
 
-## Author by copying a sibling — don't build from blank
+## Start from the latest template — don't copy a stale sibling
 
-INET showcase charts carry the full template machinery (`<dialogPage>` config forms, the house
-`<property>` set, rc-params). **The reliable way to match house style is to copy the nearest existing
-showcase chart of the same template, then edit it** — that inherits the dialogPages, property names,
-rc-params, and defaults for free, so you only touch the data query, the script body, the chart
-`name`, and the `image_export_filename`.
+A chart is created from a chart *template* (recorded in its `template="<id>"` attribute), which
+carries the script, the `<dialogPage>` config forms, the house `<property>` set, and rc-params.
+**Templates evolve, so start new charts from the current template — not from an old sibling frozen on
+a stale template version.** Two ways to get a current template-derived chart:
+
+- **In the IDE (preferred):** create a new chart from the template (chart gallery → from template).
+  It assembles the latest script + dialog pages + defaults. Then hand-edit the query/script and
+  properties, and render headless.
+- **Headless, from the template dir** `org.omnetpp.scave.templates/charttemplates/<id>`: its
+  `scriptFile` (current script), its `dialogPage.N.xswtFile` forms (wrapped as `<dialogPage>` blocks),
+  and the defaults from `opp_charttool templates --properties`.
 
 ```
-1. Pick the chart type/template you need (see the decision below)
-2. Find the closest existing chart:  grep -rl 'template="<id>"' showcases/*/*/*.anf
-   copy that whole <chart>…</chart> (with its <script>, <property> tags, AND <dialogPage> blocks)
-3. Edit: the result filter / query, custom script logic, the name=, and image_export_filename
+1. Pick the chart type/template (see the decision below)
+2. Create the chart from the LATEST template (IDE new-from-template, or assemble from the template dir)
+3. Edit: the result filter / query, custom script logic, name=, image_export_filename,
+   and the size props (image_export_width=8, image_export_height=6, image_export_dpi=150)
 4. Render:  . /home/user/omnetpp-dev/setenv
-            opp_charttool imageexport Foo.anf -n "<chart name>" -d <showcase>/doc/media/
-5. Verify:  open the PNG; for a NATIVE chart this is the Matplotlib-emulated render — confirm it
-            looks right (it is what gets committed)
-6. (optional) preview in the IDE for parity / native interactivity (omnetpp-ide-mcp skill)
+            opp_charttool imageexport Foo.anf -n "<chart name>" -f png --dpi 150 -d <showcase>/doc/media/
+5. Verify:  open the PNG; for a NATIVE chart this is the Matplotlib-emulated render — confirm it looks right
+6. (optional) preview in the IDE; for an EXISTING chart use Compare to Template to spot drift
 7. Commit:  the .anf + the exported PNG (PNG → doc/media/)
 8. Recipe:  add a FIGURE RECIPE comment next to the .. figure:: in the .rst (below)
 ```
 
-A from-scratch `.anf` skeleton and the full `.anf` element reference are in
-**references/anf-format.md** — but for production charts, prefer copying a sibling.
+**Keep existing charts current** with the IDE's template actions (right-click a chart in the
+Analysis editor):
+- **Compare to Template** — reports how the chart's script and dialog pages differ from its current
+  template, so you can see what has drifted.
+- **Reset to Template** — pulls the chart's script and/or dialog pages back to the current template.
+
+Copying an existing showcase chart of the same template is a quick shortcut, but it inherits *that
+chart's* template version — if you copy one, run **Compare to Template** first to confirm it isn't
+stale. The full `.anf` element reference and a from-scratch skeleton are in
+**references/anf-format.md**.
 
 ## Choose the chart backend
 
@@ -95,15 +108,15 @@ Omitting it is the #1 reason an export silently produces no PNG. All showcase ch
 ```bash
 . /home/user/omnetpp-dev/setenv          # puts .../python on PYTHONPATH
 opp_charttool info Foo.anf               # list charts with indices + types
-opp_charttool imageexport Foo.anf -n "Per-station throughput" -d <showcase>/doc/media/
-opp_charttool imageexport Foo.anf -i 0 -d <showcase>/doc/media/      # or select by index
+opp_charttool imageexport Foo.anf -n "Per-station throughput" -f png --dpi 150 -d <showcase>/doc/media/
+opp_charttool imageexport Foo.anf -i 0 -f png --dpi 150 -d <showcase>/doc/media/   # or by index
 ```
 
 - Select the chart with `-n <name-substring>` or `-i <index>` (not both). `info` shows indices.
-- **Size is controlled in inches by the chart's `image_export_width`/`height` properties**, not by
-  cranking dpi. House sizes: **12×8** (wide), **9×6**, or **6×4** (compact). Existing committed PNGs
-  are ~80–96 dpi (≈963×578 for a wide chart) — the chart's properties carry these; copying a sibling
-  inherits them. Match the dpi/size of the other figures in the same showcase.
+- **Default size: 8×6 inches at 150 dpi** (→ 1200×900 px). Set the chart's `image_export_width=8`,
+  `image_export_height=6` properties and pass `--dpi 150` (or set `image_export_dpi=150`). Copying a
+  sibling inherits *its* size/dpi — override these to the 8×6 / 150 default unless a specific showcase
+  deliberately uses another size. (Older committed PNGs are ~80 dpi / 12×8 etc. — don't match those.)
 - **Output filename** = the chart's `image_export_filename` property, else a sanitized chart name.
   `-o <name>` overrides; the format adds the extension. Set the property only when the chart name is
   ambiguous or shared (most showcase charts rely on the name fallback).
@@ -128,14 +141,16 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
              different series set, the scenario/recording changed → re-derive.
    backend:  native → headless export is Matplotlib-emulated; verify it matches the IDE widget
    export:   opp_charttool imageexport PerStationThroughput.anf -n "Per-station throughput"
-             -f png -d doc/media/   ; size from image_export_width/height (was 963×578)
+             -f png --dpi 150 -d doc/media/   ; image_export_width/height 8×6 → 1200×900
    stamp:    captured 2026-06, INET 4.6
 ```
 
 ## Best practices (from the surveyed showcases)
 
-- **Copy a sibling of the same template** as the base — it brings the dialogPages, house property
-  names, rc-params, and defaults; you then only edit the query, script, name, and export filename.
+- **Start from the latest template** (IDE new-from-template, or the template dir) — it brings the
+  current script, dialogPages, property names, rc-params, and defaults. Use **Compare/Reset to
+  Template** to keep an existing chart in sync; if you copy a sibling as a shortcut, **Compare to
+  Template** first to confirm it isn't stale.
 - **Keep the full `<dialogPage>` blocks** — showcase charts carry them (the IDE writes them), so the
   chart stays first-class/editable in the IDE. Don't strip them to "minimize" the `.anf`.
 - **House rc-params**: `savefig.transparent: True` (and often `bbox: tight`) for clean doc embedding —
