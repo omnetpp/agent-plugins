@@ -58,7 +58,7 @@ mirrors the IDE workflow, with a headless equivalent for each step.
 4. **Edit the script only if needed** — for custom *data aggregation* the dialog can't express. Keep
    presentation in properties and plot through `utils.plot_*` (see the contract).
 5. **Render & commit.** `opp_charttool imageexport Foo.anf -n "<name>" -f png --dpi 150 -d
-   <showcase>/doc/media/` → check the PNG (native ⇒ it's the Matplotlib-emulated render) → commit the
+   doc/media` → check the PNG (native ⇒ it's the Matplotlib-emulated render) → commit the
    `.anf` + PNG → add the FIGURE RECIPE comment (below).
 
 A chart is made from a template, which carries the **latest** script + `<dialogPage>` config forms +
@@ -146,11 +146,14 @@ A custom chart usually only needs custom *data aggregation* — do that, then pl
 ```bash
 . /home/user/omnetpp-dev/setenv          # puts .../python on PYTHONPATH
 opp_charttool info Foo.anf               # list charts with indices + types
-opp_charttool imageexport Foo.anf -n "Per-station throughput" -f png --dpi 150 -d <showcase>/doc/media/
-opp_charttool imageexport Foo.anf -i 0 -f png --dpi 150 -d <showcase>/doc/media/   # or by index
+opp_charttool imageexport Foo.anf -n "Per-station throughput" -f png --dpi 150 -d doc/media
+opp_charttool imageexport Foo.anf -i 0 -f png --dpi 150 -d doc/media   # or by index
 ```
 
 - Select the chart with `-n <name-substring>` or `-i <index>` (not both). `info` shows indices.
+- **`-d` resolves relative to the `.anf`'s directory, not your cwd.** Since the `.anf` sits in the
+  showcase root, use `-d doc/media` (or an absolute path) — a repo-root path like
+  `-d showcases/.../doc/media` gets doubled into a stray `showcases/.../showcases/...` tree.
 - **Default size: 8×6 inches at 150 dpi** (→ 1200×900 px). Set the chart's `image_export_width=8` and
   `image_export_height=6` properties; **dpi is not a chart property — pass it at export with
   `--dpi 150`**. A chart created from a template inherits *its* width/height — override to 8×6 unless a
