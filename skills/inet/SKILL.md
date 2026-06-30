@@ -10,8 +10,14 @@ creating it (`plan/pending/`) if the project has none yet. Follow this
 status-by-folder convention:
 
 - Save a **new plan** in `plan/pending/`.
-- When a plan has been **executed to completion**, move it to `plan/done/`
-  (e.g. `git mv plan/pending/<name>.md plan/done/<name>.md`).
+- When a plan has been **executed to completion**, move it to `plan/done/`.
+
+The default location for the plans is the `plans` folder of the `ai-logs` repo
+(git@github.com:omnetpp/ai-logs.git), normally checked out as the `ai-logs` 
+sibling directory of the `inet` folder.
+
+The naming convention for plans is to begin them with the hyphenated ISO date:
+`2026-06-30_bgp-ipv6-support.md`
 
 When implementing a plan, work through it incrementally:
 
