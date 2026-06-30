@@ -110,6 +110,34 @@ utils.export_data_if_needed(df, props)                # if you have a df
 no-op interactively, writes the file when `opp_charttool imageexport` sets `export_image=true`.
 Omitting it is the #1 reason an export silently produces no PNG. All showcase charts end this way.
 
+## Let the dialog drive presentation — don't hardcode it
+
+The stock plotting helpers plus `postconfigure_plot` wire a chart's **title, legend, axis labels,
+limits, scales, and grid to its properties** (the *Configure Chart* dialog). Use them and **do not
+re-set those in the script** — hardcoding overrides the user's dialog choices and breaks
+configurability. This is the most common mistake.
+
+- `utils.plot_vectors` / `plot_bars` / `plot_lines` / `plot_histograms` — draw the data, set the
+  **title** from the `title` property (auto-generated if empty), and draw the **legend** with labels
+  from the `legend_*` properties. They work for both native and matplotlib charts (the mpl templates
+  reuse the same scripts), branching internally on `chart.is_native_chart()`.
+- `utils.postconfigure_plot(props)` (call it last, before the export hook) — applies
+  `xaxis_title`/`yaxis_title`, `xaxis_min/max` & `yaxis_min/max` (limits), `xaxis_log`/`yaxis_log`,
+  and `grid_show`/`grid_density`; for native charts it also places the legend from
+  `legend_placement` / `legend_show` / `legend_border`.
+
+So **do NOT put these in the script**: `set_title`, `set_xlabel`/`set_ylabel`, `set_xlim`/`set_ylim`,
+`margins`, `set_xticks`, `legend(loc=…, framealpha=…)`, `grid(…)`, or cosmetics like hiding spines or
+custom frame alpha. They belong in the chart's properties — set them in the dialog, or with
+`new_chart_from_template.py --width/--height/--prop`. A value that must be data-derived should still
+go through a property the user can override.
+
+**Drop to raw `matplotlib` only for what the helpers can't express.** Even then: assemble a DataFrame
+and run it through `utils.plot_lines(df, props)` if at all possible (you keep the dialog-driven title,
+legend, and axes); use `utils.set_plot_title(props["title"])` not `ax.set_title`; read
+limits/labels/legend from `props`, never literals; and end with `utils.postconfigure_plot(props)`.
+A custom chart usually only needs custom *data aggregation* — do that, then plot through the helpers.
+
 ## Render headlessly with opp_charttool
 
 `opp_charttool` is a plain Python script needing the OMNeT++ Python package on `PYTHONPATH`, so
@@ -164,10 +192,13 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
   Template** first to confirm it isn't stale.
 - **Keep the full `<dialogPage>` blocks** — showcase charts carry them (the IDE writes them), so the
   chart stays first-class/editable in the IDE. Don't strip them to "minimize" the `.anf`.
+- **Let the dialog drive presentation** — use `utils.plot_*` + `postconfigure_plot`; don't hardcode
+  title, axis labels/limits, legend placement, grid, ticks, or cosmetics in the script (see "Let the
+  dialog drive presentation" above). Drop to raw matplotlib only for what the helpers can't do.
 - **House rc-params**: `savefig.transparent: True` (and often `bbox: tight`) for clean doc embedding —
-  near-universal; inherited when you copy a sibling.
-- **Size via `image_export_width`/`height` in inches** (12×8 / 9×6 / 6×4); leave dpi to match the
-  showcase's other figures. Don't reach for high dpi unless the showcase already does.
+  near-universal; inherited from the template.
+- **Default size 8×6 inches at 150 dpi** — `image_export_width=8` / `height=6` properties; dpi is the
+  export-time `opp_charttool --dpi 150` flag (not a chart property). Older PNGs are ~80 dpi / 12×8.
 - **Axis labels carry the unit in brackets**: `Throughput [Mbps]`, `Delay [ms]`, `Loss [%]`.
 - **Always guard empty data**: `if df.empty: raise chart.ChartScriptError(...)`.
 - **Input patterns are relative to the `.anf` dir** — `results/General-*.sca` + `…-*.vec`, or
