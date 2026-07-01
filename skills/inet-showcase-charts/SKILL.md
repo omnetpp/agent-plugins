@@ -211,8 +211,8 @@ whatever obscures the point:
 - **Legend vs data.** Does the legend overlap or obscure the data? Move it (`legend_placement`).
 - **Whitespace / ranges.** Unwarranted empty space? Tighten the axis ranges — *unless* they're
   deliberately matched to another chart for side-by-side comparison (keep them aligned then).
-- **Legibility.** Markers when points are few or lines overlap (square); labels carry units; the grid
-  supports rather than competes.
+- **Legibility.** Markers when points are few or lines overlap (square); the grid supports rather than
+  competes.
 - **Palette.** `default_colors` for the data series; non-data marks are a judgment call (often
   gray/black).
 - **Consistency** across a showcase's charts where feasible (not always possible).
