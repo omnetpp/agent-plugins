@@ -194,6 +194,32 @@ opp_charttool imageexport Foo.anf -i 0 -f png --dpi 150 -d doc/media   # or by i
 - `-f` format defaults to **svg** — pass `-f png` for the raster figure (most showcase media is PNG).
 - Export always goes through Matplotlib, **including native charts** — hence the native eyeball check.
 
+## Design — can the reader see the point?
+
+The test that matters: after rendering, **look at the chart and ask — can a reader see the thing it is
+meant to show?** Every showcase chart exists to make one specific point (e.g. "under rate anomaly
+every station collapses to the slow station's rate"). Good design is that point reading clearly and
+unambiguously. Everything below is just the common ways it fails — **judgment calls, not rules**; fix
+whatever obscures the point:
+
+- **Distinguishable elements.** Series tell apart; and a non-data mark (reference line, threshold,
+  annotation) must not blend into the data where that hides the point. *No blanket rule against
+  reusing a color* — but e.g. in per-station-throughput the reference line reused the orange series
+  color and merged with the bars, hiding the very level the chart is about; a neutral dark dashed line
+  fixes it.
+- **The point stands out.** Emphasize the element that carries the story; let context recede.
+- **Legend vs data.** Does the legend overlap or obscure the data? Move it (`legend_placement`).
+- **Whitespace / ranges.** Unwarranted empty space? Tighten the axis ranges — *unless* they're
+  deliberately matched to another chart for side-by-side comparison (keep them aligned then).
+- **Legibility.** Markers when points are few or lines overlap (square); labels carry units; the grid
+  supports rather than competes.
+- **Palette.** `default_colors` for the data series; non-data marks are a judgment call (often
+  gray/black).
+- **Consistency** across a showcase's charts where feasible (not always possible).
+
+Most of this you only catch by **actually looking at the rendered PNG** — make the visual review a
+step, not an afterthought.
+
 ## FIGURE RECIPE comment for charts
 
 Every chart `.. figure::` in a showcase gets a FIGURE RECIPE comment after it. RST comment — `..` on
