@@ -266,7 +266,10 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
   near-universal; inherited from the template.
 - **Default size 8×6 inches at 150 dpi** — `image_export_width=8` / `height=6` properties; dpi is the
   export-time `opp_charttool --dpi 150` flag (not a chart property). Older PNGs are ~80 dpi / 12×8.
-- **Axis labels carry the unit in brackets**: `Throughput [Mbps]`, `Delay [ms]`, `Loss [%]`.
+- **Make sure axis labels carry the unit** (e.g. `Throughput [Mbps]`, `Delay [ms]`). The clean way is
+  to set the unit in the dialog (`yaxis_unit`/`xaxis_unit`) — the framework converts and appends
+  `[unit]` automatically; only for a derived quantity with no convertible unit do you put it in the
+  axis title (see "Axis units and labels").
 - **Always guard empty data**: `if df.empty: raise chart.ChartScriptError(...)`.
 - **Input patterns are relative to the `.anf` dir** — `results/General-*.sca` + `…-*.vec`, or
   config-specific `results/<Config>-#0.sca`. Keep them as patterns so the chart survives re-runs.
