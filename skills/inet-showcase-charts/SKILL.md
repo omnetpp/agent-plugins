@@ -138,6 +138,35 @@ legend, and axes); use `utils.set_plot_title(props["title"])` not `ax.set_title`
 limits/labels/legend from `props`, never literals; and end with `utils.postconfigure_plot(props)`.
 A custom chart usually only needs custom *data aggregation* — do that, then plot through the helpers.
 
+## Axis units and labels
+
+Axis labels come from the framework, but *how* depends on whether the chart uses the unit machinery:
+
+- **Unit-aware** (chart has `xaxis_unit`/`yaxis_unit` properties — the line/bar templates add them,
+  empty by default): the plot helpers + `postconfigure_plot` build the label as **`axis_title` +
+  ` [unit]`** and *convert* the data to the target unit. Use this when you plot a **raw result that
+  carries a unit** and want it converted/shown — e.g. `endToEndDelay` in `s`: set `yaxis_unit=ms`,
+  give the axis a base title, and the framework does the conversion and label.
+- **Title-only** (no unit props): `postconfigure_plot` applies `xaxis_title`/`yaxis_title` verbatim.
+
+**Gotcha — empty unit props on a derived-value chart.** Because the templates include the unit props
+(even empty), a chart is unit-aware *by default*, which has two traps for a chart that plots a
+**computed** quantity (throughput from a `count`, an itervar axis) with the unit baked into the title:
+
+1. `plot_lines` **never sets the x-label** (only y), and `postconfigure_plot` applies the title→label
+   path **only when no unit props exist** — so a custom line chart with (empty) unit props gets **no
+   x-label** unless you hand-set one (that's what forces a `set_xlabel` "hack").
+2. For bars the y-label already comes from `yaxis_title` via `_set_ylabel` — do **not** force it by
+   assigning `df["name"]`.
+
+A derived quantity has nothing to convert, so the clean fix is to **remove the empty
+`xaxis_unit`/`yaxis_unit` properties** and put the unit in the axis title (`… [Mbps]`); then
+`postconfigure_plot` labels both axes with no `set_xlabel`/`df["name"]` workarounds. (If the source
+result carries a stray unit you don't want appended, clear it with `df["unit"] = ""`.)
+
+**Rule of thumb:** raw result + want unit conversion → use the unit dialog; computed/derived quantity
+→ drop the empty unit props and bake the unit into the title.
+
 ## Render headlessly with opp_charttool
 
 `opp_charttool` is a plain Python script needing the OMNeT++ Python package on `PYTHONPATH`, so
