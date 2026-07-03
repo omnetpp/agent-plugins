@@ -1,0 +1,8 @@
+# OMNeT++ tooling & config
+
+*Extracted 2026-07-03 from Claude session memory (`~/.claude/projects/-home-andras-projects-inet/memory/`). Raw material for future INET dev skills — unedited: may contain machine-specific paths and session-specific observations. Source memory file cited per bullet.*
+
+- Fully suppress `.vec` output: **`record-vector-results = false`** (per-run master switch, `[General]`) — writes NO `.vec` at all; `.sca` unaffected (`record-scalar-results = false` for scalars). **`**.vector-recording = false` is NOT enough** — per-object switch; the manager still opens the file and writes a header-only `.vec` (empty-but-present, run metadata). (omnetpp-disable-vec-recording.md)
+- Query available ini config options: **`opp_run -h config`** (compact list) or **`opp_run -h configdetails`** (full descriptions), then grep — faster and authoritative vs grepping omnetpp source for `Register_*ConfigOption`. Gives exact name, type, default, scope (per-run/per-object/global). E.g. `opp_run -h config | grep -i vector` surfaces `record-vector-results`, `**.vector-recording`, `output-vector-file`. (omnetpp-query-config-options.md)
+- Macho-FSM per-state `EV_TRACE` lines don't render in cmdenv even at `-log-level=trace` — add INFO-level logging when visibility is needed. (bgp-pr1110-adjribin-integration.md)
+- Example-run recipe (release, express): `source omnetpp/setenv; source ./setenv; (cd examples/babel/<ex>; ../../../bin/inet --release -u Cmdenv -c General --cmdenv-express-mode=true)`; ping results in `results/*.sca` (`pingRxSeq:count`). Verbose variant: `--sim-time-limit=30s --cmdenv-express-mode=false --cmdenv-log-prefix="%t %M: "`. (ansa-babel-port.md)
