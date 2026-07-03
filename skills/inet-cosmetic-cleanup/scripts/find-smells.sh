@@ -51,8 +51,11 @@ for f in "$@"; do
 
     echo
     echo "--- [5] ANGRY / emotional comments (!?!? runs, or long SHOUTING in a comment) ---"
-    grep -nE '//.*([!?]{2,}|[!?][[:space:]]*[!?])' "$f" | head -30
-    grep -nE '//[[:space:]]*[A-Z][A-Z ]{10,}' "$f" | head -20
+    echo "    (RFC 2119 keywords and license boilerplate are filtered out as false positives)"
+    # exclude license boilerplate and RFC 2119 / requirement-level keywords (MUST/SHOULD/MAY ...)
+    NOISE='MERCHANTABILITY|WARRANTY|FITNESS|PARTICULAR PURPOSE|LICENSE|COPYRIGHT|GNU|SPDX|MUST|SHOULD|SHALL|\bMAY\b|REQUIRED|RECOMMENDED|OPTIONAL|RFC [0-9]'
+    grep -nE '//.*([!?]{2,}|[!?][[:space:]]*[!?])' "$f" | grep -vE "$NOISE" | head -30
+    grep -nE '//[[:space:]]*[A-Z][A-Z ]{10,}' "$f" | grep -vE "$NOISE" | head -20
 
     echo
     echo "--- [6] TAUTOLOGICAL trailing comments (heuristic — judge each; delete the obvious ones) ---"
