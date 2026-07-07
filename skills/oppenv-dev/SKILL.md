@@ -5,6 +5,12 @@ description: Maintaining the opp_env project database, especially adding new OMN
 
 # opp_env Maintenance Skill
 
+## determining the next version number for opp_env
+
+- increase the minor version if a user-facing change was added to the opp_env utility (except database modifications) since the last release
+- increase patch version if any change/bugfix landed since the last release (an icreased minor version drops patch version to 0)
+- use today's timestamp for the last part (database version)
+
 ## Project location
 
 The opp_env source is at `/home/andras/projects/opp_env`. The database lives in
