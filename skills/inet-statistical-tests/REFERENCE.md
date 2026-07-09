@@ -115,3 +115,27 @@ repo history:
 - `follow example/pim/ reorganization, added new examples pim/*_ipv6`
 
 Then `git -C "$STATS" show --stat`, present it, and **wait for explicit OK before `git push`.**
+
+## CLI fallback (when the opp_repl MCP session is unusable)
+
+The live opp_repl session has crashed on the full ~913-config run (streams too much) and has
+been observed bound to the WRONG worktree — its PASS results were computed against different
+code. The reliable standalone route (after `source ./setenv` so `INET_ROOT` points at the
+right checkout):
+
+- **Compare/triage**: `inet_run_statistical_tests -m debug --no-build [-w <dir>]` — a separate
+  process that cannot take the session down. Summary line: `N TOTAL, .. PASS, .. FAIL, .. ERROR`.
+- **Record**: there is NO record CLI. Use a one-off python script:
+  `from inet.main import *` then
+  `update_statistical_results(working_directory_filter="examples/<area>")` —
+  returns per-config `INSERT`/`UPDATE`/`KEEP`; records in debug mode.
+- **Default-project gotcha**: the standalone functions take no
+  `simulation_project` argument and raise `Exception: No default simulation project is set`
+  unless you first call `determine_default_simulation_project()` (auto-discovers from cwd)
+  or pass `simulation_project=inet_project` explicitly.
+- **KEEP semantics**: a baseline `.sca` is written ONLY on `INSERT` (new) or `UPDATE`
+  (differs; also drops a `.diff`). On `KEEP` (byte-identical) NOTHING is written — "no results
+  file generated" almost always means the baseline already matches, not a failure.
+  `INSERT (unexpected)` is normal for a brand-new config.
+- **Compare before recording a whole directory** that has pre-existing baselines: matching
+  configs then show KEEP (no clobber) and only genuine changes become UPDATEs to justify.

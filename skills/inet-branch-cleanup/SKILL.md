@@ -13,9 +13,9 @@ description: >
 Turn a messy INET topic branch (developed exploratorily, with broken intermediate commits and
 under-documented fingerprint drift) into a clean linear history where **every commit passes the
 relevant test suites**, **every fingerprint change is explained per-ingredient**, and **each
-logical change lands once, in final form** (minimal churn/zigzags). This is the
-generalized playbook; a concrete run (IPv6/MIPv6) is at
-`~/.claude/projects/.../plans/velvety-shimmying-bonbon.md`.
+logical change lands once, in final form** (minimal churn/zigzags). This is the CLI-based
+INET playbook; for the opp_repl-driven variant (dependency-scoped tests, coverage ledger)
+see omnetpp-branch-cleanup.
 
 ## Confirm with the user before starting
 
@@ -115,16 +115,11 @@ identical before/after (`git diff <pre> <post>` empty).
 
 ## Fingerprint discipline
 
-- Behavioral ingredients: `tplx` (event seq + module path), `~tNl` (network traffic, lengths),
-  `~tNd`/`~tNlb`/`~tND` (network traffic incl. packet contents). `sz` (scalars), `tyf` (display,
-  usually excluded). See the project's fingerprint docs / OMNeT++ manual.
-- A change point's justification ties each moved ingredient to a cause. **Recognizable causes**
-  (protocol-agnostic): a changed header field → content ingredients (`~tND/~tNlb`) but not length
-  (`~tNl`); extra/retimed control packets → `~tNl/~tND/~tNlb` + `tplx`; init-stage / lifecycle
-  (`OperationalBase`) changes → shifted timing across *all* sims that bring up the protocol; MAC /
-  delivery-set changes → content ingredients but not `tplx`; serialization refactors → `~tND`;
-  unordered→deterministic iteration → determinism. If you can't explain an ingredient move, it's
-  a red flag — investigate, don't just re-record.
+- Ingredient semantics and the cause→ingredient map for writing per-commit justifications live
+  in omnetpp-fingerprint-testing (`ingredients.md`, `interpreting-drift.md`); INET runner flags
+  and gotchas in inet-fingerprint-testing. The rule that matters here: a change point's
+  justification ties **each moved ingredient to a cause** — if you can't explain an ingredient
+  move, it's a red flag: investigate, don't just re-record.
 
 ## Pitfalls / hard-won lessons
 

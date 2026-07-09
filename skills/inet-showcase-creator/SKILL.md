@@ -14,7 +14,7 @@ description: |
 2. Check the destination directory for existing simulation model. Explore and
     analyze it. Use it as a template or starting point.
 3. Find the best matching existing showcase as template:
-   - `grep_search` or `find_by_name` in `showcases/` for similar features
+   - Search (grep / filename search) in `showcases/` for similar features
    - Read its `doc/index.rst`, `omnetpp.ini`, and `.ned` files
 4. Check the relevant category `index.rst` for toctree structure.
 5. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 

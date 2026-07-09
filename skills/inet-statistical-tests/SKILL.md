@@ -114,7 +114,7 @@ update_statistical_test_results(simulation_project=inet_project,
   intended INET change; otherwise it's a bug to fix, not a result to record.
 - **Committing `.diff`/`.csv`** → keep them out via `.gitignore` and stage only `*.sca`.
 - **`KEEP` is not a failure** → baseline already matches; no file is written and the temp
-  `results/*.sca` is deleted. See memory `opp-repl-statistical-keep-no-write`.
+  `results/*.sca` is deleted. See REFERENCE.md ("CLI fallback" section for details).
 - **`abstract` and `emulation` configs are excluded by design** — don't try to force them in.
 - **RNG non-determinism** → a config that varies run-to-run can't hold a stable baseline;
   investigate rather than re-recording it repeatedly.
