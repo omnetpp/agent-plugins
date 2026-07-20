@@ -63,7 +63,7 @@ No auth token needed — the simulation MCP server is unauthenticated.
 
 | Tool | What it does | Qtenv? | Clang? |
 |---|---|---|---|
-| `run_simulation` | Advance sim by time/event limit, optional run mode (normal/fast/express) | | |
+| `run_simulation` | Advance sim by time/event limit, optional run mode (normal/fast/express); under Qtenv the result carries a `status` (`stopped`/`finished`/`error`) + `message` (see below) | | |
 | `request_stop_simulation` | Stop the currently running simulation after the current event | | |
 | `set_stop_condition` | Set a C++ lambda stop condition (persists across `run_simulation` calls) | | Y |
 | `clear_stop_condition` | Clear the C++ stop condition | | |
@@ -80,7 +80,7 @@ No auth token needed — the simulation MCP server is unauthenticated.
 | `setup_config` | Switch to a different config / run number (tears down + sets up fresh network) | Y | |
 | `rebuild_network` | Restart current config from event #0 (reseeds RNGs, resets stats) | Y | |
 
-**Dialogs** — normally empty during MCP work. While an MCP request is processed, Qtenv routes `confirm()` / `displayException()` (errors, end-of-sim notices) to the log buffer instead of a blocking `QMessageBox`. Use these for the rare dialog that bypasses that path.
+**Dialogs** — normally empty during MCP work. While an MCP request is processed, Qtenv routes `confirm()` / `displayException()` (errors, end-of-sim notices) to the log buffer instead of a blocking `QMessageBox`. Use these for the rare dialog that bypasses that path. Note: a runtime **error** during `run_simulation` is reported via that tool's `status`/`message` result (see "Reading run outcome & errors" below), so you rarely need `list_dialogs` for errors — it's mainly for dialogs raised outside a request (e.g. at startup / network setup).
 
 | Tool | What it does | Qtenv? | Clang? |
 |---|---|---|---|
@@ -306,6 +306,22 @@ Fields:
 
 - `run_simulation` with `time_limit` runs until that sim-time **or** the INI `sim-time-limit`, whichever comes first
 - After the sim-time-limit is reached the simulation is finished; further `run_simulation` calls won't advance it
+
+### Reading run outcome & errors (Qtenv)
+
+Under Qtenv, `run_simulation` catches simulation exceptions internally (a human would
+normally see them in a modal `QMessageBox`, which an agent cannot read). The outcome is
+surfaced in the tool result instead — **always check the `status` field**:
+
+| `status` | Meaning | `message` |
+|---|---|---|
+| `stopped` | A run/event limit or stop condition was reached; more events may remain | — |
+| `finished` | The simulation ended normally (e.g. sim-time-limit hit, or a module called `endSimulation()`) | termination reason |
+| `error` | A **runtime error** stopped the run — the run did NOT complete as intended | full error text (module path + cRuntimeError message) |
+
+The same error text is also available afterwards as the `lastError` field of
+`get_simulation_state` (present only while the last run's state is error). `Cmdenv` does
+not wrap errors this way — there a runtime error propagates out as a normal MCP tool error.
 
 ## Requirements
 
