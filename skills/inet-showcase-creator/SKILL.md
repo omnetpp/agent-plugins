@@ -26,10 +26,13 @@ description: |
 ## Phase 0.5: Assess implementation vs. the showcase's claim
 
 Before committing to build a showcase, check whether the INET implementation actually
-supports the specific claim the showcase will make. The risk this catches: writing a
-showcase that *names* a protocol while skipping mechanisms a knowledgeable reader
-would immediately ask about (the DHCP showcase nearly shipped without lease
-expiration).
+supports the specific claim the showcase will make. Two distinct risks this catches:
+writing a showcase that *names* a protocol while skipping mechanisms a knowledgeable
+reader would immediately ask about (the DHCP showcase nearly shipped without lease
+expiration), and building a scenario on a modeling *capability* the code doesn't have
+(the rate-anomaly showcase's downlink scenario assumed an AP transmits to each client
+at that client's rate; INET's rate control kept one state machine per interface, and
+per-receiver adaptation had to be implemented before the scenario was possible).
 
 Run these steps in order. Don't skip ahead — the order is what prevents
 "read the code and judge reasonableness" creep.
@@ -51,12 +54,27 @@ This list comes from the standard, not from intuition or from what looks easy to
 demo. The point is to have a mechanical reference the audit grades against, so the
 assessment can't drift into "the parts that look implemented look fine."
 
-For trivial / well-trodden cases (e.g. a basic Ethernet topology demo) the checklist
+**Second list — scenario-required capabilities.** The standard-derived checklist
+catches missing protocol *mechanisms*, but a showcase can also silently depend on a
+modeling *capability* that no mechanism list will ever contain — precisely because
+the standard takes it for granted. Derive this list from the planned scenarios: for
+each config, ask "what must the model be able to represent or configure for this
+scenario to be expressible at all?" — per-node or per-link parameter heterogeneity,
+per-destination or per-flow state, a queue/scheduler discipline, a statistic that
+must be recordable per the right key. The real miss this list exists for: the
+rate-anomaly showcase's downlink scenario needed the AP to rate-adapt *per client*.
+Every real AP does this and the standard assumes it — which is exactly why the
+mechanism checklist never surfaced it — but INET's rate control kept a single state
+machine per interface, and per-receiver adaptation had to be implemented first. A
+human caught that gap; this checklist is how the audit catches the next one.
+
+For trivial / well-trodden cases (e.g. a basic Ethernet topology demo) the checklists
 may be one or two items — that's fine, the discipline is the same.
 
 ### Step 3: Grade each checklist item against the C++
 
-For each item in the Step 2 checklist, check the actual code:
+For each item in the two Step 2 checklists (mechanisms and capabilities), check the
+actual code:
 - Read the relevant `.cc`/`.h`, not just `.ned`
 - Grep for `TODO`, `FIXME`, "not implemented", "ignored", "simplified", "for now"
 - Check that NED parameters the mechanism relies on are actually read in the C++
@@ -80,7 +98,8 @@ embarrassing later, and merging the axes hides it.
 
 Present the user with:
 - The claim (Step 1)
-- The required-mechanisms checklist with each item's status (Steps 2–3)
+- The required-mechanisms and scenario-capability checklists with each item's status
+  (Steps 2–3)
 - A gap table with two columns: *blocker by definition* and *impacts current scope*
 - A verdict from the menu in Step 6
 
@@ -129,6 +148,11 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
 **Iterate with the user until you are sure about the scope and the basic outline of the showcase.**
 - ask the user to generate new result files if needed (like new diagrams, logs, pcap files, eventlogs, statistics, screenshots, screen video captures etc.)
 - incorporate the new results into the plan
+- if scoping introduces a dependency the Phase 0.5 checklists didn't cover — a new
+  mechanism, or a scenario-required capability (per-station state, a scheduling
+  discipline, a heterogeneous parameter) — extend the Phase 0.5 audit to those items
+  now, before summarizing. Phase 0.5 ran before the scope was final; a capability gap
+  discovered mid-implementation is the expensive kind.
 
 **Summarize before proceeding:**
 - The general scope and the planned outline and claims of the showcase
@@ -138,6 +162,12 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
   0.0.0.0 → a leased address around t≈2 s in `host[0]`"; "queue length at
   `router.eth[0]` exceeds N at some point"; "node B's RSSI crosses the threshold
   and it reassociates around t≈10 s"). Write at least one per claim.
+- The **literature anchor**, when the showcase demonstrates a known effect or anomaly
+  that has a published magnitude or analytical model (the Heusse et al. airtime
+  formula for the 802.11 rate anomaly, Li et al.'s 1/4–1/7 multi-hop chain capacity,
+  near-total flow-in-the-middle starvation): compute the predicted value for the
+  planned scenario's parameters and register it, with its source, as one more
+  expected observable. Phase 2.7 Step 2 compares the run against it.
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
@@ -341,6 +371,12 @@ For each predicted observable, find the evidence in the actual run:
 - live inspection via the `omnetpp-mcp-sim` skill — pause at the predicted time and look at
   module state, watches, and the FES; this is where you actually *watch what's happening*
 - for a time-located prediction, confirm *when* it happens, not just *that* it happens
+- for an observable carrying a literature anchor (Phase 1), compare the measured
+  magnitude against the anchor's predicted value. Landing near the published /
+  analytical number is the strongest evidence the parameters are representative —
+  the positive counterpart of Step 4's ban on contrived tuning. A large unexplained
+  deviation is a *Needs tuning* or *Something is wrong in the model* signal to
+  resolve, not a discrepancy to narrate around.
 
 #### Step 3: Classify each observable
 
