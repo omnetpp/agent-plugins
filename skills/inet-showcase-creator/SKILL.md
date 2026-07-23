@@ -448,9 +448,12 @@ meaningless run in the same context that just wrote the doc — it already knows
 
 ### Running the review (subagent path)
 
-Each round, spawn **two fresh subagents in parallel, both on the Opus model** (not Sonnet):
+Each round, spawn **two fresh subagents in parallel**, both on the **same model the main
+conversation is running on** — never a weaker one:
 
 - one loads the `review-as-user` skill, the other `review-as-pro`.
+- instruct each subagent to state, at the very start of its report, which model it is
+  running on — so a silent downgrade is visible.
 - give each subagent only the path to `doc/index.rst` plus the target persona / domain —
   **not** the authoring rationale or this conversation. The blindness is the whole point.
 - re-spawn fresh each round (don't reuse a subagent): a blind re-read of the revised doc is
