@@ -138,6 +138,16 @@ legend, and axes); use `utils.set_plot_title(props["title"])` not `ax.set_title`
 limits/labels/legend from `props`, never literals; and end with `utils.postconfigure_plot(props)`.
 A custom chart usually only needs custom *data aggregation* — do that, then plot through the helpers.
 
+**Rename series via `legend_replacements`, not by rewriting the series column in the script.** To give
+a series a readable name (e.g. `*.hostB.app[0]` → `hostA → hostB flow`), add the mapping to the chart's
+**Legend dialog page** rather than mutating the `module`/`name` column the pivot groups on. The
+replacements come in two forms: `find --> replace` (literal substring) and `/find/replace/` (regex).
+They are applied by `make_legend_label` **before** `sort_rows_by_legend`, so the Ordering page's regexes
+match the *renamed* labels — dialog pages stay in one vocabulary. Rewriting the series column instead
+splits naming across two schemes (the visible legend vs. the ordering/pivot keys) and has to be kept in
+sync by hand. Exception: **synthesized** rows the script itself creates (an aggregate/total series that
+isn't in the data) must be named in the script — there is no source label for a replacement to match.
+
 ## Axis units and labels
 
 Axis labels come from the framework, but *how* depends on whether the chart uses the unit machinery:
@@ -150,22 +160,33 @@ Axis labels come from the framework, but *how* depends on whether the chart uses
 - **Title-only** (no unit props): `postconfigure_plot` applies `xaxis_title`/`yaxis_title` verbatim.
 
 **Gotcha — empty unit props on a derived-value chart.** Because the templates include the unit props
-(even empty), a chart is unit-aware *by default*, which has two traps for a chart that plots a
-**computed** quantity (throughput from a `count`, an itervar axis) with the unit baked into the title:
+(even empty), a chart is unit-aware *by default*. For a chart plotting a **computed** quantity
+(throughput from a `count`, an itervar axis) with the unit baked into the title, two behaviors matter:
 
-1. `plot_lines` **never sets the x-label** (only y), and `postconfigure_plot` applies the title→label
-   path **only when no unit props exist** — so a custom line chart with (empty) unit props gets **no
-   x-label** unless you hand-set one (that's what forces a `set_xlabel` "hack").
-2. For bars the y-label already comes from `yaxis_title` via `_set_ylabel` — do **not** force it by
-   assigning `df["name"]`.
+1. `plot_lines` **never sets the x-label** (only y); `postconfigure_plot` applies the title→x-label
+   fallback **only when neither `xaxis_unit` nor `yaxis_unit` is declared** (the backward-compat block
+   in `utils.py` guards on `"xaxis_unit" not in props and "yaxis_unit" not in props`). So a line chart
+   that keeps the (empty) unit props gets **no x-label** unless you hand-set one.
+2. For bars, `_set_xlabel`/`_set_ylabel` take the title straight from `xaxis_title`/`yaxis_title`
+   regardless, and append `[unit]` **only when the data's unit column is non-empty** (`len(unit) > 0`).
+   So clearing `df["unit"] = ""` keeps the label to the title alone, with no stray `[]` — do **not**
+   also force it by assigning `df["name"]`.
 
-A derived quantity has nothing to convert, so the clean fix is to **remove the empty
-`xaxis_unit`/`yaxis_unit` properties** and put the unit in the axis title (`… [Mbps]`); then
-`postconfigure_plot` labels both axes with no `set_xlabel`/`df["name"]` workarounds. (If the source
-result carries a stray unit you don't want appended, clear it with `df["unit"] = ""`.)
+**Do NOT delete the empty `xaxis_unit`/`yaxis_unit` property declarations to "fix" this** (earlier
+versions of this skill wrongly recommended that). `opp_charttool` won't object, but the **IDE rejects
+the chart the moment it is opened for editing** — `Edited properties not declared: [yaxis_unit]` —
+because the template's Plot dialog page still carries a widget for that property, and every dialog
+widget requires a declared property. This bites *only* in the IDE; headless renders stay green, so
+removing the props silently ships a chart the IDE then refuses to open.
+
+**The IDE-safe recipe for a derived quantity:** keep the unit props **declared but empty**, put the
+unit in the axis title (`yaxis_title = "… [Mbps]"`), and clear the data unit with `df["unit"] = ""`.
+For **bars** that is the whole fix — the label reads `Throughput [Mbps]`, no workaround. For **lines**
+the x-label still needs a hand-set (`p.set_xlabel(...)`) because the title→x-label fallback is
+suppressed while the props are declared — the lesser evil versus a chart the IDE won't open.
 
 **Rule of thumb:** raw result + want unit conversion → use the unit dialog; computed/derived quantity
-→ drop the empty unit props and bake the unit into the title.
+→ keep the unit props declared-but-empty, bake the unit into the title, and clear `df["unit"]`.
 
 ## Render headlessly with opp_charttool
 
@@ -250,6 +271,11 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
   Template** first to confirm it isn't stale.
 - **Keep the full `<dialogPage>` blocks** — showcase charts carry them (the IDE writes them), so the
   chart stays first-class/editable in the IDE. Don't strip them to "minimize" the `.anf`.
+- **Every dialog-page widget needs its `<property>` declaration** — do not delete a property just
+  because the script overrides it or leaves it empty. The IDE validates chart-vs-dialog on edit and
+  rejects a mismatch with `Edited properties not declared: [<id>]`. `opp_charttool` skips this check,
+  so a render can succeed while the IDE refuses to open the chart. If you must neutralize a property,
+  set it declared-but-empty (see the `yaxis_unit` case in "Axis units and labels"), don't remove it.
 - **Let the dialog drive presentation** — use `utils.plot_*` + `postconfigure_plot`; don't hardcode
   title, axis labels/limits, legend placement, grid, ticks, or cosmetics in the script (see "Let the
   dialog drive presentation" above). Drop to raw matplotlib only for what the helpers can't do.
@@ -268,8 +294,9 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
   export-time `opp_charttool --dpi 150` flag (not a chart property). Older PNGs are ~80 dpi / 12×8.
 - **Make sure axis labels carry the unit** (e.g. `Throughput [Mbps]`, `Delay [ms]`). The clean way is
   to set the unit in the dialog (`yaxis_unit`/`xaxis_unit`) — the framework converts and appends
-  `[unit]` automatically; only for a derived quantity with no convertible unit do you put it in the
-  axis title (see "Axis units and labels").
+  `[unit]` automatically. For a derived quantity with no convertible unit, put the unit in the axis
+  title and clear `df["unit"] = ""`, but leave the unit props **declared-but-empty** — do not delete
+  them (see "Axis units and labels").
 - **Always guard empty data**: `if df.empty: raise chart.ChartScriptError(...)`.
 - **Input patterns are relative to the `.anf` dir** — `results/General-*.sca` + `…-*.vec`, or
   config-specific `results/<Config>-#0.sca`. Keep them as patterns so the chart survives re-runs.
