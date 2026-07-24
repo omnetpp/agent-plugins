@@ -6,10 +6,6 @@ description: |
   Always start with discovery and planning; do not create files until user confirms.
 ---
 
-> Reworking an EXISTING showcase page for readability (wall-of-text fixes,
-> ranking pages by readability metrics) is the separate
-> `showcase-readability-rework` skill — use that, not this one.
-
 # Workflow
 
 ## Phase 0: Discover existing patterns (before asking questions)
@@ -224,19 +220,10 @@ Title
 
 Goals
 -----
-[What is demonstrated and why — short; the box and hero figure below carry the punchline]
+[What is demonstrated and why]
 
 | Verified with INET version: ``X.Y``
 | Source files location: `inet/showcases/... <GitHub URL>`__
-
-.. admonition:: In one minute
-
-   [3–5 bullets: the effect (with its headline numbers), the cause, the fix(es),
-    and a one-line roadmap of the page. Written LAST, once Results exist.]
-
-[Hero artifact: the strongest Results figure, placed here so it lands on the first
- screen — before any protocol background — followed by its one-sentence bold
- takeaway. Reusing the same image file as the Results section is fine.]
 
 About [Protocol/Feature]
 ------------------------
@@ -279,7 +266,6 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 
 **Document structure guidance:**
 
-- **Evidence before theory:** the "In one minute" box and the hero artifact put the page's claim, proven, on the first screen. The About section then explains what the reader has already seen — which also permits writing it tighter. (Full rules: *Two reading layers* under Documentation Writing Principles.)
 - **Three-layer separation for protocol showcases:** protocol background → INET implementation → specific scenarios. This prevents INET details from being scattered across config sections. Simpler showcases (e.g., a feature demo with no protocol background) can merge or skip layers.
 - **Explain key node types before first use:** If the network uses a specialized node type (e.g., MulticastRouter, TsnDevice), explain what it is and what it adds before describing the network topology.
 - **Module interior screenshots:** For showcases where the internal module structure matters (e.g., protocol implementations, QoS queues), include a screenshot of the relevant compound module's interior in the INET section. Use `get_canvas_image` with the submodule path.
@@ -495,57 +481,6 @@ Do not modify files outside the new showcase except required `index.rst` wiring.
 - When a parameter appears in multiple places, the mechanism must be described the same way, not just the outcome (e.g. don't describe `numReservedAddresses` differently in the module overview vs the results section)
 - Abstract models (state machines, protocol layers) need explicit grounding in previously described concrete steps
 - For each config/scenario, identify the primary reader question and answer it explicitly in the Results section (e.g. "does the client get the same IP after reboot?")
-
-### Two reading layers (the anti-wall-of-text rules)
-
-A showcase page is written in two layers, so a skimming reader gets the whole story
-and a careful reader loses nothing. The failure mode these rules prevent: 3,000+
-words of uniform paragraphs where core claims, derivations, tuning rationale, and
-caveats all look identical, the best evidence sits 1,000 words deep, and nothing
-marks the fine print as skippable.
-
-**Layer 1 — the main flow:**
-
-- **Open with an "In one minute" admonition** (after Goals, before everything else):
-  the effect with its headline numbers, the cause, the fix(es), and a one-line
-  roadmap of the page. Write it last, once Results exist — it summarizes evidence,
-  it doesn't predict it.
-- **Lead with evidence.** The strongest Results artifact appears within the first
-  screen — right after the one-minute box, before protocol background. Theory
-  explains what the reader has already seen.
-- **Paragraph budget: ≤ ~70 words.** A longer paragraph gets split, bulleted, or
-  its depth moved to a Layer-2 box. The main flow must read end-to-end *without
-  opening any box* and still tell the complete story.
-- **Figure cadence.** No figure is preceded by more than ~2 paragraphs of new prose
-  since the last visual element. If prose accumulates past that, either a figure is
-  missing or the prose is fine print that belongs in a box.
-- **Every figure gets a takeaway.** Immediately after each figure, one bolded
-  sentence stating what it proves (e.g. "**One station at 6 Mbps pulls four 54 Mbps
-  stations down to ~2.5 Mbps each.**"). Figure + takeaway must stand alone — a
-  reader who sees only those two things learns the result.
-
-**Layer 2 — the fine print:**
-
-- **Box the depth, don't cut it.** Derivations (e.g. airtime arithmetic), parameter
-  tuning rationale (e.g. why sensitivity/noise floor were adjusted), and caveats /
-  known limitations go into titled admonitions at their point of use:
-
-  ```rst
-  .. admonition:: Details — why a 6 Mbps frame costs ~6× the airtime
-
-     [the derivation, as bullets]
-
-  .. admonition:: Fine print — per-station fairness under saturation
-
-     [the caveat, stated plainly]
-  ```
-
-- **Titles are descriptive, not generic.** "Details — why X" / "Fine print — Y",
-  never a bare "Note". Box titles collectively form a scannable index of the page's
-  fine print.
-- **Don't over-box.** If a section grows more boxes than flow, the scope is wrong —
-  cut or restructure instead. The boxes exist to protect the main flow, not to
-  absorb unlimited depth.
 
 ### Clarity and precision
 
