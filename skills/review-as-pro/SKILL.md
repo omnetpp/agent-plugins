@@ -72,6 +72,32 @@ Walk through the document and extract every verifiable technical claim. For each
 - Check boundary conditions (off-by-one in ranges, edge cases in state machines).
 - Verify that configuration values in the document match the actual config files.
 
+### Check applicability, not just truth
+A claim can be individually **true** yet not apply to the scenario the document actually
+demonstrates — the most common way a "fix"/"solution"/"cause" claim goes wrong, and one a
+naive fact-check waves through because every word is correct. For every claim that a
+mechanism *solves*, *fixes*, *mitigates*, *prevents*, or *causes* the demonstrated effect:
+- **Reconstruct the mechanism, don't just look it up.** Trace how the claimed fix/cause
+  would actually operate *in this scenario*, step by step, as if you had to reimplement or
+  reproduce it — name exactly what it acts on and follow it against this topology, traffic,
+  and roles. Verifying a claim is merely *true* tolerates vagueness; reconstructing *how it
+  would work here* forces the precision that exposes a mismatch. If the reconstruction needs
+  a fact the scenario contradicts, that gap is the error. (This is the step that surfaces
+  these; the checks below are what it turns up.)
+- **Cross-reference the claim against the configured scenario** — topology, traffic
+  direction (who transmits to whom), and node roles — not just against the code/standard in
+  the abstract. A correct statement about a *different* configuration (e.g. a downlink /
+  AP-side fix cited for an uplink demo) is an error even though it is factually accurate.
+- **Pin down exactly what the mechanism acts on**, then confirm that thing is present and
+  dominant in the scenario as run. Ask literally: *"would this change the demonstrated
+  result?"* If the mechanism operates on traffic, a node, or a layer the scenario doesn't
+  exercise, it is misapplied — flag it.
+- **External-system claims sit outside the code/spec surface.** A claim about a system *not*
+  in the implementation or the standard (a different stack, a real-world product, another
+  OS's behavior) cannot be checked by reading the source. Verify it against domain knowledge
+  of *that* system's mechanism, and scrutinize applicability hardest here — true-but-
+  inapplicable claims hide in exactly these "in the real world, X handles this" asides.
+
 ## Phase 2: Completeness Check
 
 Assess what the document *omits* that a domain expert would expect to see:
@@ -114,6 +140,10 @@ Concise table with columns: #, Issue, Severity (Error / Missing / Minor).
 
 - **Never evaluate claims from memory alone.** Always read the actual implementation
   source code. Protocols in simulation frameworks often differ from textbook descriptions.
+- **True is not the same as applicable.** Verify every fix/solution/causation claim actually
+  applies to the scenario *as configured* (topology, traffic direction, node roles), not
+  merely that it is true in general — true-but-inapplicable claims are the ones a naive
+  fact-check misses (see "Check applicability, not just truth").
 - **Distinguish document errors from implementation bugs.** If the code behaves
   differently from the RFC, note it, but the primary question is whether the document
   accurately describes what the code *actually does*.
