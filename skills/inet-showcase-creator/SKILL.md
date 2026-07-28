@@ -28,7 +28,16 @@ description: |
 
 ## Phase 1: Reach shared understanding (do not create files yet)
 
-Raise all doubts, discuss every important aspect with the user. Infer defaults from existing model and template showcase.
+**Shared understanding is two-way.** After Phase 0 the knowledge is split in half:
+the user owns the intent (what to show, to whom, why it matters); you own the
+mechanics (how the protocol works, what INET models of it, what's feasible, what the
+literature predicts). The conversation must move both halves across. So don't just
+collect requirements — explain concepts and give short overviews whenever the
+discussion touches something the user may not have at their fingertips, answer their
+questions, and let those questions steer the depth. Raise all doubts, discuss every
+important aspect; infer defaults from the existing model and template showcase. And
+note the questions the user asks: they preview what the showcase's readers will need
+explained — feed them into the doc's detail decisions and record them in `plan.md`.
 
 **Pitch your own ideas:** when you have ideas of your own — a scenario, an angle, an
 extra config, a better way to demonstrate the claim — share each one in 1–2 sentences
@@ -60,8 +69,9 @@ your own words — the claim, the scenario, and what the reader will concretely 
 the page (which figures and charts, roughly what they show). Do not echo the user's
 phrasing back; re-derive it, so a misunderstanding becomes visible instead of hiding
 behind quoted words. If the user corrects anything, fold it in and restate again next
-round. Phase 1 ends only when a restatement draws no corrections and the user
-explicitly confirms.
+round. Phase 1 ends only when both directions have gone quiet — a restatement draws
+no corrections, and the user's questions have all been asked and answered — and the
+user explicitly confirms.
 
 Along the way:
 - ask the user to generate new result files if needed (like new diagrams, logs, pcap files, eventlogs, statistics, screenshots, screen video captures etc.)
