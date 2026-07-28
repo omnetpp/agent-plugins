@@ -3,7 +3,8 @@ name: inet-showcase-creator
 description: |
   Plan and create new INET Framework showcases under the inet/showcases/ directory.
   Use when asked to add a new showcase simulation study and its Sphinx documentation page.
-  Always start with discovery and planning; do not create files until user confirms.
+  Always start with discovery; then discuss until shared understanding is reached and
+  the feasibility gate passes before creating any files.
 ---
 
 # Workflow
@@ -18,11 +19,101 @@ description: |
    - Read its `doc/index.rst`, `omnetpp.ini`, and `.ned` files
 4. Check the relevant category `index.rst` for toctree structure.
 5. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 
+6. **Quick feasibility screen** (minutes, not the full audit): while exploring, check
+   that the protocol/feature at the heart of the request is modeled in INET at all,
+   and that no glaring gap sinks the idea on sight (module missing entirely, core
+   mechanism visibly stubbed out). If one does, surface it to the user now — don't
+   spend a scope discussion on a dead-on-arrival idea. The rigorous
+   implementation-vs-claim audit runs later (Phase 1.75), once the claim has converged.
 
-## Phase 0.5: Assess implementation vs. the showcase's claim
+## Phase 1: Reach shared understanding (do not create files yet)
 
-Before committing to build a showcase, check whether the INET implementation actually
-supports the specific claim the showcase will make. Two distinct risks this catches:
+Raise all doubts, discuss every important aspect with the user. Infer defaults from existing model and template showcase.
+
+**Pitch your own ideas:** when you have ideas of your own — a scenario, an angle, an
+extra config, a better way to demonstrate the claim — share each one in 1–2 sentences
+first, then discuss it in detail with the user before folding it into the plan. Don't
+sit on ideas until the summary, and don't dump fully-elaborated designs the user never
+asked for: short pitch first, deep dive together. Early in the discussion, prefer
+putting 2–3 candidate shapes of the showcase on the table (different scenarios or
+angles, a couple of sentences each) so the user reacts to concrete options instead of
+answering abstract questions.
+
+**Core questions:**
+- **Source**: What is the source of the showcase? If a base model is not present, what other example should it be based on?
+- **Goal**: What feature is demonstrated? What claim should the showcase prove?
+- **Category**: Where does it belong?
+- **Detail**: 
+  - How much the underlying network standards should be detailed (i.e. generic, non-INET specific info)? (on the level of 0-10)
+  - How much detail should be given about how to actually configure this simulation scenario (i.e. INET specific configuration info)? (on the level of 0-10)
+  - How much detail about the actual implementation in INET should be given (i.e. info from c++ files)? (on the level of 0-10)
+
+**Ask only if unclear from context:**
+- Network topology size/complexity (if not yet specified by the user)
+- Expected outputs (plots, pcap, metrics)
+- Linux-only requirements (namespaces, `RealTimeScheduler`, `CAP_SYS_ADMIN`)
+- Multiple ini configs needed
+
+**Converge by teach-back, not by checklist.** Having answers to the questions above is
+not the exit criterion. After each round of discussion, restate the whole showcase in
+your own words — the claim, the scenario, and what the reader will concretely see on
+the page (which figures and charts, roughly what they show). Do not echo the user's
+phrasing back; re-derive it, so a misunderstanding becomes visible instead of hiding
+behind quoted words. If the user corrects anything, fold it in and restate again next
+round. Phase 1 ends only when a restatement draws no corrections and the user
+explicitly confirms.
+
+Along the way:
+- ask the user to generate new result files if needed (like new diagrams, logs, pcap files, eventlogs, statistics, screenshots, screen video captures etc.)
+- incorporate the new results into the plan
+
+**Summarize before proceeding** — the summary is the final teach-back restatement; it
+passes only if the user corrects nothing. It must cover:
+- The general scope and the planned outline and claims of the showcase
+- The **expected observables**: for each config/scenario, concrete *falsifiable*
+  statements of what the run will show when it works — checked later in Phase 2.7.
+  Tie them to time and place, not just existence (e.g. "the client's IP goes
+  0.0.0.0 → a leased address around t≈2 s in `host[0]`"; "queue length at
+  `router.eth[0]` exceeds N at some point"; "node B's RSSI crosses the threshold
+  and it reassociates around t≈10 s"). Write at least one per claim.
+- The **literature anchor**, when the showcase demonstrates a known effect or anomaly
+  that has a published magnitude or analytical model (the Heusse et al. airtime
+  formula for the 802.11 rate anomaly, Li et al.'s 1/4–1/7 multi-hop chain capacity,
+  near-total flow-in-the-middle starvation): compute the predicted value for the
+  planned scenario's parameters and register it, with its source, as one more
+  expected observable. Phase 2.7 Step 2 compares the run against it.
+- Final path: `showcases/<category>/<showcaseName>/`
+- Which `index.rst` to update
+- Files to create
+- Which configs to run for verification
+
+Wait for explicit user confirmation (until the user switches to code mode). Once the
+restatement has passed and the user confirms, write it to
+`showcases/<category>/<showcaseName>/plan.md` — the persistent record of the shared
+understanding. Keep it updated whenever the plan legitimately changes later
+(enrichment, a feasibility-gate narrowing, a Phase 2.7 claim change). It is a working
+file for the build, not part of the shipped showcase — don't commit it.
+
+## Phase 1.5: Check existing examples for enrichment
+
+After the showcase plan is established, search `examples/` and `showcases/` for
+existing simulations that use the same modules or features. Check if they contain
+anything worth incorporating:
+- Interesting configurations or edge cases not yet in the plan
+- Working parameter values that could serve as sanity checks
+- Results or behaviors worth referencing or contrasting
+
+This is not about copying — the showcase design comes first. This step is about
+finding extras that make the showcase more complete or interesting. Update the plan
+if you find something valuable, and mention it to the user. If it changes the plan,
+run one more quick teach-back round (and update `plan.md`) so the shared
+understanding stays current.
+
+## Phase 1.75: Feasibility gate — assess implementation vs. the converged claim
+
+Now that the claim has converged, check whether the INET implementation actually
+supports it. This audit is the gate between shared understanding and building
+anything. Two distinct risks this catches:
 writing a showcase that *names* a protocol while skipping mechanisms a knowledgeable
 reader would immediately ask about (the DHCP showcase nearly shipped without lease
 expiration), and building a scenario on a modeling *capability* the code doesn't have
@@ -36,8 +127,9 @@ Run these steps in order. Don't skip ahead — the order is what prevents
 ### Step 1: Pin down the claim
 
 The claim is the one-sentence answer to "what will a reader see this showcase prove?"
-— usually inferable from the user's initial request, or from the template showcase.
-If unclear, ask one focused question before continuing.
+— it is the claim recorded in `plan.md`, i.e. the final, uncorrected teach-back
+restatement from Phase 1. If it can't be stated in one sentence, Phase 1 didn't
+actually converge; go back and reconverge before auditing.
 
 ### Step 2: Enumerate the protocol's required mechanisms as a checklist (before reading code)
 
@@ -119,70 +211,11 @@ for *non*-blocker gaps inside an otherwise-suitable showcase — not as a way to
 past a blocker.)
 
 After issuing the verdict, ask the user how to proceed — they may accept it, push to
-narrow further, fix the implementation first, or abandon. Do not proceed to Phase 1
-until they have chosen.
-
-## Phase 1: Clarify scope (do not create files yet)
-
-Raise all doubts, discuss every important aspect with the user. Infer defaults from existing model and template showcase.
-
-**Core questions:**
-- **Source**: What is the source of the showcase? If a base model is not present, what other example should it be based on?
-- **Goal**: What feature is demonstrated? What claim should the showcase prove?
-- **Category**: Where does it belong?
-- **Detail**: 
-  - How much the underlying network standards should be detailed (i.e. generic, non-INET specific info)? (on the level of 0-10)
-  - How much detail should be given about how to actually configure this simulation scenario (i.e. INET specific configuration info)? (on the level of 0-10)
-  - How much detail about the actual implementation in INET should be given (i.e. info from c++ files)? (on the level of 0-10)
-
-**Ask only if unclear from context:**
-- Network topology size/complexity (if not yet specified by the user)
-- Expected outputs (plots, pcap, metrics)
-- Linux-only requirements (namespaces, `RealTimeScheduler`, `CAP_SYS_ADMIN`)
-- Multiple ini configs needed
-
-**Iterate with the user until you are sure about the scope and the basic outline of the showcase.**
-- ask the user to generate new result files if needed (like new diagrams, logs, pcap files, eventlogs, statistics, screenshots, screen video captures etc.)
-- incorporate the new results into the plan
-- if scoping introduces a dependency the Phase 0.5 checklists didn't cover — a new
-  mechanism, or a scenario-required capability (per-station state, a scheduling
-  discipline, a heterogeneous parameter) — extend the Phase 0.5 audit to those items
-  now, before summarizing. Phase 0.5 ran before the scope was final; a capability gap
-  discovered mid-implementation is the expensive kind.
-
-**Summarize before proceeding:**
-- The general scope and the planned outline and claims of the showcase
-- The **expected observables**: for each config/scenario, concrete *falsifiable*
-  statements of what the run will show when it works — checked later in Phase 2.7.
-  Tie them to time and place, not just existence (e.g. "the client's IP goes
-  0.0.0.0 → a leased address around t≈2 s in `host[0]`"; "queue length at
-  `router.eth[0]` exceeds N at some point"; "node B's RSSI crosses the threshold
-  and it reassociates around t≈10 s"). Write at least one per claim.
-- The **literature anchor**, when the showcase demonstrates a known effect or anomaly
-  that has a published magnitude or analytical model (the Heusse et al. airtime
-  formula for the 802.11 rate anomaly, Li et al.'s 1/4–1/7 multi-hop chain capacity,
-  near-total flow-in-the-middle starvation): compute the predicted value for the
-  planned scenario's parameters and register it, with its source, as one more
-  expected observable. Phase 2.7 Step 2 compares the run against it.
-- Final path: `showcases/<category>/<showcaseName>/`
-- Which `index.rst` to update
-- Files to create
-- Which configs to run for verification
-
-Wait for explicit user confirmation (until the user switches to code mode)
-
-## Phase 1.5: Check existing examples for enrichment
-
-After the showcase plan is established, search `examples/` and `showcases/` for
-existing simulations that use the same modules or features. Check if they contain
-anything worth incorporating:
-- Interesting configurations or edge cases not yet in the plan
-- Working parameter values that could serve as sanity checks
-- Results or behaviors worth referencing or contrasting
-
-This is not about copying — the showcase design comes first. This step is about
-finding extras that make the showcase more complete or interesting. Update the plan
-if you find something valuable, and mention it to the user.
+narrow further, fix the implementation first, or abandon. Do not proceed to Phase 2
+until they have chosen. If the outcome narrows or otherwise changes the claim,
+re-establish shared understanding with one more short teach-back round on the revised
+claim (and update `plan.md`) before moving on — the gate stops the build; it never
+silently rewrites the plan.
 
 ## Phase 2: Implement (after confirmation)
 
@@ -396,11 +429,11 @@ Pick one:
   reverse-engineered to force the result.
 - **Claim must change** — the run is correct but shows something narrower or different than
   the doc claims. This is a scope change: **present it to the user and let them decide**
-  (narrow the claim, re-scope, or abandon), the same way Phase 0.5 hands its verdict back.
+  (narrow the claim, re-scope, or abandon), the same way the Phase 1.75 feasibility gate hands its verdict back.
   Do not silently rewrite the claim. If narrowed, revisit the prediction list.
 - **Something is wrong in the model** — implausible magnitudes or impossible behavior point
   at a config or model bug. **Surface it to the user** before continuing; if it traces to
-  the implementation, it may reopen the Phase 0.5 assessment.
+  the implementation, it may reopen the Phase 1.75 feasibility gate.
 
 "Capture it anyway and describe what we hoped to see" is **not** a verdict. The Results
 section must show evidence the behavior happened — a caption describing intent over an
@@ -458,7 +491,7 @@ conversation is running on** — never a weaker one:
    rounds**, whichever comes first.
 5. **On recurrence** — a reviewer re-flags something you already addressed — stop the loop
    and surface it to the user. That's author-vs-reviewer disagreement, a human call, not
-   something to churn on (same hand-back as the Phase 0.5 / 2.7 verdicts).
+   something to churn on (same hand-back as the Phase 1.75 / 2.7 verdicts).
 
 Report which rounds ran, what was fixed each round, and any unresolved Medium/Low items or
 disagreements left for the user.
