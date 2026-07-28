@@ -270,6 +270,7 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Explain key node types before first use:** If the network uses a specialized node type (e.g., MulticastRouter, TsnDevice), explain what it is and what it adds before describing the network topology.
 - **Module interior screenshots:** For showcases where the internal module structure matters (e.g., protocol implementations, QoS queues), include a screenshot of the relevant compound module's interior in the INET section. Use `get_canvas_image` with the submodule path.
 - **Configuration parameters explained once:** Explain parameters (with rationale for non-obvious choices) in the INET section. Per-config sections should just show the literalinclude and walk through the scenario behavior.
+- **Keep the ini nearly comment-free:** the doc prose is the explanation, so `omnetpp.ini` carries only short section headers and the rare one-liner for a genuinely non-obvious value — never paragraph rationale (shipped showcases run ~0–19% comment lines). A comment must never be the thing a `literalinclude` shows: anchor `:start-at:`/`:end-at:` on config lines and keep the included range pure config, so the snippet isn't padded with prose that duplicates the surrounding text.
 - **Implementation notes/limitations:** Place near the implementation description in the INET section, not at the end or scattered in config sections.
 
 **Results section guidance:** Think about what makes the showcase's behavior visible and interesting. Choose from these evidence types based on the showcase's focus:
@@ -295,7 +296,7 @@ Add entry to appropriate `index.rst`:
 - NED `package` matches folder path
 - All `:download:` links reference existing files
 - No broken `:doc:` or `:ned:` references
-- ``literalinclude`` markers actually slice what you expect. `:start-at:` + `:end-before:` are order-sensitive: if the ini's section order doesn't match the doc's subsection order, the slice silently extends past the intended config, or worse, swallows the next one too. Default rule: **keep ini section order matching doc subsection order** (helps direct ini readers too). Verify by rendering or by reading the rendered output.
+- ``literalinclude`` markers actually slice what you expect. `:start-at:` + `:end-before:` are order-sensitive: if the ini's section order doesn't match the doc's subsection order, the slice silently extends past the intended config, or worse, swallows the next one too. Default rule: **keep ini section order matching doc subsection order** (helps direct ini readers too). Anchor on **config lines, never on a comment** — a comment-keyed `:start-at:` silently breaks (or slices the wrong range) the moment someone trims that comment. Verify by rendering or by reading the rendered output.
 
 ### 2.6 Run and verify
 
