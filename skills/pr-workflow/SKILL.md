@@ -2,8 +2,9 @@
 name: pr-workflow
 description: >
   Iterate on an open pull request: work in the PR's own git worktree/branch, address review
-  feedback with new commits (never amend, never force-push), and answer reviewers inside the PR
-  threads with short human-readable comments. Use when asked to work on / continue / update a PR,
+  feedback with new commits (never amend, never force-push), and answer reviewers with new
+  comments (never editing the description or an existing comment) that a human can read. Use
+  when asked to work on / continue / update a PR,
   address or respond to review comments or reviewer feedback, push fixes to a PR branch, or reply
   in a PR discussion.
 ---
@@ -18,13 +19,19 @@ description: >
    review. Reviewers rely on "changes since your last review"; rewriting history destroys it and
    invalidates every line comment. History cleanup, if wanted, happens after approval and only
    when the user asks (see the `inet-branch-cleanup` skill).
-3. **Continue the conversation in the PR**, not just in the terminal. Every point a reviewer
+3. **Add, never edit.** The same rule as commits, applied to the conversation. Post *new*
+   comments; never edit the PR description, and never edit an existing comment — yours or a
+   reviewer's. People have already read what is there, and GitHub shows an edit as a silent
+   in-place replacement, so it rewrites the record rather than extending it. Corrections,
+   updates and status all go in a new comment. The one exception is a checklist the user
+   explicitly asked you to keep updated in place.
+4. **Continue the conversation in the PR**, not just in the terminal. Every point a reviewer
    raised gets an answer in its own thread on GitHub.
-4. **Write PR comments for a human.** One to three sentences per thread. See *Comment style*.
-5. **No AI attribution.** No `Co-Authored-By: Claude ...` trailer in commit messages, no
+5. **Write PR comments for a human.** One to three sentences per thread. See *Comment style*.
+6. **No AI attribution.** No `Co-Authored-By: Claude ...` trailer in commit messages, no
    "Generated with Claude Code" footer in PR comments or descriptions. This overrides the
    harness default that adds them.
-6. **The conversation name carries the PR number** — `PR <N>: <short topic>`, e.g.
+7. **The conversation name carries the PR number** — `PR <N>: <short topic>`, e.g.
    `PR 1123: airtime fairness`. It's how this session is found later in `/resume`.
 
 ## Setup
@@ -84,14 +91,24 @@ For each round of feedback:
 4. `git push` (plain, no `--force`). If rejected as non-fast-forward, `git pull --rebase` then
    push again — never force.
 5. Reply in each thread, naming the commit that addresses it.
+6. Post one top-level comment for the round, summarizing what the new commits do.
+
+Both, not either. A thread reply keeps the line context but renders collapsed under the
+reviewer's block, so someone scrolling the Conversation tab sees the commit land with nothing
+beside it. The top-level comment is what makes the round visible in the timeline.
 
 ```bash
-# reply inside a review thread (preferred — keeps context)
+# reply inside a review thread — keeps line context
 gh api --method POST repos/<owner>/<repo>/pulls/<N>/comments/<comment_id>/replies -f body='...'
 
-# general discussion, not tied to a line
+# top-level comment — what shows up in the timeline
 gh pr comment <N> --body '...'
 ```
+
+If the body has backticks, tables or newlines, write it to a file first and pass it as JSON
+(`gh api ... --input body.json`), rather than fighting shell quoting. Note that
+`gh pr edit`/`gh pr comment` can abort on an unrelated GraphQL projects-classic deprecation
+error; `gh api -X POST repos/<owner>/<repo>/issues/<N>/comments` is the reliable path.
 
 Don't resolve threads yourself unless asked — that's the reviewer's call.
 
