@@ -127,7 +127,7 @@ No auth token needed — the simulation MCP server is unauthenticated.
 
 | Tool | What it does | Qtenv? | Clang? |
 |---|---|---|---|
-| `get_canvas_image` | Render a module's `cCanvas` to a PNG (base64-encoded) | Y | |
+| `get_canvas_image` | Render a module's graphics to a PNG (base64-encoded) — the "Export to Image..." context menu item | Y | |
 | `open_inspector` | Open a Qtenv inspector window for any cObject by full path | Y | |
 | `get_inspector_screenshot` | Capture the inspector widget as a PNG (with optional resize) | Y | |
 | `expand_inspector_tree` | Expand tree nodes in object / object-tree inspectors before screenshotting | Y | |
@@ -219,30 +219,67 @@ inet -u Qtenv -c BasicDHCP --mcp-server-address localhost:8765 --qtenv-default-r
 - Verify MCP is listening: `ss -tlnp | grep 8765`
 - The Windsurf MCP config on this machine uses server name `omnetppX` (not `omnetpp-sim`)
 
-## Saving the canvas image to a file
+## Network / topology screenshots
 
-`get_canvas_image` returns base64 PNG via MCP but does not save to disk. Use this to save it:
+`get_canvas_image` is the programmatic equivalent of Qtenv's right-click
+**"Export to Image..."**: it renders the module's *live* graphical inspector, so the
+current zoom, icon scale, label settings and every canvas figure — INET visualizer
+annotations included — come out exactly as shown on screen, but with no window
+chrome, toolbar, scrollbars or zoom overlay. **Prefer it over
+`get_inspector_screenshot` for network/topology figures** — nothing has to be
+cropped afterwards.
 
-```python
-import base64, json, urllib.request
+Parameters:
 
-req = urllib.request.Request(
-    'http://localhost:8765/mcp',
-    data=json.dumps({
-        'jsonrpc':'2.0','id':1,'method':'tools/call',
-        'params':{'name':'get_canvas_image','arguments':{'module_path':'NetworkName','area':'all_elements','margin':5}}
-    }).encode(),
-    headers={'Content-Type':'application/json','Accept':'application/json'}
-)
-resp = json.loads(urllib.request.urlopen(req).read())
-for item in resp.get('result',{}).get('content',[]):
-    if item.get('type') == 'image':
-        with open('/path/to/output.png','wb') as f:
-            f.write(base64.b64decode(item['data']))
+- `area`: `module_rectangle` (the module's background rectangle, i.e. the playground;
+  default, and what "Export to Image" defaults to), `all_elements` (bounding box of all
+  graphics — crops tighter when the playground has empty regions), `viewport` (exactly
+  what the inspector currently shows)
+- `margin`: pixels around the captured area (default 5)
+- `output_file`: also save the PNG there (relative paths resolve against the
+  simulation's working directory). The image comes back either way — this just saves
+  decoding the base64 yourself
+- Response carries a metadata block alongside the image: `width`, `height`,
+  `zoom_factor`, `area`, `margin`, and `file` if saved
+- Requires **Qtenv**, and requires an **open graphical inspector** for the module. For
+  the network one always exists; for a submodule, `set_canvas_view` or `open_inspector`
+  opens it. Otherwise you get an error — deliberately, because the alternative
+  (rendering offscreen at zoom 1) silently produces garbage.
+- Images are downscaled so neither side exceeds 2048 px
+
+### The zoom loop
+
+**Zoom is a composition choice, not a resolution knob.** Icons have a fixed pixel size
+regardless of zoom, while the layout and the canvas figures scale with it. So zooming
+out doesn't just shrink the picture — it crowds submodules, their name labels, and
+visualizer annotations into each other, and clips figures. Zooming in spreads them out
+but wastes space and may not fit. You cannot render small and upscale.
+
+There is no formula for the right zoom. Capture, **look at the image**, and judge it
+the way a person would:
+
+- do the visualizer annotations overlap each other, or the node icons?
+- is there a large empty region? (try `area: all_elements`, or zoom in)
+- is anything clipped at the edges?
+- is the text legible at the size this will appear in the docs?
+
+Then adjust and re-capture:
+
+```
+set_canvas_view {module_path: "<root>", fit: true}     → rough framing
+get_canvas_image {module_path: "<root>"}               → look at it, judge
+set_canvas_view {module_path: "<root>", zoom_by: 1.3}  → adjust
+get_canvas_image {module_path: "<root>"}               → look again
+...
+get_canvas_image {module_path: "<root>", output_file: "doc/media/Topology.png"}
 ```
 
-- `get_canvas_image` requires **Qtenv** — it returns "not available" under Cmdenv
-- `area` options: `all_elements` (bounding box of all graphics), `module_rectangle`, `viewport`
+**Record the final `zoom` in the FIGURE RECIPE.** Qtenv persists per-network zoom in
+`~/.qtenvrc` as `type2-embedded-<NetworkName>-zoomfactor`, so on the machine where the
+figure was first made the framing looks right "for free" — and on a fresh checkout or
+CI it silently falls back to zoom 1. A recipe that names an explicit
+`set_canvas_view {zoom: N}` replays anywhere in one shot; the judge-loop above is only
+needed when creating or re-tuning a figure.
 
 ## Recipe comments for showcase figures (canvas & inspector)
 
@@ -267,7 +304,8 @@ Format (RST comment — `..` on its own line, content never parsed as RST):
    shows:    network topology — dhcpServer, switch, client[0..2] on 100 Mbps Ethernet
    anchor:   initial state (t=0, before run). No timing — the self-check is
              structural: if the module set/links differ, the NED changed.
-   capture:  get_canvas_image, area=all_elements; was 728×478
+   capture:  set_canvas_view zoom=1.69 → get_canvas_image area=module_rectangle
+             margin=5; was 728×478
    stamp:    captured 2026-06, INET 4.6
 
 .. figure:: media/lease_table.png        ← module inspector
@@ -294,8 +332,10 @@ Fields:
   still matches.
 - **target** (inspector only) — which module and which inspector/field to
   `open_inspector` (plus `expand_inspector_tree` if the field is a nested object).
-- **capture** — `area` for canvas (`all_elements` etc.) and the last screenshot dims
-  as a resolution hint.
+- **capture** — for canvas: the **explicit `set_canvas_view` zoom** (not "fit" — the
+  zoom that the judge-loop settled on, so a replay needs no loop), plus `area` and
+  `margin`; for inspector: the `open_inspector`/crop steps. Either way end with the
+  last dims as a resolution hint.
 
 ## Qtenv vs Cmdenv for MCP
 

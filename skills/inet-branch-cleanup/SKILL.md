@@ -68,6 +68,9 @@ only at the exceptions below.
   layering, not churn. Test: *does B stand alone, or is it just "oops, A also needed this"?* — only
   the latter folds. Don't fold a coherent feature just to shrink the commit count; gate "minor
   feature" folds on the granularity choice (§3) — fold only additions too small to review standalone.
+- **Documentation** — adding documentation (NED/doxygen comments, doc/ pages, users-guide text) is a
+  distinct commit, not folded into the code commit it documents. Reviewing prose and reviewing code
+  are different passes; keeping them separate lets each be reviewed (and reverted) on its own.
 
 ## Procedure
 
@@ -106,7 +109,7 @@ resolve each by re-recording at that commit.
 - Run the suite **twice** at any commit where determinism is in doubt.
 
 **Phase 4 — Reword.** Rewrite every subject to `Area: category: description`
-(`fix`/`refactor`/`feature`/`test`; omit category when the verb makes it obvious — "Implement…",
+(`fix`/`refactor`/`feature`/`test`/`doc`; omit category when the verb makes it obvious — "Implement…",
 "Add … test"). Message-only, bodies preserved: `git filter-branch --msg-filter`. Verify trees are
 identical before/after (`git diff <pre> <post>` empty).
 
