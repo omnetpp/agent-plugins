@@ -9,6 +9,11 @@ description: |
 > Reworking an EXISTING showcase page for readability (wall-of-text fixes,
 > ranking pages by readability metrics) is the separate
 > `showcase-readability-rework` skill — use that, not this one.
+>
+> Building a showcase with the **expert panel** (INET / standards / university / industry
+> reviewers at five gates) is the `inet-showcase-team` skill. It coordinates the phases below
+> rather than replacing them: this file stays the build reference, that one adds who is
+> consulted, when, and how their disagreements end.
 
 # Workflow
 
