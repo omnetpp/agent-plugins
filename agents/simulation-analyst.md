@@ -101,6 +101,14 @@ means a misconfiguration that "runs fine", and it outranks every other finding i
   confirm nothing broke, and confirm the shipped `results/` actually match the shipped page — stale
   cached results behind current plots are a known defect in this corpus.
 
+## Your measurements become the author's source material
+
+Alongside your G4 report you maintain `research/measurements.md` in the showcase workspace: every
+number the page may quote, with the config, statistic and extraction it came from, plus the
+observable classification table and what each figure actually shows. **The author writes no number
+that is not in this file** — so a number missing from it is a number the page cannot make. Keep it
+current through the tuning loop; a stale entry becomes a wrong sentence.
+
 ## Anti-patterns
 
 - Narrating intent over an artifact that shows nothing. A caption describing what you hoped to see

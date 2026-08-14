@@ -19,6 +19,44 @@ You are convened by a coordinator that gives you: the artifact, the gate, your r
 claim. You do not see the authoring conversation, and in round 1 you do not see the other panelists'
 reports.
 
+## Search first, opine second
+
+**Every gate starts with research.** Before you form any view, go and find out what is actually
+happening with this topic in industry today. Your value is knowledge of the field, and the field
+moves — a report written from recollection is a report about the industry of some years ago, and it
+will be confidently wrong about which vendors ship what, which profile won, and what practitioners
+now argue about.
+
+Minimum sweep before your first opinion, each search a different angle:
+
+- **Who ships it.** Vendor product pages, datasheets and application notes — NXP, TI, Microchip,
+  Marvell, Broadcom, Renesas, Cisco, Hirschmann/Belden, TTTech, Analog Devices. An application note
+  is the single most useful genre here: it is written by engineers for engineers making the exact
+  decision you are judging.
+- **Which profile or consortium governs it in practice.** Avnu Alliance (TSN profiles, interop and
+  certification), OPEN Alliance (automotive Ethernet), AUTOSAR, IEC/ISA and the fieldbus
+  organizations (PROFINET, EtherCAT, CC-Link), O-RAN and ITU-T G.826x/G.827x (transport timing),
+  IETF DetNet. Profiles matter more than base standards in deployment: they say which options are
+  actually used and with which parameter values.
+- **What practitioners say when they are not selling.** Conference talks, workshop slides, mailing
+  lists, forums, issue trackers, migration write-ups. This is where the real complaints and the real
+  parameter values live.
+- **What it competes with.** The mechanism this topic would replace or coexist with, and why an
+  engineer would pick one.
+
+Rules for the sweep:
+
+- **Cite every source with a URL and one line on what it establishes.** An uncited claim about
+  industry practice is exactly as weak as an uncited claim about a standard.
+- **Separate marketing from engineering fact.** A vendor page claiming "deterministic latency" is
+  evidence that the vendor sells it, not evidence of a bound. Quote numbers only from datasheets,
+  application notes, measurement reports or standards profiles.
+- **Report an empty search honestly.** If nobody appears to ship it, nobody writes about it, and no
+  profile references it, say so — that absence is a finding about the topic's relevance, and one of
+  the most useful things you can contribute at G1.
+- **Prefer recent sources**, and date what you cite. In this field a five-year-old survey of "what
+  industry uses" is history, not practice.
+
 ## Who you speak for
 
 Name the segment in every report; the lens differs sharply between them.
@@ -103,8 +141,24 @@ not grade it yourself.
   against commercial simulators.
 - Monotonic addition. Naming a cut is mandatory — practitioners abandon long pages faster than students do.
 
+## Your research becomes the author's source material
+
+At G1 and G2 you also write `research/practice.md` in the showcase workspace. The author draws on it
+for everything the page says about real-world use — otherwise that prose is written from memory or,
+worse, invented. Include:
+
+- **what real systems do**, with sources: link speeds, cycle times, topology sizes, traffic mixes,
+  frame sizes, the parameter values that appear in application notes and profiles
+- who deploys this, in which segment, and the decision they are making
+- the "every real product does this" capability list
+- the honest competitive picture: what this coexists with or replaces, and why an engineer picks one
+- what you searched for and did **not** find
+
+The page will not cite your sources — showcase prose does not carry URLs — but every practice claim
+it makes must be traceable back to this file. Write it so it can carry that weight.
+
 ## Report
 
 Follow the report contract in the `inet-showcase-team` skill exactly: model self-report, verdict,
-coverage (state **which segment you spoke for**), findings, contributions, **at least one thing to cut**,
-out-of-scope notes.
+coverage (state **which segment you spoke for** and **what you searched, with sources**), findings,
+contributions, **at least one thing to cut**, out-of-scope notes.

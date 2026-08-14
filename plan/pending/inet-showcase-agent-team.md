@@ -29,6 +29,9 @@ disagreements end*.
 | D5b | **Reviewers are report-only**: each writes exactly one file, its own report | No concurrent-edit conflicts; blindness stays intact |
 | D5c | Producers are **briefed and persistent** (continued via `SendMessage`); reviewers are **blind and re-spawned fresh** each round | The page keeps one voice and the analyst keeps its run history, while a blind re-read stays honest |
 | D5d | Producers receive a **change order**, never the raw review reports | The conflicts are already resolved; four raw voices pull the page apart and re-litigate settled rulings |
+| D6a | **The briefing pack.** G1/G2 produce `research/{standards,practice,implementation,measurements}.md`; the author writes the page out of those files and nothing else | Otherwise the author — a fresh agent with no topic knowledge — writes the protocol background from memory, which is fluent, plausible and unverifiable. Research artifacts go to the author; review reports never do |
+| D6b | The domain expert **opens the actual standard** (local `~/Documents/ieee802` cache, `pdftotext` extract-then-grep), and flags every item `verified: <doc> cl. <n>` or `UNVERIFIED — from memory`; an UNVERIFIED item may not be a blocker | A confident recollection is indistinguishable from a read clause in a written report, and it can otherwise stop a showcase |
+| D6c | The industry expert **searches before it opines**, every gate, with URLs per claim | The field moves; recollection describes the industry of some years ago and is confidently wrong about who ships what |
 | D5e | The analyst has **bounded tuning authority**: parameter values in existing configs, inside an authorized loop, within representative ranges, every change logged | Otherwise every *needs tuning* round trips through author + coordinator for a value change, and the loop the creator skill caps at 2–3 rounds never converges |
 | D6 | Panelist agent frontmatter **omits `model:`** so each inherits the main conversation's model | The existing Phase 3 rule — reviewers never run on a weaker model than the author — enforced structurally instead of by instruction |
 | D7 | Panel artifacts live under `inet-master/plan/pending/showcase-<name>/panel/` | `plan/` is already untracked in `inet-master`, so the paper trail never pollutes the INET repo |
@@ -57,12 +60,22 @@ usable at all. Changes are committed with targeted `git add`.
 | `industry-expert` | Whether a practitioner can map the scenario to a real deployment and lift something out of it | The scenario is unmappable to any real system, or the headline claim would mislead someone making a real engineering decision |
 | coordinator (main session) | Merging, conflict resolution, change orders, all user escalation — **and nothing that ships** | — |
 
-## The gate loop
+## The two gate shapes
 
-Every gate has the same six steps: **produce** (author or analyst) → **convene** (reviewers, blind,
+**Research gates (G1, G2)** — the experts produce knowledge into `research/*.md`, the coordinator
+merges and rules, then the author writes `brief.md` / `plan.md` **out of the pack**.
+
+**Review gates (G3, G4, G5)** — **produce** (author or analyst) → **convene** (reviewers, blind,
 parallel) → **merge** (classify every finding) → **resolve** (ladder, cross-examination, escalation)
 → **order** (`change-order.md` to the producer) → **verify** (read the diff; confirm each item landed
 and nothing else moved).
+
+The research gates exist as much to build the author's knowledge base as to judge the topic. That is
+the answer to "how does the author write about a topic it does not know": it does not write from
+memory, it writes from `research/standards.md` (verbatim clause quotes), `research/practice.md`
+(sourced deployment facts), `research/implementation.md` (module map and exact parameter names) and
+`research/measurements.md` (every number with its provenance). Anything the pack does not support is
+a marked gap and a request back to the relevant expert — never a smoothed-over sentence.
 
 ## Gate map
 

@@ -78,6 +78,11 @@ inet-master/plan/pending/showcase-<name>/
   brief.md                  G1 output — the approved topic brief          (author)
   plan.md                   claim, scenarios, observables, anchor, outline (author)
   decisions.md              escalations, user rulings, dial settings       (coordinator)
+  research/                 THE BRIEFING PACK — the author's only knowledge source
+    standards.md            clause quotes, terminology, mechanisms, anchor (domain)
+    practice.md             what real systems do, with sources            (industry)
+    implementation.md       module map, parameter names, simplifications  (INET)
+    measurements.md         every number, with its extraction provenance  (analyst)
   panel/
     g1-topic/round1/{inet,domain,university,industry}.md
     g1-topic/merge.md · change-order.md · applied.md
@@ -91,9 +96,45 @@ inet-master/plan/pending/showcase-<name>/
 reason goes there. A panel with no paper trail cannot be audited, and you will be asked in round 3
 why something was dropped in round 1.
 
-## The gate loop
+## The briefing pack
 
-Every gate has the same shape. Do not skip steps or reorder them.
+**The author knows nothing about the topic.** It is a fresh agent every job, and if it writes the
+protocol background unaided it writes from memory — fluent, plausible, and unverifiable. The pack is
+the fix: the experts research the topic first and write down what they found, and the author writes
+the page out of those files.
+
+That is what the research gates are *for*. G1 and G2 do not merely judge a topic — they produce the
+knowledge the showcase will be built from:
+
+- `research/standards.md` — the domain expert, having actually opened the standard: verbatim clause
+  quotes with locators, terminology, mechanism list, the literature anchor with its computation
+- `research/practice.md` — the industry expert, having actually searched: what real systems do, with
+  sources, deployment parameter values, the "every real product does this" list
+- `research/implementation.md` — the INET expert: module map, exact parameter names, what is
+  simplified or absent, which statistics exist, nearest existing art
+- `research/measurements.md` — the analyst: every number with its extraction provenance
+
+Assemble the pack before the author's first write, and refresh it before every subsequent one. Hand
+it over as **paths**, together with `plan.md` and `decisions.md`.
+
+**Research artifacts go to the author; review reports never do.** The distinction is what the file
+is *about*: `research/*.md` is knowledge about the topic, and the author needs all of it. A
+reviewer's report is a judgement about the author's own work, holds conflicts you have already
+resolved, and speaks in four voices — that reaches the author only as a change order.
+
+If the pack is thin where the page needs substance, that is a gap to fill by sending the relevant
+expert back for more research — not something for the author to paper over.
+
+## The two gate shapes
+
+**Research gates (G1, G2)** — the experts produce knowledge, then the author writes from it:
+
+1. **Research** — spawn the experts in parallel; each writes its `research/*.md` and its report.
+2. **Merge** — classify findings, build the gap table or the score summary.
+3. **Rule** — issue the gate verdict; take it to the user.
+4. **Order** — the author writes `brief.md` / `plan.md` from the pack.
+
+**Review gates (G3, G4, G5)** — a producer creates, the reviewers critique:
 
 1. **Produce** — the author (or analyst) creates or revises the artifact.
 2. **Convene** — spawn the gate's reviewers in parallel, blind.
@@ -115,6 +156,8 @@ Each reviewer gets, in its prompt:
 5. **The detail dials** — the three 0–10 settings from Phase 1 (standards detail, INET
    configuration detail, implementation detail), because they bound what anyone may ask for.
 6. **Persona parameters** where the role takes them: which academic persona, which industry segment.
+7. **At a research gate**, the path of its `research/*.md` file and the instruction that the research
+   comes before the opinion — the standard opened, the search run, the code read.
 
 They must **not** get: the authoring rationale, your reasoning, prior conversation, or — in round 1
 — any other reviewer's report. The blindness is what makes the reports worth reading; a reviewer
@@ -188,6 +231,11 @@ Each reviewer scores the candidate 0–5 on its own axis with justification: imp
 relevance (industry). Each names its top risk. The analyst adds a cheap reality check: does the
 nearest existing model build and run, and what is the runtime order of magnitude.
 
+**The research starts here, not at G2.** The domain expert opens the governing standard and starts
+`research/standards.md`; the industry expert runs its search sweep and starts `research/practice.md`;
+the INET expert maps the modules into `research/implementation.md`. A G1 score offered without that
+work is a guess, and a topic chosen on guesses costs a full G2 to discover.
+
 You merge, then order the author to write `brief.md`: claim candidate, target audience, why this
 topic now, top three risks, nearest existing art. **The user picks.** Do not proceed on a topic the
 user has not chosen.
@@ -198,7 +246,9 @@ Order matters — it is what keeps the audit from drifting into "the parts that 
 fine".
 
 1. **Domain expert, blind to the code**, writes the required-mechanisms checklist from the standard
-   alone, with normative force per item.
+   alone — the document open in front of it, one verification flag per item (`verified: <document>
+   cl. <n>` or `UNVERIFIED — from memory`), and normative force per item. **An `UNVERIFIED` item
+   may not be a blocker**; it comes to you as a question, with the document that would settle it.
 2. **University expert** adds the mechanisms every textbook shows; **industry expert** adds the
    capabilities every real product has. These two lists exist because the standard's MUST list
    systematically misses what everyone takes for granted — the per-client rate adaptation that made
@@ -363,6 +413,12 @@ withdrawn in practice; treat it as such and say so in `merge.md`.
   change order.
 - **Letting a producer review its own work.** The author's opinion of the page and the analyst's
   opinion of its own runs are not review. Convene the reviewers.
+- **Accepting research that was not done.** A domain report with no clause locators, an industry
+  report with no URLs, an implementation report with no file:line — that is memory in costume. Send
+  it back; it is the input the whole page is built on.
+- **Letting the author write past the pack.** If the page says something no `research/*.md` supports,
+  either the pack is incomplete (send an expert back) or the author invented it (which the reviewers
+  will catch, expensively, two gates later).
 - **Issuing a verdict the analyst proposed without checking its evidence.** It proposes, you issue.
 - **Splitting the difference silently.** Half-implementing a contested finding satisfies nobody and
   hides the disagreement from the user.

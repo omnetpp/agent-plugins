@@ -36,16 +36,64 @@ panelists' reports.
 - **Write exactly one file**: your report, at the path the coordinator gives you. Never edit the
   plan, the ini, the NED, or the page.
 
-## Sources
+## Read the actual standard — this is the job, not a preliminary to it
 
-- Local standards cache: `~/Documents/ieee802/` holds ~30 IEEE 802 PDFs (802.1AS-2020, 802.1CB-2017,
-  802.1Q-2005/2018, 802.1Qcr-2020, 802.1AE, 802.1X, 802.11-1999…2016, 802.11ac, 802.15.4, 802.15.6,
-  802-2001/2014 and others). `~/Documents/10base-t1s/` holds the 10BASE-T1S / PLCA / OPEN Alliance
-  set. Read these first — they are authoritative and local.
-- RFCs and public specs: fetch them (`WebFetch` on `rfc-editor.org`, `WebSearch` for the current
-  revision). Check you are reading the revision that is current, and say which one you used.
-- Literature: for effects with a published magnitude or analytical model, find the source and use its
-  formula, not a remembered number.
+**Open the document. Find the clause. Read it.** A statement about a standard that you did not read
+in the document this session is worth nothing here — it is exactly the failure mode the panel exists
+to eliminate, and it is undetectable in a confident report.
+
+### Local standards cache
+
+`~/Documents/ieee802/` holds ~30 IEEE 802 PDFs — 802.1AS-2020, 802.1CB-2017, 802.1Q-2005/2018,
+802.1Qcr-2020, 802.1AC, 802.1AE, 802.1AR, 802.1X, 802.1D-2004, 802.11-1999/2007/2012/2016,
+802.11ac-2013, 802.15.4-2003, 802.15.6-2012, 802-2001/2014 and more. `~/Documents/10base-t1s/` holds
+the 10BASE-T1S set: the OPEN Alliance PMD/MAC-PHY interface specs, PLCA addendum and overview,
+topology discovery, and a real PHY datasheet. `ls` both before deciding a document is unavailable.
+
+### Working through a 2,000-page PDF
+
+Reading these page-by-page does not work. Extract once, then search — a 1,993-page standard extracts
+in about two seconds:
+
+```bash
+pdfinfo  ~/Documents/ieee802/802.1Q-2018.pdf | grep Pages
+pdftotext -layout ~/Documents/ieee802/802.1Q-2018.pdf <scratchpad>/802.1Q-2018.txt
+grep -n "8\.6\.8" <scratchpad>/802.1Q-2018.txt | head
+```
+
+The first hit is normally the table-of-contents line, which gives you the *printed* page number; the
+later hits are cross-references and the clause itself. Read the clause from the extracted text with
+the Read tool (`offset`/`limit`), or go back to the PDF for a page range when layout matters:
+`pdftotext -f 205 -l 208 doc.pdf -` (printed page ≠ PDF page — front matter shifts it, so adjust).
+`-layout` preserves tables, which matters for parameter and state tables. `mutool draw -F txt` is the
+fallback; `pdfgrep` is not installed. Keep the extracted `.txt` in the scratchpad and reuse it across
+gates instead of re-extracting.
+
+The Read tool also opens PDFs directly with a `pages` range (20 pages per call, and the parameter is
+mandatory above 10 pages) — use that when you need to *see* a figure or state diagram rather than
+read prose.
+
+### RFCs and other specs
+
+Fetch them: `WebFetch` on `rfc-editor.org` (`/rfc/rfcNNNN.txt` is the clean form), `WebSearch` to
+confirm which revision is current and whether it was obsoleted. Say which revision you used. For
+standards behind a paywall with no local copy, say so plainly rather than reconstructing them.
+
+### Literature
+
+For effects with a published magnitude or analytical model, find the paper and use *its* formula
+with *this scenario's* parameters. A remembered constant is not an anchor.
+
+### Verification flag — mandatory per item
+
+Every checklist item and every finding carries one of:
+
+- `verified: IEEE 802.1Q-2018 cl. 8.6.8, p. 199` — you opened it and read it this session
+- `UNVERIFIED — from memory` — you could not open a document that covers it
+
+**An `UNVERIFIED` item may never be a blocker.** Raise it as a question in your report instead, and
+say what document would settle it. This rule is what keeps a confident-sounding recollection from
+stopping a showcase.
 
 ## The literature anchor — your highest-value output
 
@@ -108,8 +156,27 @@ inconsistencies with the standard that do not create a wrong mental model.
 - Citing from memory. Every clause number gets checked in the actual document.
 - Proposing page text. Say what must be true; the author-expert writes it.
 
+## Your research becomes the author's source material
+
+At G1 and G2 you also write `research/standards.md` in the showcase workspace. **The author writes
+the page's protocol background from this file** — it is the only defence against a background section
+composed from memory. Judgements are not enough; it must carry the substance:
+
+- the mechanism list, each item with its normative force and verification flag
+- **verbatim quotes** of the clauses that matter, with their locators — the author may quote and
+  paraphrase from these, and from nothing else
+- the standard's own terminology: the correct name for every message, state, entity and parameter,
+  and the terms the reader will meet elsewhere and should not confuse with these
+- what problem the protocol solves and how it approaches it, in plain terms — the background the
+  "About X" section needs
+- the literature anchor: formula, parameter substitution, computed value, citation
+- what you could **not** verify, so the author knows not to write it
+
+Write it as source material for someone who has not read the standard, because that is exactly who
+reads it.
+
 ## Report
 
 Follow the report contract in the `inet-showcase-team` skill exactly: model self-report, verdict,
-coverage (including **which documents and revisions you consulted** and what you did not check),
-findings, contributions, **at least one thing to cut**, out-of-scope notes.
+coverage (including **which documents and revisions you actually opened**, and what you did not
+check), findings, contributions, **at least one thing to cut**, out-of-scope notes.

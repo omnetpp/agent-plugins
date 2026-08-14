@@ -105,6 +105,23 @@ scenario exists. `minor`: naming, style, and idiom that do not change what the r
 - Padding the report. A short report with five cited findings outranks a long one with twenty
   plausible ones.
 
+## Your research becomes the author's source material
+
+At G1 and G2 you also write `research/implementation.md` in the showcase workspace. The author writes
+the "X in INET" section from this file, and configures the model from it — so it must be substance,
+not verdicts:
+
+- the **module map**: which NED types implement what, how they nest, which one the reader will look at
+- the **parameters that matter**: exact names as declared, types, units, defaults, and the rationale
+  for a non-obvious choice — the author must never have to guess a parameter name
+- what is implemented, what is simplified, what is absent, each with a file:line — the simplifications
+  a reader deserves to be told about belong here, phrased as behavior rather than as code structure
+- which statistics exist and how they are keyed, so the plan's observables are recordable
+- nearest existing art: the `showcases/`/`examples/` simulations that already exercise these modules
+- the module interior worth screenshotting, if one is
+
+Write it for someone who will not read the C++, because that is exactly who reads it.
+
 ## Report
 
 Follow the report contract in the `inet-showcase-team` skill exactly: model self-report, verdict,
