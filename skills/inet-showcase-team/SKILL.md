@@ -69,6 +69,13 @@ because a blind re-read is more honest than a reviewer anchored on its own findi
 - Cross-examination **continues** a reviewer via `SendMessage`, because it must be able to hold or
   withdraw its own position. Full re-review **re-spawns** it.
 
+**Convene, or consult.** A *convene* is the full machinery: blind reports, the report contract, a
+merge. A **consult** is a targeted question to one or two agents — "which of these three topologies
+is expressible, and what does each cost?" — answered in a few lines, with no report file and no merge.
+Consults are what the G3 sub-steps run on; using the full panel for every design sub-decision would
+cost four reports to settle a question two seats can answer. Consult freely, but never let a consult
+stand in for the gate's review: the artifact still gets a blind panel before it is signed off.
+
 ## Workspace
 
 Everything lives outside the INET source tree, under the (untracked) plan folder:
@@ -77,7 +84,7 @@ Everything lives outside the INET source tree, under the (untracked) plan folder
 inet-master/plan/pending/showcase-<name>/
   brief.md                  G1 output — the approved topic brief          (author)
   plan.md                   claim, scenarios, observables, anchor, outline (author)
-  decisions.md              escalations, user rulings, dial settings       (coordinator)
+  decisions.md              user rulings U1–U8, escalations, dials, level  (coordinator)
   research/                 THE BRIEFING PACK — the author's only knowledge source
     standards.md            clause quotes, terminology, mechanisms, anchor (domain)
     practice.md             what real systems do, with sources            (industry)
@@ -144,6 +151,97 @@ expert back for more research — not something for the author to paper over.
 6. **Verify** — read the diff. Confirm each ordered item landed and nothing else moved. Record
    refusals in `decisions.md`.
 
+## Working with the user
+
+The user is not the approver at the end of the pipeline; they are in the room while the showcase is
+designed. The team's job is to bring them a **decision that is ready to be made** — researched,
+costed, with the panel's positions on it — not a status report and not an open question.
+
+### Involvement level
+
+Ask once, at the start of the job, and record it in `decisions.md`:
+
+- **full** — every checkpoint below, plus a digest after every gate
+- **key** *(default)* — U1, U2, U3+U4 batched, U6, U7, U8; digests elsewhere
+- **light** — U1, U2, U6, and U7 only when the claim or the model is in question
+
+The user can add or drop specific checkpoints at any time ("always ask me about topologies", "stop
+asking about configs"). Honour it for the rest of the job and write it down.
+
+### Checkpoints
+
+| # | Where | The decision |
+|---|---|---|
+| **U1** | G1, after the scores | **Topic and goals.** Which candidate, the claim in one sentence, the target reader, and the three detail dials. Everything downstream is derived from this, so it is the one checkpoint that is never skipped. |
+| **U2** | G2, after the gap table | **Feasibility verdict.** Proceed as-is / narrow the claim to X / implement the missing capability first / abandon. The gap table with both axes goes with it. |
+| **U3** | G3, before configs are written | **Network topology.** How many nodes, wired or wireless, which node types, what the picture looks like. Show 2–3 candidates as sketches; this drives every figure and every run, and it is expensive to change later. |
+| **U4** | G3, after the topology is fixed | **Simulation configurations.** The config matrix: what each `[Config]` varies, the baseline against which the effect is read, `sim-time-limit`, seeds and repetitions. |
+| **U5** | G3 end / G4 start | **Analysis plan.** What is measured and with which statistic, which evidence type carries each claim (chart, video, sequence chart, packet inspector, canvas screenshot), and which artifact is the hero figure. |
+| **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor. This is the existing Phase 1 confirmation. |
+| **U7** | G4 | **Behavioral verdict.** Whether the run demonstrates the claim; authorization for a bounded tuning loop; any claim change or suspected model bug. |
+| **U8** | G5 | **Ship.** Remaining `minor` items, reviewer-versus-author disagreements, and the decision to move the plan to `plan/done/`. |
+
+U3, U4 and U5 are the ones the pipeline previously swallowed inside a single "here is the plan" gate.
+They are separate because they are decided in sequence — a topology choice constrains the configs,
+which constrain what can be measured — and presenting them together forces the user to review three
+coupled decisions at once, after all three have already been made.
+
+### When to stop and ask, outside the checkpoints
+
+**Ask** when the decision changes what the showcase *is* rather than how it is built; when two options
+are both defensible and the panel splits on taste or scope rather than on evidence; when reversing it
+later would mean re-running or re-capturing; or when the user knows something the team cannot — house
+style, what the project wants to ship, what a colleague already covered, an upcoming release theme.
+
+**Do not ask** when the evidence settles it (the code does X, the standard requires Y), when a
+convention in `inet-showcase-creator` already covers it, when it is cheap to reverse, or when the
+user has already ruled on it — check `decisions.md` first. Re-asking a settled question is how a
+collaborator becomes a burden.
+
+### How to ask
+
+- **Batch related decisions** into one checkpoint. Trickling questions one at a time is the fastest
+  way to make the user stop reading them.
+- **Options, not an open question.** Two to four concrete candidates, each with its consequence and
+  cost, and **your recommendation first**. "What topology would you like?" wastes the team's work;
+  "here are three topologies, the panel splits on the second, I recommend the first because …" does not.
+- **Use `AskUserQuestion` with previews** when the options are visual or structural — an ASCII
+  topology sketch, a config matrix, a section outline. Previews are monospace markdown and render
+  side by side, which is exactly right for comparing topologies:
+
+  ```
+  Option A — single AP, 5 stations        Option B — two APs, roaming
+     sta[0..3] ))) ap ((( sta[4]             sta ))) ap1 … ap2
+      54 Mbps        6 Mbps                    moves left → right
+  ```
+
+  Constraints: up to 4 questions per call, 2–4 options each, previews only on single-select.
+- **Show the disagreement.** When the panel split, say who wanted what and why — that is the most
+  useful thing you can hand over, and it is what makes the ruling informed rather than a coin flip.
+- **Always offer a hand-back.** "Go with your recommendation" must be one of the choices; the user
+  should be able to stay out of a decision they do not care about without a round trip.
+
+### Digests
+
+At every gate where no checkpoint fires, post a short digest — five to ten lines: what the panel
+found, what you ruled, what changed, and what is next. It exists so the user can intervene anywhere,
+not only where the design predicted they would want to. Keep it to that length; a digest that becomes
+a report gets skipped, and then the checkpoints get skipped with it.
+
+### Asking the user to contribute
+
+Some things only the user can supply: a screen recording or a measurement from real hardware, a
+paywalled standard, a design intent behind an existing model, a judgement call about what INET
+should present. Ask for these as soon as the need appears — they have lead time, and discovering the
+need during G5 costs a full round. State what you need, why, and what happens if it does not arrive.
+
+### Rulings are binding
+
+Every user decision goes into `decisions.md` with its date and the options that were on the table. A
+ruling constrains the rest of the job: it is not re-decided, and a panelist who later disagrees with
+it escalates rather than argues. That is the whole point of asking — a decision that gets quietly
+re-opened two gates later was never worth the interruption.
+
 ## Convening protocol
 
 Each reviewer gets, in its prompt:
@@ -158,6 +256,11 @@ Each reviewer gets, in its prompt:
 6. **Persona parameters** where the role takes them: which academic persona, which industry segment.
 7. **At a research gate**, the path of its `research/*.md` file and the instruction that the research
    comes before the opinion — the standard opened, the search run, the code read.
+8. **The user's rulings so far**, as a list of constraints — "5-node topology, chosen at U3";
+   "standards detail = 4". Not the reasoning behind the artifact, just what is settled. Reviewers who
+   do not know what was ruled spend findings re-opening it. Tell them the other half too: a ruling
+   they consider actively harmful is escalated to the user, never argued at the author — so the
+   constraint does not buy silence, only efficiency.
 
 They must **not** get: the authoring rationale, your reasoning, prior conversation, or — in round 1
 — any other reviewer's report. The blindness is what makes the reports worth reading; a reviewer
@@ -237,8 +340,12 @@ the INET expert maps the modules into `research/implementation.md`. A G1 score o
 work is a guess, and a topic chosen on guesses costs a full G2 to discover.
 
 You merge, then order the author to write `brief.md`: claim candidate, target audience, why this
-topic now, top three risks, nearest existing art. **The user picks.** Do not proceed on a topic the
-user has not chosen.
+topic now, top three risks, nearest existing art.
+
+→ **Checkpoint U1.** The user picks the topic, fixes the claim in one sentence, names the target
+reader, and sets the three detail dials. Present the candidates with each panel's score and its top
+risk. Nothing proceeds on a topic the user has not chosen, and the dials set here bound every later
+"more detail" argument — so get them explicitly, do not infer them.
 
 ### G2 — Feasibility *(Phase 0.5)*
 
@@ -261,11 +368,52 @@ fine".
    0.5 menu (*suitable as-is* / *suitable with claim narrowed to X* / *not suitable — implementation
    needs work first*) and hand it to the user. "Document the limitations openly" is not a verdict.
 
-### G3 — Plan review *(Phase 1 / 1.5)*
+→ **Checkpoint U2.** The gap table with both axes, the verdict, and what each option costs. The user
+proceeds, narrows the claim, orders the implementation work first, or abandons.
 
-The gate this team exists for. The author writes `plan.md`: the claim, the scenario and config
-matrix, the **expected observables** (falsifiable, tied to a time and place), the literature anchor,
-the evidence types, the doc outline, and the detail dials.
+### G3 — Design and plan review *(Phase 1 / 1.5)*
+
+The gate this team exists for, and the one where the user is most involved. It is a **sequence**, not
+a single review: each decision narrows the next, so each is taken — and checkpointed — in order,
+before the thing it constrains exists.
+
+#### G3a — Topology → U3
+
+Consult the INET expert (which topologies are expressible, what the nearest existing art uses) and
+the industry expert (which map to a real deployment) for **2–3 candidates**, not one. Have the author
+sketch each. Then present them: node count and types, wired or wireless, what the reader will see in
+the network screenshot, and what each makes easy or impossible to show.
+
+→ **Checkpoint U3.** Use `AskUserQuestion` with an ASCII sketch per option. This choice drives every
+figure, every run and every screenshot in the showcase; changing it after G4 means recapturing
+everything.
+
+#### G3b — Configuration matrix → U4
+
+On the chosen topology, the author drafts the `[Config]` matrix: what each config varies, which one
+is the baseline the effect is read against, `sim-time-limit`, seeds and repetitions. Consult the
+analyst for runtime and result size per config, and the domain expert on whether the parameter values
+are representative.
+
+→ **Checkpoint U4.** Present the matrix as a table with the cost per config. The usual real question
+here is how many configs earn their place — every extra config is another run, another figure, and
+another section the reader walks through.
+
+#### G3c — Analysis plan → U5
+
+What is measured, with which statistic and at which key; which evidence type carries each claim
+(chart, video, sequence chart, packet inspector, canvas screenshot); which artifact is the **hero
+figure** on the first screen. Consult the analyst on extractability and the university expert on
+which evidence would actually teach.
+
+→ **Checkpoint U5.** Present each claim with the evidence proposed for it. A claim with no evidence
+type, or an evidence type carrying no claim, is the thing to surface here rather than after the runs.
+
+#### G3d — Full plan review
+
+Now the author assembles `plan.md` — claim, topology, config matrix, the **expected observables**
+(falsifiable, tied to a time and place), the literature anchor, evidence types, doc outline, dials —
+and the full panel reviews it.
 
 All four reviewers, blind, in parallel, plus the analyst on measurement feasibility. Per-seat
 questions:
@@ -285,9 +433,14 @@ Everyone proposes at least one concrete contribution with its cost, and **everyo
 cut requirement is structural: four lenses grow a page monotonically otherwise, and wall-of-text is
 the dominant defect across the existing corpus.
 
-Merge, resolve, escalate, order the author to revise `plan.md`, then take it to the user for the
-Phase 1 confirmation. If the panel introduced a new mechanism or capability dependency, reopen G2 for
-those items before summarizing.
+Merge, resolve, escalate, order the author to revise `plan.md`. If the panel introduced a new
+mechanism or capability dependency, reopen G2 for those items before summarizing. If a finding
+contradicts what the user chose at U3–U5, it does not go to the author — it goes back to the user
+with what the panel now knows (ladder rung 0).
+
+→ **Checkpoint U6.** Plan sign-off: the whole `plan.md`, the expected observables, the literature
+anchor, and what the panel changed since U3–U5. This is the existing Phase 1 confirmation, and
+nothing is built before it.
 
 ### G4 — Behavioral gate *(Phase 2.7)*
 
@@ -305,10 +458,14 @@ the wrong behavior and noticing later.
 - **INET** — only when a magnitude is implausible or an observable is absent: is this a config problem
   or a model problem?
 
-**You issue the verdict.** Only *demonstrates the claim cleanly* unlocks artifact capture. *Needs
-tuning* authorizes the analyst for a bounded loop — parameter values only, representative ranges only,
-two or three rounds — then it comes back. *Claim must change* and *something is wrong in the model*
-both exit to the user.
+**You issue the verdict.** Only *demonstrates the claim cleanly* unlocks artifact capture.
+
+→ **Checkpoint U7.** Bring the observable classification table, the measured-versus-anchor comparison,
+and the proposed verdict. *Needs tuning* needs the user's authorization for the bounded loop — say
+which parameters would move, by how much, and why that is still representative. *Claim must change*
+and *something is wrong in the model* are the user's to rule on, always, at any involvement level.
+A verdict of *demonstrates cleanly* can be reported in the digest at the **light** level; the other
+three never can.
 
 ### G5 — Final doc review *(Phase 3)*
 
@@ -328,6 +485,10 @@ Order every `blocker` and `major`; collect `minor` and order them once at the en
 revised doc. Stop when a round surfaces no blockers or majors, or after **3 rounds**. **On recurrence**
 — a reviewer re-flags something already addressed — stop and hand it to the user; that is
 author-versus-reviewer disagreement, a human call, not something to churn on.
+
+→ **Checkpoint U8.** Ship: the remaining `minor` items with your recommendation on each, every
+author-versus-reviewer disagreement, and anything the panel wanted that the budget dropped. The user
+decides what ships, what becomes a follow-up, and when the plan moves to `plan/done/`.
 
 ## Merge protocol
 
@@ -366,6 +527,10 @@ prose, the item is under-specified — sharpen it.
 
 Apply in order. Stop at the first rung that settles it.
 
+0. **A user ruling is settled.** Check `decisions.md` before anything else. A finding that contradicts
+   a ruling is not resolved by you and not passed to the author: it goes back to the user as an
+   escalation, with what the reviewer now knows that was not on the table when they ruled. Everything
+   below applies only to what the user has not already decided.
 1. **Truth first.** The INET expert on what the code does and the domain expert on what the standard
    says both outrank pedagogy and marketability. Code-versus-standard is *not* a conflict: report both
    plainly ("INET does X; the standard requires Y") and route it through the Phase 0.5 machinery —
@@ -431,6 +596,16 @@ withdrawn in practice; treat it as such and say so in `merge.md`.
   Results, produces speculation. Have the artifact ready first.
 - **Running past the cap.** Three rounds, then the user decides.
 - **Losing the trail.** Every rejection needs a recorded reason.
+- **Deciding a scope question silently.** Topology, config matrix, evidence types and the claim are
+  the user's calls. Making them yourself and then presenting the result as a plan is the failure this
+  team's checkpoints exist to prevent.
+- **Asking without doing the work first.** A checkpoint arrives with the research done, options
+  costed, the panel's split stated, and your recommendation. "What would you like?" hands the user
+  the team's job.
+- **Re-asking what is already in `decisions.md`.** Read it before every checkpoint.
+- **Batching a checkpoint with the thing it constrains.** Topology, configs and analysis are decided
+  in that order because each narrows the next; presenting all three at once means all three were
+  already decided by you.
 
 ## Output
 

@@ -29,6 +29,10 @@ disagreements end*.
 | D5b | **Reviewers are report-only**: each writes exactly one file, its own report | No concurrent-edit conflicts; blindness stays intact |
 | D5c | Producers are **briefed and persistent** (continued via `SendMessage`); reviewers are **blind and re-spawned fresh** each round | The page keeps one voice and the analyst keeps its run history, while a blind re-read stays honest |
 | D5d | Producers receive a **change order**, never the raw review reports | The conflicts are already resolved; four raw voices pull the page apart and re-litigate settled rulings |
+| D7 | **The user is a participant, not an approver.** Eight named checkpoints (U1–U8), with topology, config matrix and analysis plan split out as separate decisions inside G3 | The single "here is the plan, confirm" gate presented three coupled decisions at once, after all three had already been made. Each narrows the next, so each is checkpointed before the thing it constrains exists |
+| D7a | Involvement level (**full / key / light**) chosen at the start, plus per-checkpoint overrides; a digest at every gate that has no checkpoint | A fixed set is too much for a small showcase and too little for a contentious one. The digest keeps intervention possible everywhere, not only where the design predicted it |
+| D7b | **Consult vs convene.** A consult is a targeted question to one or two agents, answered in a few lines with no report file | Running the full panel on every design sub-decision costs four reports to settle what two seats can answer |
+| D7c | User rulings are **binding** — ladder rung 0. A finding that contradicts one is escalated back to the user, never passed to the author | A ruling that gets quietly re-opened two gates later was never worth the interruption |
 | D6a | **The briefing pack.** G1/G2 produce `research/{standards,practice,implementation,measurements}.md`; the author writes the page out of those files and nothing else | Otherwise the author — a fresh agent with no topic knowledge — writes the protocol background from memory, which is fluent, plausible and unverifiable. Research artifacts go to the author; review reports never do |
 | D6b | The domain expert **opens the actual standard** (local `~/Documents/ieee802` cache, `pdftotext` extract-then-grep), and flags every item `verified: <doc> cl. <n>` or `UNVERIFIED — from memory`; an UNVERIFIED item may not be a blocker | A confident recollection is indistinguishable from a read clause in a written report, and it can otherwise stop a showcase |
 | D6c | The industry expert **searches before it opines**, every gate, with URLs per claim | The field moves; recollection describes the industry of some years ago and is confidently wrong about who ships what |
@@ -77,13 +81,32 @@ memory, it writes from `research/standards.md` (verbatim clause quotes), `resear
 `research/measurements.md` (every number with its provenance). Anything the pack does not support is
 a marked gap and a request back to the relevant expert — never a smoothed-over sentence.
 
+## User checkpoints
+
+| # | Where | The decision |
+|---|---|---|
+| **U1** | G1 | Topic, claim, target reader, the three detail dials — never skipped |
+| **U2** | G2 | Feasibility verdict: proceed / narrow / implement first / abandon |
+| **U3** | G3a | **Network topology** — 2–3 candidates as ASCII sketches via `AskUserQuestion` |
+| **U4** | G3b | **Configuration matrix** — what each config varies, the baseline, limits, seeds, cost per config |
+| **U5** | G3c | **Analysis plan** — what is measured, which evidence type carries each claim, the hero figure |
+| **U6** | G3d | Plan sign-off (the existing Phase 1 confirmation) |
+| **U7** | G4 | Behavioral verdict; tuning authorization; claim changes and suspected model bugs |
+| **U8** | G5 | Ship: remaining minor items, unresolved disagreements, move to `plan/done/` |
+
+Outside the checkpoints the rule is: **ask** when the decision changes what the showcase *is*, when
+the panel splits on taste rather than evidence, when reversing it later means re-running or
+re-capturing, or when the user knows something the team cannot. **Do not ask** when the evidence
+settles it, when a convention covers it, when it is cheap to reverse, or when `decisions.md` already
+holds the answer.
+
 ## Gate map
 
 | Gate | `inet-showcase-creator` phase | Producer | Reviewers | Coordinator's job |
 |---|---|---|---|---|
 | **G1 topic brief** | (new — feeds Phase 0) | author writes `brief.md` | all four score the candidate; analyst does a cheap build/runtime check | Merge, order the brief, take it to the user. **The user picks.** |
 | **G2 feasibility** | Phase 0.5 | — | domain writes the standard checklist **blind to the code**; university adds "what every textbook shows"; industry adds "what every real product does"; INET derives the capability list and grades all three against the C++ | Build the two-axis gap table, issue the verdict menu, hand back to user |
-| **G3 plan review** | Phase 1 / 1.5 | author writes `plan.md` | all four, blind, parallel + analyst on measurement feasibility | Merge, resolve, escalate, order the revision; user confirms |
+| **G3 design + plan review** | Phase 1 / 1.5 | author sketches topologies (a), drafts the config matrix (b) and the analysis plan (c), then assembles `plan.md` (d) | consults at a–c; all four blind + analyst at d | Run the design sequence through **U3, U4, U5**; then merge, resolve, escalate, order the revision; **U6** signs off |
 | **G4 behavioral gate** | Phase 2.7 | analyst runs and classifies | domain checks the anchor and polices honest tuning; university judges legibility; industry judges representativeness; INET called in on absent observables and implausible magnitudes | Issue the 2.7 verdict; only *demonstrates the claim cleanly* unlocks artifact capture; authorize bounded tuning |
 | **G5 final doc review** | Phase 3 | author revises the page | university runs `review-as-user`; INET and domain split `review-as-pro` (code-truth vs standard-truth); industry reviews applicability; analyst runs the claim-to-evidence traceability audit | Triage, order, re-review; cap 3 rounds; stop on recurrence |
 
