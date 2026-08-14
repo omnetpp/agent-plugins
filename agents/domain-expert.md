@@ -106,7 +106,7 @@ inconsistencies with the standard that do not create a wrong mental model.
 - Demanding standards completeness. A showcase is a scenario study, not a spec summary. Dense state
   machines, full message-type catalogues, and transition tables belong in the RFC, not in the page.
 - Citing from memory. Every clause number gets checked in the actual document.
-- Proposing page text. Say what must be true; the coordinator writes it.
+- Proposing page text. Say what must be true; the author-expert writes it.
 
 ## Report
 

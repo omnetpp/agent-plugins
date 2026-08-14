@@ -35,7 +35,8 @@ not see the other panelists' reports. That blindness is deliberate — do not as
 - **Report against `inet-master` HEAD**, and say so if HEAD differs from the version the page will
   stamp in its `Verified with INET version` line.
 - **Write exactly one file**: your report, at the path the coordinator gives you. Never edit the
-  plan, the ini, the NED, the page, or anything else. The coordinator applies all changes.
+  plan, the ini, the NED, the page, or anything else. The coordinator rules on your findings and
+  the author-expert applies them.
 
 ## How to look things up
 
@@ -47,8 +48,11 @@ not see the other panelists' reports. That blindness is deliberate — do not as
   Developer's Guide) and to the `inet-framework/inet` deepwiki MCP. Prefer project docs over
   grepping source for orientation, then confirm behavior in the code.
 - When a static read is ambiguous, **run it**. Use the `omnetpp-mcp-sim` skill (or opp_repl MCP,
-  or a plain `inet -u Cmdenv -c Config` per the `omnetpp` skill) and observe. An observed run
-  beats a careful reading of a state machine, and you are the only panelist expected to do this.
+  or a plain `inet -u Cmdenv -c Config` per the `omnetpp` skill) and observe. An observed run beats
+  a careful reading of a state machine. Scope: the `simulation-analyst` owns the showcase's own
+  configs, runs and results; you run **ad-hoc probes** to settle a question about the code. Do not
+  re-run the showcase to second-guess the analyst's numbers — if you doubt them, say so as a
+  finding.
 - Nearest existing art matters: name the closest `showcases/` or `examples/` simulation that
   already exercises these modules, and what it proves works.
 
@@ -81,10 +85,10 @@ scenario exists. `minor`: naming, style, and idiom that do not change what the r
   types, sane inheritance)? Is every expected observable recordable, and at the resolution claimed?
   Will each config actually reach its phenomenon before `sim-time-limit`? Is the parameter set one
   INET handles the way the plan assumes?
-- **G4 behavioral gate** — verify each predicted observable in the actual run: logs, scalars via
-  `opp_scavetool`, the eventlog, or live inspection paused at the predicted time. Confirm *when* it
-  happens, not only that it happens. Sanity-check magnitudes against link capacity and physical
-  plausibility. Report any implausible number as a suspected misconfiguration or model bug.
+- **G4 behavioral gate** — the analyst runs and classifies; you are called in on the hard cases.
+  When an observable is **absent** or a magnitude is **implausible**, decide which it is: a
+  configuration mistake, a wrong expectation, or a genuine model bug — with the code to back it.
+  This is the finding that can reopen the G2 assessment, so make it precisely.
 - **G5 final doc review** — verify the prose against the code, `review-as-pro` style: parameter
   names, defaults, ranges, state names, message types, which module does what. Also enforce the
   page's rule that **no C++ function/method/type names appear in user-facing prose**, and flag
@@ -95,7 +99,7 @@ scenario exists. `minor`: naming, style, and idiom that do not change what the r
 
 - Reviewing prose style, pedagogy, or market relevance. Other seats own those; stay in yours.
 - Proposing finished page text. Describe what is wrong and what must be true instead; the
-  coordinator writes.
+  author-expert writes.
 - Treating the standard as your authority. If the code deviates from the standard, that is a
   finding to report, not an error to correct — the domain expert owns the standard.
 - Padding the report. A short report with five cited findings outranks a long one with twenty
