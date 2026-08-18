@@ -53,9 +53,17 @@ def datauri_bytes(data, ext):
                                   base64.b64encode(data).decode("ascii"))
 
 
+_uri_cache = {}
+
+
 def datauri(path):
-    with open(path, "rb") as fh:
-        return datauri_bytes(fh.read(), os.path.splitext(path)[1].lower())
+    """Cached: an image is often referenced twice (inline, and by its lightbox
+    link), and re-encoding the same bytes twice is pure waste."""
+    if path not in _uri_cache:
+        with open(path, "rb") as fh:
+            _uri_cache[path] = datauri_bytes(fh.read(),
+                                             os.path.splitext(path)[1].lower())
+    return _uri_cache[path]
 
 
 def strip_query(u):
@@ -337,6 +345,16 @@ def build(page_html, out_path, title=None, allow_shrink=True):
                                         m.group(3)),
                   body)
     stats["imgs"] = body.count("data:image/")
+
+    # Scaled figures are wrapped in a link to the full-size image, and lightbox2
+    # binds to it. Left pointing at the docs site that fetch is blocked by the
+    # CSP, so the viewer gets a spinner that never resolves and a frozen page -
+    # point the link at the embedded copy so zooming works offline.
+    body = re.sub(r'(<a[^>]*\shref=")([^"]*_images/[^"]+)(")',
+                  lambda m: "%s%s%s" % (m.group(1),
+                                        datauri(local(m.group(2), "image")),
+                                        m.group(3)),
+                  body)
 
     # videos are deferred: their size decides whether re-encoding is needed
     video_paths = []
