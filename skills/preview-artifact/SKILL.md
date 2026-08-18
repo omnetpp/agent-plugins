@@ -64,11 +64,14 @@ Do not "simplify" these away — each one was a real failure:
 - **Inert download links.** Artifact viewers are never granted download
   permission, so `:download:` targets are repointed at GitHub and `download=`
   is dropped. Leaving them trips a publish warning.
-- **Lightbox spins forever.** A scaled figure is wrapped in a link to the
-  full-size image and lightbox2 binds to it. Pointed at the docs site that
-  fetch is CSP-blocked, so clicking a figure gives a spinner that never
-  resolves and a frozen page. The link is repointed at the embedded copy, so
-  zoom works offline.
+- **Figure zoom links must be removed, not repointed.** A scaled figure is
+  wrapped in a link to the full-size image, which lightbox2 binds to. Neither
+  target works: left pointing at the docs site the fetch is CSP-blocked, so
+  clicking gives a spinner that never resolves; pointed at the embedded `data:`
+  URI the viewer refuses the link (a `data:` href is a phishing vector) and
+  replaces the whole figure — the image with it, since the `<img>` is inside the
+  anchor — with a "This content is blocked" box. The wrapper is dropped, so the
+  figure renders and clicking it does nothing.
 
 ## Provenance stamp
 

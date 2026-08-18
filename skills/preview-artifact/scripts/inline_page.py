@@ -331,6 +331,20 @@ def build(page_html, out_path, title=None, allow_shrink=True):
 
     body = re.sub(r'<img alt="([^"]*/_images/[^"]+)"', fix_alt, body)
 
+    # A scaled figure is wrapped in a link to the full-size image, which
+    # lightbox2 then binds to. Neither possible target works in an artifact:
+    # left pointing at the docs site the fetch is CSP-blocked, so clicking gives
+    # a spinner that never resolves; pointed at the embedded data: URI the
+    # viewer refuses the link outright (a data: href is a phishing vector) and
+    # replaces the whole figure - image included, since the <img> is inside the
+    # anchor - with a "This content is blocked" box. Drop the wrapper instead:
+    # the figure renders, and clicking it simply does nothing.
+    body, unwrapped = re.subn(
+        r'<a[^>]*href="[^"]*_images/[^"]*"[^>]*>(.*?)</a>', r"\1", body, flags=re.S)
+    if unwrapped:
+        notes.append("%d figure zoom link(s) removed - not expressible in an artifact"
+                     % unwrapped)
+
     def local(url, kind):
         path = os.path.normpath(os.path.join(page_dir, strip_query(url)))
         if not os.path.isfile(path):
@@ -345,16 +359,6 @@ def build(page_html, out_path, title=None, allow_shrink=True):
                                         m.group(3)),
                   body)
     stats["imgs"] = body.count("data:image/")
-
-    # Scaled figures are wrapped in a link to the full-size image, and lightbox2
-    # binds to it. Left pointing at the docs site that fetch is blocked by the
-    # CSP, so the viewer gets a spinner that never resolves and a frozen page -
-    # point the link at the embedded copy so zooming works offline.
-    body = re.sub(r'(<a[^>]*\shref=")([^"]*_images/[^"]+)(")',
-                  lambda m: "%s%s%s" % (m.group(1),
-                                        datauri(local(m.group(2), "image")),
-                                        m.group(3)),
-                  body)
 
     # videos are deferred: their size decides whether re-encoding is needed
     video_paths = []
