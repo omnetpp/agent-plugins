@@ -33,7 +33,7 @@ Loading this skill makes **you** the coordinator. You decide, you do not produce
 > to the producers as their build reference. This file only adds who does what, when, and how
 > conflicts end.
 
-Work in a dedicated worktree off `inet-master`, not in the main checkout.
+Work in a dedicated worktree off INET's `master` branch, not in the main checkout.
 
 ## Roster
 
