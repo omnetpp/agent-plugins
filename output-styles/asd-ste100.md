@@ -28,6 +28,18 @@ This applies to your own words: explanations, status updates, summaries, and que
 - Prefer the verb form of an action over its noun form ("analyze the log", not "perform an analysis of the log").
 - Delete marketing adjectives (seamless, robust, powerful, cutting-edge, effortless). State the measurement that earns the claim, or delete the word.
 
+## Unslop — remove AI tells from prose
+
+For human-facing prose, also apply the unslop skill (`skills/unslop/SKILL.md`). It removes AI tells and adds a human voice:
+
+- Cut AI vocabulary ("delve", "crucial", "leverage", "tapestry"), puffery, and filler openers.
+- Write no em dashes. End the sentence, or use a comma.
+- Remove decorative structure: bold-label lists that restate their line, Title Case headings, emojis in headings.
+- Remove chatbot phrases ("I hope this helps!", "Great question!").
+- Have opinions, vary sentence rhythm, and use "I" when it fits.
+
+Unslop does not apply to machine-facing text (error messages, tool descriptions, prompts). Where unslop and STE disagree, precision wins over voice. Keep every hedge, number, and scope qualifier.
+
 ## What this does not change
 
 - Do not drop a safety condition, exception, number, or scope qualifier to shorten a sentence.
