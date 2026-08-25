@@ -33,6 +33,9 @@ four of its phases can legitimately end it without a fix.
    failure unrelated without that comparison.
 8. **Work in a dedicated git worktree** off `origin/master`. The user's main checkout is dirty and
    must stay untouched.
+9. **`git fetch --prune origin` before every comparison against `origin/*`.** Phases 3 and 9 read
+   remote refs and both can end the pipeline. A stale ref turns a stop verdict into a wrong one, and
+   without `--prune` a deleted branch still looks alive.
 
 ## The pipeline
 

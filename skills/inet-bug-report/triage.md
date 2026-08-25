@@ -27,7 +27,7 @@ lists — close the gaps in this order, and only then start phase 1:
 **The worktree.** The user's main checkout is dirty and must stay untouched.
 
     cd /home/user/inet
-    git fetch origin
+    git fetch --prune origin          # always --prune, see phase 3
     git worktree add ../inet-bug-<slug> -b topic/gy/<slug> origin/master
 
 Note the exact commit you branched from. Build there before you start changing anything, so that a
@@ -74,7 +74,16 @@ deliberate simplification the model documents elsewhere. Many INET models abstra
 ## Phase 3 — is it still on master, and is a fix already sitting somewhere?
 
 Two questions. The first is answered by running the code, the second only by searching history.
+Both read `origin/*` refs, so **fetch immediately before this phase**, even if phase 0 already
+fetched. This phase produces stop verdicts, and a stop verdict computed from stale refs is wrong in
+the expensive direction: you tell the user "still broken on master" about a commit that was fixed
+this morning, or "a fix exists on branch X" about a branch that was deleted after being merged.
 
+Always `--prune`. Without it a deleted remote branch keeps its remote-tracking ref forever, and
+`for-each-ref` reports it as live — which is exactly how the branch scan below invents a fix that no
+longer exists anywhere.
+
+    git fetch --prune origin
     git -C <worktree> log --oneline origin/master -5
     # rebuild and rerun the reproduction on origin/master
 
@@ -97,7 +106,7 @@ one, so phase 4 cannot see it. INET has hundreds of live topic branches. You can
 rebuild them, and you do not have to: the pickaxe over `--all` searches every local and remote
 branch at once.
 
-    git fetch origin
+    git fetch --prune origin
     git log --all --oneline -S '<the exact broken expression>' -- <path>
     git log --all --oneline -G '<regex for the broken line>'   -- <path>
     git log --all --oneline --grep '<identifier>'

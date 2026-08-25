@@ -3,6 +3,11 @@
 # Usage:  search-github.sh <term> [<term> ...]        (run inside the git checkout)
 set -u
 [ $# -ge 1 ] || { echo "usage: $0 <term> [<term> ...]" >&2; exit 2; }
+# gh and git both resolve the repository from the cwd: run this INSIDE the checkout under
+# investigation, not inside the skill directory.
+git rev-parse --verify -q origin/master >/dev/null || {
+    echo "no origin/master in $(pwd) -- run this inside the project you are investigating." >&2
+    exit 1; }
 
 for term in "$@"; do
     echo "=============================================================="
