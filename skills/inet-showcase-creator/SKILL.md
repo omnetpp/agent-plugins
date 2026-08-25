@@ -487,6 +487,16 @@ Do not modify files outside the new showcase except required `index.rst` wiring.
 - Abstract models (state machines, protocol layers) need explicit grounding in previously described concrete steps
 - For each config/scenario, identify the primary reader question and answer it explicitly in the Results section (e.g. "does the client get the same IP after reboot?")
 
+### Simple technical English
+
+The audience is international, and most of it reads English as a second or third language. Write so that a competent engineer who is tired and not a native speaker gets each sentence on the first pass.
+
+- **One idea per sentence.** Aim under 25 words. If a sentence needs a comma-spliced clause to survive, it is two sentences.
+- **Active voice, present tense.** "The switch drops the frame", not "the frame will have been dropped by the switch".
+- **Plain verbs.** Use, send, drop, wait, grow, shrink — not utilize, transmit-a-message-to, experience-a-loss-of.
+- **No noun stacks.** Three nouns in a row is the limit: "queue length threshold" is fine, "downlink transmission opportunity duration limit" is not — rewrite it with a preposition.
+- **One term per concept, fixed at first use.** Never vary a term for elegance. Variety is the enemy of comprehension: if it is a "stream" in section 2, it is not a "flow" in section 5.
+
 ### Clarity and precision
 
 - **Qualify ambiguous nouns on first use**: "group" → "multicast group", "entry" → "entry in the router's forwarding table". Every noun needs enough context to be unambiguous at its first appearance.
