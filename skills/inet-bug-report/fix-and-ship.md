@@ -1,42 +1,50 @@
-# Fix and ship: phases 5 to 10
+# Fix and ship: phases 6 to 10
 
-## Phase 5 — write the fix
+## Phase 6 — write the fix in worktree B, build, test against the baseline
 
-- **Fix the cause, not the symptom.** If the report's *Candidate fix* only suppresses the crash,
-  say so and decide deliberately. A defensive guard is legitimate when the caller is allowed to see
-  transient state; it is wrong when the state should never have been transient.
-- **One commit per independent defect.** If two defects have to land together to change anything
+Worktree B is already at `origin/master`, on branch `topic/<initials>/<slug>`, built, and its test
+baseline is recorded. Work there. The pull request targets master, so the fix is cut from master,
+never from the reported hash.
+
+### Writing it
+
+- **Fix the cause, not the symptom.** If the report's candidate fix only suppresses the crash, say
+  so and decide deliberately. A defensive guard is right when the caller is allowed to see transient
+  state; it is wrong when the state should never have been transient.
+- **One commit per independent defect.** If two defects must land together to change anything
   observable, that is fine — two commits, one pull request, and the pull request explains why
   neither works alone.
-- **Keep the diff minimal.** No drive-by refactoring, no reformatting, no renaming. Anything you
-  noticed but did not fix belongs in *Not addressed here*, or in its own issue.
-- **Match the surrounding code.** Follow the conventions in the [inet](../inet/SKILL.md) skill for
-  naming, Doxygen comments and display strings.
+- **Keep the diff minimal.** No drive-by refactoring, reformatting or renaming. Anything you noticed
+  but did not fix belongs in *Not addressed here*, or in its own issue.
+- **Match the surrounding code.** Follow the [inet](../inet/SKILL.md) skill for naming, Doxygen
+  comments and display strings.
 - Commit subjects use the repository's own form: `<area>: <verb phrase>`, area lowercase, for
   example `mipv6: use hasActiveBinding() to detect a first home registration`. Never add
   Co-Authored-By or any other attribution trailer.
 
-## Phase 6 — test, and separate regressions from pre-existing failures
+### Testing it
 
-Build first, then run the suites that cover the area you touched. Ask the user for the exact scope
-if it is not obvious; the usual pair is:
+Rebuild, then rerun exactly the suites you baselined in phase 3 and **diff against the saved
+output**:
 
-    cd tests/fingerprint && ./fingerprinttest -d -m <area>
-    cd tests/module     && inet_run_module_tests -f <Area>
+    cd tests/fingerprint && ./fingerprinttest -d -m <area>   | tee <scratch>/after-fingerprint.txt
+    cd tests/module      && inet_run_module_tests -f <Area>  | tee <scratch>/after-module.txt
+    diff <scratch>/baseline-fingerprint.txt <scratch>/after-fingerprint.txt
+    diff <scratch>/baseline-module.txt      <scratch>/after-module.txt
 
-**The rule that matters most:** a failing test is a regression until you have proved otherwise, and
-the only proof is reproducing the same failure on pristine master. Build unmodified `origin/master`
-in a second worktree, run the same test, and compare. State the result explicitly in the pull
-request: "fails identically on unmodified master, therefore pre-existing and out of scope". Never
-write that sentence without having run it.
+Every difference is caused by your change until you show otherwise; every failure present in the
+baseline is pre-existing and out of scope. That is what the baseline buys you: the pull request
+sentence *"fails identically on unmodified master, so it is pre-existing and out of scope"* is now
+backed by a diff, and you never have to rebuild master to write it.
 
-If fingerprints change, justify each change **per ingredient**, tying the moved ingredient to the
-code change. Graphical (`tyf`) fingerprints are unreliable and often already stale; when your
-re-recording absorbs a stale value, say so. The [inet-branch-cleanup](../inet-branch-cleanup/SKILL.md)
-skill has the full fingerprint discipline.
+If fingerprints move, justify each change **per ingredient**, tying the moved ingredient to the code
+change. Graphical (`tyf`) fingerprints are unreliable and often already stale; when a re-recording
+absorbs a stale value, say so. The [inet-branch-cleanup](../inet-branch-cleanup/SKILL.md) skill has
+the full fingerprint discipline.
 
-Also produce the **before/after evidence** that the fix works: the measurement, the log excerpt or
-the run that used to crash and now does not. This is what the pull request is built around.
+Also produce the **before/after evidence** that the fix works: the run that used to crash and now
+does not, the measurement that changed, the log excerpt. Worktree A still holds the failing build if
+you need the "before" again. This evidence is what the pull request is built around.
 
 ## Phase 7 — the gate
 
@@ -44,23 +52,25 @@ Stop here. Post to the user:
 
 1. the diff of the fix;
 2. the before/after evidence;
-3. the test results, with any pre-existing failure named and its master comparison;
-4. the proposed issue title or titles;
+3. the test diff against the baseline, with every pre-existing failure named;
+4. the proposed issue title or titles — or the existing issue number you will cite instead;
 5. the proposed pull request title and branch name.
 
 Then ask whether to file the issue and open the pull request, or to stop. Wait for the answer.
-Nothing reaches GitHub until it comes. If the user declines, leave the branch local and record that
-in the report file.
+Nothing reaches GitHub until it comes. If the user declines, leave the branch local and say so.
 
 ## Phase 8 — the issue
 
+**Skip this phase if phase 5 found an open issue with no fix.** Cite that number in the pull request
+instead of filing a duplicate.
+
 House style, taken from inet-framework/inet issues #1132 and #1133.
 
-- **Title**: `<area>: <the precise claim>`. Lowercase area prefix. The title states the defect, not
-  the symptom: `mipv6: MIPv6_INITIAL_BINDACK_TIMEOUT_FIRST is 1 s, RFC 6275 specifies 1.5 s`.
-- **One issue per independent defect.** Cross-reference them, and explain the dependency: "fixing
+- **Title**: `<area>: <the precise claim>`, area lowercase. It states the defect, not the symptom:
+  `mipv6: MIPv6_INITIAL_BINDACK_TIMEOUT_FIRST is 1 s, RFC 6275 specifies 1.5 s`.
+- **One issue per independent defect.** Cross-reference them and explain the dependency: "fixing
   this alone changes nothing observable, because #1132 makes the branch that reads it unreachable".
-- Spell out every abbreviation on first use and repeat it well past the first use:
+- Spell out every abbreviation on first use and keep repeating it well past the first use:
   "Binding Update (BU)", "Duplicate Address Detection (DAD)".
 - Labels are optional; the maintainers triage. Do not invent labels.
 
@@ -71,7 +81,8 @@ What is wrong, with `src/inet/.../File.cc:123` and the few lines of code quoted.
 
 ## What the standard says
 
-The quoted clause, as a block quote, with its number. Or the NED/Doxygen contract it breaks.
+The authority from phase 2, quoted as a block quote with its clause number. Or the NED/Doxygen
+contract it breaks.
 
 ## Why it matters
 
@@ -82,27 +93,28 @@ The consequence for a user, with the measurement that shows it.
 Only when there is one. Say which fix is load-bearing and which is not.
 ```
 
-Create it, then note the number:
-
     gh issue create --title "<title>" --body-file <file>
+
+If the bug is latent on master — the defect is there but the trigger arrived on a topic branch —
+say so plainly in *Why it matters*, and name the branch and the configuration that expose it.
 
 ## Phase 9 — the pull request
 
 Branch name `topic/<initials>/<slug>`, matching the repository's existing branches.
 
+    git fetch --prune origin      # master may have moved while you worked
     git push -u origin topic/gy/<slug>
     gh pr create --title "<title>" --body-file <file>
 
 - **Title** states the outcome, not the mechanism:
   `mipv6: complete a first home registration in a single Binding Update`.
-- Put `Closes #N` for every issue the pull request fixes near the top.
+- Put `Closes #N` for every issue it fixes near the top — including an issue you did not file.
 
 ```markdown
 One paragraph: what the pull request achieves, and the constraint a reviewer needs up front
 (for example, that two defects had to be fixed together).
 
 Closes #<n>
-Closes #<m>
 
 ## The problem
 
@@ -118,8 +130,8 @@ Only for multi-defect fixes. A table showing each partial fix changing nothing.
 
 ## Verification
 
-The reproduction that now passes. Fingerprints re-recorded and why. Module tests, with every
-pre-existing failure named and shown to fail identically on unmodified master.
+The reproduction that now passes. Fingerprints re-recorded and why. Test results diffed against the
+master baseline, with every pre-existing failure named.
 
 ## Not addressed here
 
@@ -129,11 +141,14 @@ What you deliberately left, and the issue that records it.
 ## Phase 10 — record
 
 - Report the verdict, the issue number and the pull request number to the user. The verdict is one
-  of: `fixed, PR #<n>` / `already fixed by <sha>` / `duplicate of #<n>` / `not reproducible` /
-  `not a bug` / `fix ready, not filed`.
-- **If the input was a file**, append the verdict to it, in place, together with what you learned
-  that the reporter did not know — the real reproduction, the authority you found, the trigger
-  condition, the pre-existing test failures. Leave the file where it was.
+  of: `fixed, PR #<n>` / `already fixed by <sha>` / `already fixed on branch <b>` /
+  `duplicate of #<n>` / `not reproducible` / `not a bug` / `introduced by the reporter's branch` /
+  `fix ready, not filed`.
+- **If the report was a file**, append the verdict to it in place, with what you learned that the
+  reporter did not know: the real reproduction, the authority, the trigger conditions, the
+  pre-existing test failures. Leave the file where it was.
+- Remove the worktrees once the user is done with them: `git worktree remove <path>`. Ask first —
+  they are expensive to rebuild.
 - Save a memory when the investigation produced knowledge that outlives the fix: a diagnostic that
-  proved a branch was dead, a set of pre-existing failures that future agents should not
-  re-diagnose, a trigger condition nobody would guess.
+  proved a branch was dead, pre-existing failures future agents should not re-diagnose, a trigger
+  condition nobody would guess.
