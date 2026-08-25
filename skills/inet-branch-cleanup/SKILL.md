@@ -69,6 +69,57 @@ only at the exceptions below.
   the latter folds. Don't fold a coherent feature just to shrink the commit count; gate "minor
   feature" folds on the granularity choice (§3) — fold only additions too small to review standalone.
 
+## Commit taxonomy (classify before you rewrite)
+
+The INET lead developer's rules. They bind at **Phase 1** (classify), **Phase 2** (split and
+order) and **Phase 4** (reword) — classification is not message cosmetics, it decides what each
+commit is allowed to contain.
+
+**Every commit is exactly one of:**
+
+| category | contains |
+| --- | --- |
+| **rename** | rename a file, function, class, parameter, … and nothing else |
+| **move** | pure relocation: code block, indent/unindent, extract function — byte-identical |
+| **remove** | delete something dead or obsolete (not used any more) |
+| **refactor** | non-trivial structural change, no behavior change |
+| **fix** | the smallest change that resolves one bug |
+| **add** | something new, possibly still unwired and unused |
+| **seam** | wire the new thing into the existing code — the commit where behavior changes |
+| **document** | NED/doxygen comments, `doc/` pages, guide text — never folded into the code commit it documents |
+
+**Ordering.** By subsystem/subcomponent, then by category, then layered by dependency. Dependency
+layering is the **hard** constraint — a commit never depends on a later one; subsystem and category
+grouping are soft. Mechanical commits (rename / move / remove) go *before* the substantive ones
+they enable.
+
+**Objective function.** Choose whatever organization is easiest for a human to follow: minimize the
+reviewer's time. This outranks every other preference in this section.
+
+**Why it pays.** rename/move/remove commits are mechanically verifiable — a reviewer skims them with
+`git diff --color-moved -M` at seconds per hundred lines — but *only if perfectly pure*. One
+behavioral line hidden inside a rename forces line-by-line reading of the whole commit, and the
+reviewer stops trusting the other mechanical commits too. The **add/seam split** isolates risk the
+same way: an `add` of unwired code cannot break anything, so the `seam` is the one small diff where
+behavior actually changes — and therefore the one commit whose fingerprints and tests move. That is
+what makes a change point localizable in Phase 3 and explainable in the pull request.
+
+**Split anything mixed.** A commit that mixes categories gets split — above all when a behavior
+change hides inside a refactor. If you cannot name a commit's category in one word, it is not one
+commit.
+
+**Extract-function is always two move commits.** An extraction whose block also unindents renders as
+a wall in plain diff. Split it:
+
+1. **unindent** — invert the condition into an early return so the block drops to function level.
+   Reviewable with `git show -w` / GitHub's hide-whitespace: only the inverted condition shows.
+   End-of-file and whitespace cleanups belong in this commit too.
+2. **move** — relocate the block byte-identical at the same indent. Plain `git show --color-moved`
+   pairs it, leaving only the signature and call-site glue (~6–8 lines) visible.
+
+Choose the extraction boundary so no later commit re-touches a moved line — e.g. keep classification
+bookkeeping at the call site when a later fix changes its key. (Learned on `DynamicClassifier`.)
+
 ## Procedure
 
 **Phase 0 — Safety + baselines.** Tag the original tip (`git tag <branch>-orig`). Work on a copy
@@ -82,7 +133,9 @@ state. The tip is often *not* green; that's expected.
 loop"); (c′) **churn chains (zigzags)** = the same file/function/hunk re-touched across commits
 (scan `git log -p`, per-hunk blame) where the later touch only fixes or finishes the earlier one —
 these fold into their origin (same *file* alone isn't a chain; it must be the same *logical unit*
-re-edited to correct it); (d) stray/non-scope commits (raise with the user, default keep). Note
+re-edited to correct it); (d) stray/non-scope commits (raise with the user, default keep);
+(e) **the category of each commit** per *Commit taxonomy* above — record the one-word category, and
+flag every commit you cannot name in one word as a split candidate for Phase 2. Note
 which `.csv` files are "invariants" (a header may say *"must NOT change"*) vs ones that legitimately drift.
 
 **Phase 2 — Construct the corrected history.** Drive a scripted rebase (interactive `-i` is often
@@ -96,6 +149,11 @@ re-record/edit stop: **purge stale `*.UPDATED`**, build, run the suite, accept t
 write the per-ingredient justification into the commit message. Expect **forward-ripple
 conflicts**: an early fingerprint re-record makes later fingerprint commits' csv diffs conflict —
 resolve each by re-recording at that commit.
+Also **split the mixed-category commits** flagged in Phase 1 (`edit`-stop, then stage by hunk) and
+**order mechanical before substantive** — a rename/move/remove ahead of the commits it enables —
+subject always to the dependency constraint. Folding a zigzag can create a mix (a fix folded into
+an `add` makes the `add` impure): after each fold, re-check that the resulting commit still has one
+category.
 
 **Phase 3 — Verify (efficiently).** A full per-commit walk is usually overkill. Instead:
 - **Bracket each fingerprint change point**: test the changing commit *and its parent* (parent
@@ -105,9 +163,14 @@ resolve each by re-recording at that commit.
   stay green.
 - Run the suite **twice** at any commit where determinism is in doubt.
 
-**Phase 4 — Reword.** Rewrite every subject to `Area: category: description`
-(`fix`/`refactor`/`feature`/`test`; omit category when the verb makes it obvious — "Implement…",
-"Add … test"). Message-only, bodies preserved: `git filter-branch --msg-filter`. Verify trees are
+**Phase 4 — Reword.** Rewrite every subject to `Area: [category: ]description`, the category
+being the one from *Commit taxonomy* above. Follow the repository's own usage rather than inventing
+a form: `fix`, `refactor`, `remove`/`cleanup`, `document`/`docs`, and the scope-like `tests` and
+`examples` appear as an explicit colon field (`IPv6: fix: declare the IPv6 multicast-membership
+@signals`), while `add`, `rename`, `move` and `seam` read better as the leading verb of the
+description (`ieee80211: add AirtimeFairnessQueue, a per-station airtime-fair transmit queue`;
+a seam as "wire … into …"). `Area` may be a pair when the change spans two (`IPv6/PIM: …`).
+Message-only, bodies preserved: `git filter-branch --msg-filter`. Verify trees are
 identical before/after (`git diff <pre> <post>` empty).
 
 **Phase 5 — Finalize.** Per the user: replace the original branch (`git branch -f`) keeping the

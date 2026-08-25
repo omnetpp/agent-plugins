@@ -82,5 +82,7 @@ FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f \
 git update-ref -d refs/original/refs/heads/<branch>   # remove backup ref
 git diff --stat <pre-reword-tag> <branch>             # MUST be empty (message-only)
 ```
-Convention: `Area: category: description` — `Area` ∈ {protocol/module, `test`, `common`, …};
-`category` ∈ {`fix`,`refactor`,`feature`,`test`}, omit when obvious ("Implement…", "Add … test").
+Convention: `Area: [category: ]description` — `Area` ∈ {protocol/module, `test`, `common`, …};
+`category` is the commit's taxonomy category (SKILL.md §*Commit taxonomy*). `fix`, `refactor`,
+`remove`/`cleanup`, `document`/`docs`, `tests`, `examples` take an explicit colon field; `add`,
+`rename`, `move`, `seam` read as the leading verb instead ("add …", "wire … into …").
