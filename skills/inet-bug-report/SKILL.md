@@ -32,16 +32,22 @@ exits are legitimate and produce no fix at all.
             found -> report the branch, STOP
         search GitHub issues and pull requests
             open pull request -> report it, STOP
-            open issue, no fix -> continue, skip phase 8, cite it in the pull request
+            open issue, no fix -> continue, skip phase 9, cite it in the pull request
         if nothing blocks:
             fix it, in worktree B       then build and test against the baseline
+            commit it                   and write the pull request text to a local file
+            audit it                    fresh opus subagent, no context from you: the
+                                        commits and the pull request text, judged against
+                                        doc/architecture/pull-requests.md
+            act on the audit            fix every FLAG, decide every QUESTION, then
+                                        rebuild and re-diff the tests
             GATE: ask the user          nothing reaches GitHub before the answer
             create the issue
             push the branch, open the pull request
             record the verdict
 
 Phases 1–5 are the detective work: [triage.md](triage.md).
-Phases 6–10 are the fix, the tests and the GitHub conventions: [fix-and-ship.md](fix-and-ship.md).
+Phases 6–11 are the fix, the audit, and the GitHub conventions: [fix-and-ship.md](fix-and-ship.md).
 
 | # | Phase | Where |
 | - | ----- | ----- |
@@ -50,11 +56,12 @@ Phases 6–10 are the fix, the tests and the GitHub conventions: [fix-and-ship.m
 | 3 | Worktree B at master: build, baseline the tests, verify the bug there | triage |
 | 4 | Search recent topic branches for an existing fix | triage |
 | 5 | Search GitHub issues and pull requests | triage |
-| 6 | Write the fix in worktree B, build, test against the baseline | fix-and-ship |
-| 7 | **GATE — present everything, wait for the user** | fix-and-ship |
-| 8 | Create the issue | fix-and-ship |
-| 9 | Push the branch, open the pull request | fix-and-ship |
-| 10 | Record the verdict | fix-and-ship |
+| 6 | Write the fix in worktree B, build, test, commit, draft the pull request text | fix-and-ship |
+| 7 | Audit the commits and the pull request text with a fresh subagent, act on it | fix-and-ship |
+| 8 | **GATE — present everything, wait for the user** | fix-and-ship |
+| 9 | Create the issue | fix-and-ship |
+| 10 | Push the branch, open the pull request | fix-and-ship |
+| 11 | Record the verdict | fix-and-ship |
 
 ## Hard rules
 
@@ -70,8 +77,9 @@ Phases 6–10 are the fix, the tests and the GitHub conventions: [fix-and-ship.m
    you need both builds alive. The user's main checkout is dirty and must stay untouched.
 6. **Baseline the tests while worktree B is still pristine.** That is the only honest way to call a
    later failure pre-existing, and it costs one test run at a moment when master is already built.
-7. **Stop at the gate.** When the fix is written and tested, stop and wait for the user. That is
-   phase 7, and you may not skip it even when the user asked for the whole pipeline up front.
+7. **Audit before the gate, then stop.** The commits and the pull request text go to a fresh
+   subagent that has none of your context (phase 7), and only then do you stop and wait for the
+   user (phase 8). Neither may be skipped, even when the user asked for the whole pipeline up front.
 8. **Ask again before each outward-facing command**: `git push`, `gh issue create`, `gh pr create`.
 9. **One issue per independent defect.** Two defects that must land together are still two issues;
    one pull request closes both.

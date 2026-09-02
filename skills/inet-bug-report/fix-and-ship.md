@@ -1,6 +1,6 @@
-# Fix and ship: phases 6 to 10
+# Fix and ship: phases 6 to 11
 
-## Phase 6 — write the fix in worktree B, build, test against the baseline
+## Phase 6 — write the fix in worktree B, build, test, commit, draft the pull request text
 
 Worktree B is already at `origin/master`, on branch `topic/<initials>/<slug>`, built, and its test
 baseline is recorded. Work there. The pull request targets master, so the fix is cut from master,
@@ -46,20 +46,69 @@ Also produce the **before/after evidence** that the fix works: the run that used
 does not, the measurement that changed, the log excerpt. Worktree A still holds the failing build if
 you need the "before" again. This evidence is what the pull request is built around.
 
-## Phase 7 — the gate
+### Committing it
+
+Commit on the topic branch — one commit per independent defect — and write the pull request text,
+the body phase 10 will post, to a local file now: `<scratch>/pull-request.md`. Nothing is pushed
+here and no pull request is opened; the commits and that file are what the audit reads.
+
+## Phase 7 — the audit
+
+A fresh subagent, opus, started with none of your context. That is the whole point: it reads the
+commits and the pull request text the way a maintainer will — cold, without your reasoning about
+why the fix is right to anchor it.
+
+**Its scope is the commits and the pull request text, not whether the code is correct.** Phases 2,
+3 and 6 established correctness against an authority and against the test baseline; an agent that
+never saw the bug cannot improve on that, and asking it to try produces noise.
+
+Give it these, and nothing else — the rule documents live in worktree B, so pass absolute paths:
+
+- the commit series, messages and diffs: `git log --reverse -p origin/master..HEAD`;
+- the pull request text file;
+- the rules it judges against: `doc/architecture/pull-requests.md` — every `PR-SPLIT-*`,
+  `PR-SERIES-*`, `PR-MSG-*` and `PR-REQ-*` rule, plus its *Quick reference* table;
+- for `PR-REQ-STORY`, the *Contributor workflow* in
+  `doc/architecture/architectural-requirements.md`, steps 6 and 8;
+- for `PR-REQ-ARCH` only, the two ledgers `doc/architecture/architecture-exceptions.md` and
+  `doc/architecture/naming-exceptions.md` — and `doc/architecture/sealing.md` when the fix touches
+  a sealed path.
+
+`doc/architecture/enforcement/agent-review-checklist.md` is *not* part of this audit. It judges a
+code diff against the architectural requirements, which is the scope you just excluded.
+
+Ask for the verdict in the form that checklist already uses — one line per finding, each carrying
+the rule it comes from:
+
+    PASS
+    FLAG     — <commit or pull request text>:<where> — <rule id> — <one-line reason>
+    QUESTION — <commit or pull request text>:<where> — <rule id> — <what to check>
+
+Then act on it, before the gate, never after:
+
+- **Fix every `FLAG`.** A commit-division finding is fixed by rebasing the series, not by adding a
+  correction commit on top (`PR-SERIES-ORDER`).
+- **Decide every `QUESTION`.** The ones you reject go to the gate with your reason. Silently
+  dropping one is how a real finding disappears.
+- **If the commits changed, rebuild, rerun the suites and re-diff against the phase-3 baseline.** A
+  rebase that splits or reorders commits invalidates the phase-6 test run, and `PR-SERIES-BUILDS`
+  asks for every commit in the series to be green, not just the tip.
+
+## Phase 8 — the gate
 
 Stop here. Post to the user:
 
 1. the diff of the fix;
 2. the before/after evidence;
 3. the test diff against the baseline, with every pre-existing failure named;
-4. the proposed issue title or titles — or the existing issue number you will cite instead;
-5. the proposed pull request title and branch name.
+4. the audit report: what you fixed from it, and every `QUESTION` you rejected, with the reason;
+5. the proposed issue title or titles — or the existing issue number you will cite instead;
+6. the proposed pull request title and branch name.
 
 Then ask whether to file the issue and open the pull request, or to stop. Wait for the answer.
 Nothing reaches GitHub until it comes. If the user declines, leave the branch local and say so.
 
-## Phase 8 — the issue
+## Phase 9 — the issue
 
 **Skip this phase if phase 5 found an open issue with no fix.** Cite that number in the pull request
 instead of filing a duplicate.
@@ -98,17 +147,20 @@ Only when there is one. Say which fix is load-bearing and which is not.
 If the bug is latent on master — the defect is there but the trigger arrived on a topic branch —
 say so plainly in *Why it matters*, and name the branch and the configuration that expose it.
 
-## Phase 9 — the pull request
+## Phase 10 — the pull request
 
 Branch name `topic/<initials>/<slug>`, matching the repository's existing branches.
 
     git fetch --prune origin      # master may have moved while you worked
     git push -u origin topic/gy/<slug>
-    gh pr create --title "<title>" --body-file <file>
+    gh pr create --title "<title>" --body-file <scratch>/pull-request.md
 
 - **Title** states the outcome, not the mechanism:
   `mipv6: complete a first home registration in a single Binding Update`.
 - Put `Closes #N` for every issue it fixes near the top — including an issue you did not file.
+
+The body is the file you wrote in phase 6 and audited in phase 7, corrected for what the audit
+found. Its shape:
 
 ```markdown
 One paragraph: what the pull request achieves, and the constraint a reviewer needs up front
@@ -138,7 +190,7 @@ master baseline, with every pre-existing failure named.
 What you deliberately left, and the issue that records it.
 ```
 
-## Phase 10 — record
+## Phase 11 — record
 
 - Report the verdict, the issue number and the pull request number to the user. The verdict is one
   of: `fixed, PR #<n>` / `already fixed by <sha>` / `already fixed on branch <b>` /

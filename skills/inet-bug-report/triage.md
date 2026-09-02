@@ -175,7 +175,7 @@ A title match is not a duplicate until you have read the body.
 | Found | Do |
 | ----- | -- |
 | Open pull request that fixes it | Report it, link it, stop |
-| **Open issue, no fix** | **Continue.** Skip phase 8 and cite that issue from the pull request |
+| **Open issue, no fix** | **Continue.** Skip phase 9 and cite that issue from the pull request |
 | Closed as "Not a bug" or "Postponed" | Read the reasoning, present it to the user, stop unless they say otherwise |
 | Closed as fixed, but it still reproduces | The fix was incomplete. File a new issue that cites the old one |
 | Nothing | Continue to phase 6 |
