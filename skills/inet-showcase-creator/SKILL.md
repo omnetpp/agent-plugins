@@ -6,10 +6,59 @@ description: |
   Always start with discovery and planning; do not create files until user confirms.
 ---
 
-> Building a showcase with the **expert panel** (INET / standards / university / industry
-> reviewers at five gates) is the `inet-showcase-team` skill. It coordinates the phases below
-> rather than replacing them: this file stays the build reference, that one adds who is
-> consulted, when, and how their disagreements end.
+> The `inet-showcase-team` skill is an **alternative** pipeline for the same job: a coordinator,
+> two producers and four blind reviewers at five gates. It uses this file as its build reference.
+> Pick one skill per showcase; do not run both on the same page.
+
+# Attention points
+
+The workflow alternates between segments that need the user and segments that run unattended.
+Every question is collected into one of three attention points, and each point arrives with an
+artifact the user can decide on. Between the points, do not ask: proceed on a stated assumption,
+record it, and raise it at the next point.
+
+| Point | When | The user decides on |
+|---|---|---|
+| **A — design** | Phases 0–1, then the placeholder draft (2.3) | claim and scope, the Phase 0.5 verdict, the storyboard, and the rendered placeholder page: structure, narrative, evidence plan |
+| **B — page** | after Phase 3 | the finished page with real evidence |
+| **C — ship** | end | remaining minor items, reviewer disagreements, commit |
+
+Phases 2.4–2.8 and Phase 3 are unattended. The one legitimate interrupt is a Phase 2.7 verdict of
+*Claim must change* or *Something is wrong in the model*; hand it back as soon as it is issued.
+
+Point A is where the expensive reversals are prevented. On the three showcases measured before
+this rule existed, the first-ready page took 1–4 hours, and the changes made after the user saw
+it — evidence type, page structure, narrative, prose — took 1 to 19 days.
+
+# Exemplar showcases
+
+The house style is defined by shipped, human-written pages, not by rules. The table lists the
+pages the maintainer rates as really good, tagged by kind. **All eleven inform every showcase**:
+their shared conventions — section skeleton, how a figure is introduced, how ini excerpts are
+cut, how results are ordered — and each page's distinctive presenting techniques are distilled
+in `references/exemplars.md`, which the author reads before writing and the style pass (2.3b)
+and Phase 3 reviewers check against. On top of that, Phase 0 picks the one page closest in
+**kind** to the new showcase — not the page closest in topic — and the author reads it in full
+and mimics its section order, its figures per section, and its words per figure.
+
+| Kind | Path (under `showcases/`) | What it exemplifies | Size: words / figures / videos |
+|---|---|---|---|
+| Protocol mechanism, short | `wireless/txop` | The minimal complete page: Goals → About → X in INET → The Model → Results. One sequence-chart figure carries the result. | 1200 / 3 / 0 |
+| Packet-level protocol demo | `wireless/blockack` | An Experiments section lists the configs; each per-config section walks the Qtenv packet traffic view and packet inspector frame by frame, one sentence before each figure. | 2100 / 14 / 0 |
+| Chart-driven parameter study | `wireless/aggregation` | Results split by reader question (received packets and throughput, end-to-end delay), one chart each. | 2100 / 7 / 0 |
+| Chart-driven parameter study | `wireless/fragmentation` | Same skeleton as aggregation, plus a Further Analysis section for the secondary result. | 2100 / 7 / 0 |
+| Cross-technology performance study | `wireless/coexistence` | Goals → The Model → Configuration → Results; performance charts next to spectrum figures and one sequence chart; one video. | 3200 / 8 / 1 |
+| Mechanism demo + performance comparison | `tsn/framepreemption` | A mechanism section (Transmission on the Wire) before Results. Results show the behavior first (video, packet log, sequence chart, Wireshark, packet inspector) and the delay charts after. | 3400 / 15 / 1 |
+| Progressive multi-config study | `tsn/timesynchronization/clockdrift` | A chain of "Example:" sections, each one config and one chart, adding one element of complexity per step. No video. | 4200 / 23 / 0 |
+| Video-driven visualizer demo | `visualizer/canvas/radiomediumactivity` | Scenarios grow simple → multiple nodes → interference; each has a video and an annotated still. No ini excerpts at all. | 2500 / 7 / 3 |
+| Feature tour of one module | `visualizer/canvas/spectrum` | One section per feature (probe, spectrum figure, spectrogram, power density map), each with its own config and its own figure or video. | 2800 / 5 / 3 |
+| Concept taxonomy | `wireless/analogmodel` | Parallel structure per variant: Overview, then Example. Videos and 3D figures where a still cannot show the idea. | 3100 / 8 / 3 |
+| Tool / feature how-to | `general/pcaprecording` | The model → The configuration → Results; external-tool (Wireshark) screenshots, one per interface type; one video. | 1800 / 10 / 1 |
+
+Word counts are of the raw `index.rst` and are for calibrating density, not targets to hit.
+
+A topic-near page or example is still the right source for the *model* (ini and NED); that is a
+separate choice, made in Phase 0 step 4.
 
 # Workflow
 
@@ -18,11 +67,17 @@ description: |
 1. Use `inet-framework/inet` deepwiki MCP for INET-specific documentation if needed.
 2. Check the destination directory for existing simulation model. Explore and
     analyze it. Use it as a template or starting point.
-3. Find the best matching existing showcase as template:
-   - `grep_search` or `find_by_name` in `showcases/` for similar features
-   - Read its `doc/index.rst`, `omnetpp.ini`, and `.ned` files
-4. Check the relevant category `index.rst` for toctree structure.
-5. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 
+3. Read `references/exemplars.md` (the conventions shared by all eleven exemplar pages and
+   each page's distinctive techniques). Then pick the **exemplar** page closest in kind from
+   the Exemplar showcases table (chart-driven study, video-driven mechanism demo, protocol
+   handshake, …), read its `doc/index.rst` in full, and note its section order, figures per
+   section, and words per figure; the draft is measured against these. Open any other page
+   in the table whose technique the storyboard borrows (a packet-inspector walk, a chain of
+   "Example:" sections, a video-only results section).
+4. Separately, find the topic-nearest showcase or example as the source of the **model**:
+   grep `showcases/` and `examples/` for the same modules; read its `omnetpp.ini` and `.ned`.
+5. Check the relevant category `index.rst` for toctree structure.
+6. Analyze the `results/` directory for existing results. Check what kind of data is available. Possibly ask the user later to provide them if it is needed for better end-result. 
 
 ## Phase 0.5: Assess implementation vs. the showcase's claim
 
@@ -169,12 +224,22 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
   near-total flow-in-the-middle starvation): compute the predicted value for the
   planned scenario's parameters and register it, with its source, as one more
   expected observable. Phase 2.7 Step 2 compares the run against it.
+- The **storyboard** — the page in miniature, approved before anything is built:
+  - the claim in one sentence, and the two to four takeaways a reader should leave with
+  - the section list in the exemplar's order, one sentence per section
+  - for every takeaway exactly one evidence artifact: its type (chart, video, sequence
+    chart, packet inspector, canvas screenshot — see the evidence types in 2.3), what it
+    shows (which nodes, which time window, which axes or which visualizer), and the
+    sentence that will stand under it. One hero artifact per claim. Every further
+    artifact names the takeaway it serves, or it is cut.
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
 - Which configs to run for verification
 
-Wait for explicit user confirmation (until the user switches to code mode)
+Wait for explicit user confirmation. This is the first half of attention point A; the
+second half is the rendered placeholder draft in 2.3, which the user reviews before any
+simulation is run or any evidence is captured.
 
 ## Phase 1.5: Check existing examples for enrichment
 
@@ -215,7 +280,28 @@ Create `showcases/<category>/<showcaseName>/` and `doc/` subdirectory (if not ye
 - Add visualizers for understanding when relevant. You can use the inet-visualization skill for that. Not all showcases need
 visualizers, e.g. in some showcases, the interesting behavior is in the charts, eventlogs, etc. For example, the wireless/qos showcase.
 
-### 2.3 Documentation page
+### 2.3 Draft the page with placeholders (second half of attention point A)
+
+Write the **complete** `doc/index.rst` now, before any run and before any capture, with a
+placeholder in every figure and video slot the storyboard defined. The user reviews this page
+rendered. Structure, narrative and evidence type are cheap to change here and cost days after
+capture.
+
+- A placeholder is a grey PNG at the intended display size, carrying the artifact's type and
+  the storyboard description of what it shows. The sentence that will stand under the real
+  artifact is already in the prose. Generate it with:
+
+  ```bash
+  python3 -c "
+  from PIL import Image, ImageDraw
+  im = Image.new('RGB', (800, 450), (220, 220, 220)); d = ImageDraw.Draw(im)
+  d.multiline_text((20, 20), 'PLACEHOLDER\n<type>: <what it shows>', fill=(60, 60, 60))
+  im.save('doc/media/placeholder-<name>.png')"
+  ```
+
+- Wire the toctree (2.4), run the style pass (2.3b), build the Sphinx HTML, and hand the user
+  the rendered page (the `preview-artifact` skill publishes it as a link). Ask for one
+  review of structure, narrative and evidence plan. Apply the answers before 2.6.
 
 Create `doc/index.rst` following this structure:
 
@@ -277,7 +363,7 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Configuration parameters explained once:** Explain parameters (with rationale for non-obvious choices) in the INET section. Per-config sections should just show the literalinclude and walk through the scenario behavior.
 - **Implementation notes/limitations:** Place near the implementation description in the INET section, not at the end or scattered in config sections.
 
-**Results section guidance:** Think about what makes the showcase's behavior visible and interesting. Choose from these evidence types based on the showcase's focus:
+**Results section guidance:** Think about what makes the showcase's behavior visible and interesting. The evidence type for each takeaway is chosen in the storyboard (Phase 1), from this list:
 
 - **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video. Use the `video-recording` skill for the recording workflow.
 - **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
@@ -287,6 +373,15 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Network screenshots with visualizer overlays** — annotated snapshots at key moments (e.g., "after prune" vs "after graft"). Useful when a video would be overkill but a static image captures the state well.
 
 Think about which moments or artifacts are most surprising, educational, or confirming for the reader. The Results section should provide evidence that the described behavior actually happens — not just restate the config section's predictions. Capture these artifacts only after Phase 2.7 confirms the run actually demonstrates the claim; capturing earlier risks recording the wrong behavior.
+
+### 2.3b Style pass (unattended, before the user sees any draft)
+
+Spawn one fresh subagent with four paths and nothing else: the draft `doc/index.rst`, the
+closest exemplar's `doc/index.rst`, and `references/exemplars.md` and `references/writing.md`
+from this skill. It returns a list of violations, each with the line, the convention or rule it
+breaks (with the exemplar count or the rule name), and a proposed replacement. Apply them. Run the pass on every draft the user will read — the placeholder
+draft and the final page — so the user's review is spent on narrative and evidence, not on
+idioms, unearned absolutes and section order.
 
 ### 2.4 Wire into toctree
 
@@ -419,7 +514,17 @@ change* or *Something is wrong in the model* verdict also exits the loop to the 
 Only a *Demonstrates the claim cleanly* verdict lets you proceed to capture Results
 artifacts (the evidence types in §2.3) and finalize the Results section.
 
-## Phase 3: Review and revise (after Results are captured)
+### 2.8 Capture the evidence into the approved slots (unattended)
+
+Replace each placeholder with the artifact the storyboard specified, at the same position and
+size, following the evidence guidance in 2.3 and the capture skills (`video-recording`,
+`inet-showcase-charts`, `omnetpp-ide-mcp`, `omnetpp-mcp-sim`). Do not add slots, change an
+artifact's type, or restructure the page here. If the run shows that a planned artifact cannot
+carry its takeaway, that is a 2.7 finding: hand it to the user with the options, do not
+substitute silently. Add a FIGURE RECIPE or VIDEO RECIPE comment after every artifact so it
+can be redone from the comment alone.
+
+## Phase 3: Review and revise (after Results are captured, unattended)
 
 Once `doc/index.rst` and its Results artifacts are complete (Phase 2.7 passed), put the
 finished document through an independent review before declaring done.
@@ -445,8 +550,9 @@ conversation is running on** — never a weaker one:
 - one loads the `review-as-user` skill, the other `review-as-pro`.
 - instruct each subagent to state, at the very start of its report, which model it is
   running on — so a silent downgrade is visible.
-- give each subagent only the path to `doc/index.rst` plus the target persona / domain —
-  **not** the authoring rationale or this conversation. The blindness is the whole point.
+- give each subagent only the path to `doc/index.rst`, the closest exemplar's path and
+  `references/exemplars.md` for comparison, and the target persona / domain — **not** the authoring rationale or this conversation.
+  The blindness is the whole point.
 - re-spawn fresh each round (don't reuse a subagent): a blind re-read of the revised doc is
   more honest than a reviewer anchored on its own prior findings.
 
@@ -467,6 +573,56 @@ conversation is running on** — never a weaker one:
 Report which rounds ran, what was fixed each round, and any unresolved Medium/Low items or
 disagreements left for the user.
 
+### Treat reviewer findings as hypotheses, not instructions
+
+Reviewers are reliable on **errors** — a mislabelled phenomenon, a wrong number, a claim
+the code contradicts. Fix those. They are much less reliable on **Missing**, and their
+findings there almost all push in one direction: *add more text*. A reader persona
+briefed as "has never used INET" will ask you to explain the ini file format; a
+completeness-minded technical reviewer will ask you to mention the module's other two
+parameters. Acting on both uncritically produces a padded page that a human editor then
+strips back out.
+
+Before acting on a "Missing" finding, ask:
+
+- **Would the page's real audience ask this?** The persona's gaps are not always the
+  audience's gaps.
+- **Does the fix answer the question or just raise it?** "The module declares two more
+  parameters" satisfies a completeness objection and leaves the reader wondering which
+  two — worse than the original sentence.
+- **Was the original sentence actually wrong, or was it read as a stronger claim than it
+  made?** "Three parameters describe the tunnel" is not a claim that the module has
+  exactly three parameters, and needs no parenthetical.
+
+Fix every Error. Weigh every Missing. Say in your report which Missing findings you
+declined and why.
+
+### Verify anything checkable before you write it
+
+Every claim about behaviour that was *reasoned* rather than *run* during one recent
+showcase turned out wrong or incomplete, and each check cost under a minute:
+
+- "Both ends of a tunnel need an interface" — running it with the far end's interface
+  removed showed only the *sending* end needs one, because decapsulation needs no
+  configured state. The tested fact was more interesting than the assumed one.
+- "Traffic starts at 2 s so Neighbor Discovery has finished" — the log showed address
+  resolution happening at 2.000 s and Router Discovery at 2.6 s. What had finished was
+  Duplicate Address Detection.
+- "16 packets are sent" — the application had no `stopTime` and sent 17.
+- "Four control packets per link" — it was 4 or 5 depending on the configuration, and
+  the arithmetic in the results table did not close.
+
+The rule: if a sentence asserts what the model does, run the model. Reading the C++ is
+the second-best check; remembering what it does is not a check at all.
+
+## Attention points B and C
+
+After Phase 3, run the style pass (2.3b) once more, build the HTML, and give the user the
+rendered finished page together with the Phase 3 report. This is attention point B; batch every
+question that was deferred during the unattended phases into it. Apply the answers, then
+present the ship decision (attention point C): remaining minor items, reviewer disagreements,
+and the commit.
+
 # Output
 
 Provide:
@@ -477,60 +633,19 @@ Provide:
 
 Do not modify files outside the new showcase except required `index.rst` wiring.
 
-# Documentation Writing Principles
+# Documentation writing rules
 
-- Goals should answer "why does this feature exist?" before "what does it do?" — structure as: problem → solution → what we demonstrate
-- Separate domain knowledge (the protocol/standard) from tool knowledge (INET configuration) — use an "About X" section for protocol background before The Model, and an "X in INET" subsection inside The Model for module/parameter overview
-- Never reference a concept before defining it — follow dependency order (e.g. define "lease" before describing the DORA exchange that grants one)
-- Explain the *why* behind each mechanism, not just the *what* (e.g. why Renewing uses unicast but Rebinding uses broadcast)
-- When a parameter appears in multiple places, the mechanism must be described the same way, not just the outcome (e.g. don't describe `numReservedAddresses` differently in the module overview vs the results section)
-- Abstract models (state machines, protocol layers) need explicit grounding in previously described concrete steps
-- For each config/scenario, identify the primary reader question and answer it explicitly in the Results section (e.g. "does the client get the same IP after reboot?")
+The full rules live in `references/writing.md` and are applied by the style pass (2.3b), not
+read while authoring. When writing, work from `references/exemplars.md`, the closest exemplar
+page, and these six essentials:
 
-### Simple technical English
+- One idea per sentence, under about 25 words; active voice, present tense, plain verbs.
+- One term per concept, fixed at first use; define acronyms and protocol message names once.
+- No C++ symbol names in prose, and no phrasing that only makes sense inside INET.
+- Do not explain what every INET reader knows (what `omnetpp.ini` is, what `extends` does).
+- No unearned absolutes: "never", "always", "cannot", "the simplest" only when you cannot name
+  the exception.
+- Say each thing once, at the place the reader needs it; mechanism before results, as on master.
 
-The audience is international, and most of it reads English as a second or third language. Write so that a competent engineer who is tired and not a native speaker gets each sentence on the first pass.
-
-- **One idea per sentence.** Aim under 25 words. If a sentence needs a comma-spliced clause to survive, it is two sentences.
-- **Active voice, present tense.** "The switch drops the frame", not "the frame will have been dropped by the switch".
-- **Plain verbs.** Use, send, drop, wait, grow, shrink — not utilize, transmit-a-message-to, experience-a-loss-of.
-- **No noun stacks.** Three nouns in a row is the limit: "queue length threshold" is fine, "downlink transmission opportunity duration limit" is not — rewrite it with a preposition.
-- **One term per concept, fixed at first use.** Never vary a term for elegance. Variety is the enemy of comprehension: if it is a "stream" in section 2, it is not a "flow" in section 5.
-
-### Clarity and precision
-
-- **Qualify ambiguous nouns on first use**: "group" → "multicast group", "entry" → "entry in the router's forwarding table". Every noun needs enough context to be unambiguous at its first appearance.
-- **Replace vague qualifiers with concrete consequences**: Don't say "expensive" or "costly" — name the actual effect (e.g. extra header overhead, processing bottleneck, wasted bandwidth).
-- **Explain what named protocol messages do**: When introducing a protocol message type, state its action as a verb — "Register message" → "*registers* the source with the RP"; "Join message" → "asks routers to create a forwarding entry."
-- **Unaware participants**: When an entity (e.g. the source host) is unaware of the protocol being described, say so explicitly — "the source sends a normal multicast packet — it has no knowledge of PIM."
-- **No C++ function/method/type names in user-facing prose.** `recordLease`, `bindLease`, `getLeaseByMac`, `handleStopOperation`, `Ieee80211MgmtSta` — none of these belong. State names, protocol message names, NED parameter names are fine and routinely cited; *implementation symbol names are not.*
-- **Implementation flavor leaks even without identifiers.** Phrases like "expiry timer", "stop handler", "lifecycle teardown", "in-memory lease" don't name C++ symbols but still frame the prose around how INET implements the protocol rather than what the protocol does. Heuristic: read the sentence as if INET didn't exist — if it only makes sense inside INET, rephrase. Example: *"the server's expiry timer reclaims the address"* → *"the server reclaims the address once the lease expires."*
-- **No implementation-history parentheticals.** "(introduced for RFC 2131 compliance)", "(added in 4.6)" tells the reader nothing actionable and implies the rest is non-compliant or otherwise different. Just describe current behavior.
-- **No `§4.4.x`-style RFC section citations inline.** Readers don't go look them up; the surrounding prose carries the meaning. Keep one high-level "RFC NNNN" pointer per protocol if useful; drop section numbers.
-- **No ad-hoc "this is current" assertions.** Lines like "all figures still current", "captured with the default seed", "verified for this commit" go stale silently and get believed; a stale assertion is worse than no assertion. The standard `| Verified with INET version: X.Y` boilerplate is an exception — it's a template convention with a defined update protocol (bump on re-verification). Invented current-state lines on top of that don't have a convention behind them; they're just hopes. Per-figure or per-config TODOs go inline at the point of use (e.g. a `.. TODO:` comment next to the figure that needs re-capturing), where a maintainer editing that thing will see them — not in a top-of-file list nobody reads.
-- **No idioms or phrasal verbs where a plain verb exists.** An idiom is the one part of a sentence a non-native reader cannot look up: "the queue fills up in no time", "the link goes down for good", "throughput takes a hit". Write "the queue fills within 2 ms", "the link stays down", "throughput drops to 2.5 Mbps". Phrasal verbs have the same problem whenever a single verb says it — "set up" is *configure*, "carry out" is *perform*, "put off" is *delay*.
-
-### Structure and notation
-
-- **Standard notation gets its own paragraph**: If the protocol has standard notation (e.g. `(S,G)`, `(*,G)` in PIM), define it in a dedicated paragraph *before* first use, not inline mid-sentence.
-- **Two-context terms need both contexts stated**: When a term appears in two roles (e.g. `(S,G)` as a forwarding table entry AND as a Join message type), explain both explicitly. Don't assume the reader will infer the second meaning.
-- **Label temporary vs. steady-state**: When a mechanism has phases (e.g. bootstrap → normal operation), explicitly label what is temporary and what is the final state. Don't let the reader mistake the bootstrap for the normal mode.
-- **Define acronyms, state names, and protocol-message names on first use** unless they're obviously well-known to the showcase's expected audience. ACK is everywhere; NAK isn't. DORA is jargon outside DHCP-aware readers. The bar is *"would I gloss this in a hallway conversation with the target reader?"*. A short parenthetical (`DHCPNAK — "negative acknowledgement"`) usually does it.
-- **Avoid forward references by default.** "(explained below)" isn't a substitute for explaining — the reader feels they're missing something even if they're not. Exceptions are fine when the inline gloss carries enough context that the forward pointer is *informational* rather than load-bearing: e.g. *"a server identifier — described under DHCP in INET — that the client uses to direct its REQUEST"* tells you what a server identifier is without making you go look first. If you can't write the term cleanly in place, reorder the doc instead of pointing forward.
-
-### Readability
-
-- **Dense paragraphs → bullet lists**: When a paragraph contains more than two sequential steps or more than three distinct concepts, break it into a bulleted or numbered list.
-- **Problem→solution at every level**: Not just in the Goals section — each new mechanism should motivate *why it's needed* before explaining *what it does* (e.g. "receivers don't know the source → that's why we need an RP").
-- **State machines and similar reference material aren't narrative.** Dense state-machine prose walkthroughs, ASCII transition diagrams, formal grammar dumps, decision-tree tables — anything that reads like a reference-manual page belongs in the protocol's RFC/textbook (or, if needed, in INET's per-module reference doc). The showcase's job is "watch this specific scenario unfold", not "here is the whole spec." Introduce only the states/transitions/notation the per-config sections actually demonstrate.
-- **Bullet-list parameter dumps.** When introducing a module, listing its parameters as a comma-separated, parenthetical-laden paragraph is unscannable. One bullet per parameter, short description per bullet. The cost is a handful of extra lines; the gain is something a reader can actually skim.
-
-### Figures and screenshots
-
-- **Every visible element on a figure should be explainable from the caption or surrounding text** — especially the elements that would prompt "wait, what's that?" from a first-time reader. Sequence charts and canvas screenshots routinely show things that surprise readers but are protocol-correct: 802.11 broadcast echoes, link-layer ACKs, ARP exchanges before any unicast, retransmits that cross each other on the wire, the same packet appearing on multiple axes as it traverses internal modules. Anticipate the question and answer it before the reader asks.
-
-  Corollary: the deciding question is *"is this element relevant to what the figure is showing?"* — not *"can I explain it?"*. If it's not relevant, strip it via axis filter, event filter, or tighter time range; explaining noise costs the reader attention for nothing. If it is relevant, explain it — and don't ship the figure without that explanation.
-
-- **Silence is a feature.** A network node whose lifeline stays empty across the frame of a sequence chart tells the reader "this node is not involved in the path being shown." The Roaming chart in the DHCP showcase uses this: `dhcpServer1`'s empty lifeline below the active path makes it visually obvious that the roam DORA does not touch the old subnet. Use that on purpose.
-
-- **Default to noise removal, not noise tolerance.** When the protocol of interest produces ten arrows and the link-layer / management chatter produces a hundred, the chart's reader can't see the ten. Filter aggressively. The result should be: the reader's eye lands on the protocol arrows immediately, not after a manual subtraction pass.
+A new lesson goes into `references/writing.md` only as a check — a pattern to grep for or a
+question to ask of a sentence — never as an anecdote.
