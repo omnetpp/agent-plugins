@@ -1,9 +1,11 @@
 ---
 name: inet-showcase-creator
 description: |
-  Plan and create new INET Framework showcases under the inet/showcases/ directory.
-  Use when asked to add a new showcase simulation study and its Sphinx documentation page.
-  Always start with discovery and planning; do not create files until user confirms.
+  Plan and create new INET Framework showcases under the inet/showcases/ directory, or
+  rework an existing draft showcase page that is not good enough. Use when asked to add a
+  new showcase simulation study and its Sphinx documentation page, or to improve, rework,
+  restructure or finish a work-in-progress showcase. Always start with discovery and
+  planning; do not create files until user confirms.
 ---
 
 > The `inet-showcase-team` skill is an **alternative** pipeline for the same job: a coordinator,
@@ -29,6 +31,33 @@ Phases 2.4–2.8 and Phase 3 are unattended. The one legitimate interrupt is a P
 Point A is where the expensive reversals are prevented. On the three showcases measured before
 this rule existed, the first-ready page took 1–4 hours, and the changes made after the user saw
 it — evidence type, page structure, narrative, prose — took 1 to 19 days.
+
+# Rework entry: an existing draft showcase
+
+When the showcase already exists as a work-in-progress page, enter here instead of at Phase 0.
+The expensive decisions — evidence type, structure, narrative — were made without a storyboard;
+the rework supplies the storyboard after the fact and rebuilds the page into it.
+
+1. **Reverse-storyboard the existing page.** Extract what it actually delivers: the claim, the
+   takeaways a reader leaves with, the section list, and every figure or video with the
+   takeaway it serves. Artifacts serving no takeaway, and takeaways with no artifact, are the
+   first findings.
+2. **Write the target storyboard** (Phase 1 shape) against the exemplar of the right kind, after
+   reading `references/exemplars.md`. Map every existing artifact to **keep**, **re-capture**
+   (same slot, different window, crop, pacing or type) or **cut**. Keep the existing observables
+   and literature anchor if the plan had them; write them now if it did not.
+3. **Attention point A.** Show the user both storyboards side by side and the artifact map. That
+   is the one decision the rework needs; batch the Phase 0.5 questions into it only if the
+   audit was never done.
+4. **Rewrite the whole page into the target storyboard.** Not a diff of the old prose — the
+   old structure survives a patch. Kept artifacts go into their slots as they are; re-capture
+   slots get placeholders (2.3). Style pass (2.3b), build, one rendered review.
+5. Continue as for a new page: 2.6 run if configs changed, 2.7 gate for every re-capture slot,
+   2.8 capture, Phase 3 review, attention points B and C.
+
+Skipped in a rework: Phase 0.5 when the implementation audit already exists in the plan or the
+decisions log; the placeholder draft for slots whose artifact is kept. Never skipped: the
+storyboard, the style pass, and the blind Phase 3 review.
 
 # Exemplar showcases
 
