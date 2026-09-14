@@ -38,9 +38,10 @@ exits are legitimate and produce no fix at all.
             commit it                   and write the pull request text to a local file
             audit it                    fresh opus subagent, no context from you: the
                                         commits and the pull request text, judged against
-                                        doc/architecture/pull-requests.md
+                                        pull request audit in the doc/project folder.
             act on the audit            fix every FLAG, decide every QUESTION, then
                                         rebuild and re-diff the tests
+            run audit again             re-audit and act on the audit until everything passes.
             GATE: ask the user          nothing reaches GitHub before the answer
             create the issue
             push the branch, open the pull request
@@ -57,7 +58,7 @@ Phases 6–11 are the fix, the audit, and the GitHub conventions: [fix-and-ship.
 | 4 | Search recent topic branches for an existing fix | triage |
 | 5 | Search GitHub issues and pull requests | triage |
 | 6 | Write the fix in worktree B, build, test, commit, draft the pull request text | fix-and-ship |
-| 7 | Audit the commits and the pull request text with a fresh subagent, act on it | fix-and-ship |
+| 7 | Audit the commits and the pull request text with a fresh subagent, act on it, repeat until it passes | fix-and-ship |
 | 8 | **GATE — present everything, wait for the user** | fix-and-ship |
 | 9 | Create the issue | fix-and-ship |
 | 10 | Push the branch, open the pull request | fix-and-ship |
@@ -78,12 +79,15 @@ Phases 6–11 are the fix, the audit, and the GitHub conventions: [fix-and-ship.
 6. **Baseline the tests while worktree B is still pristine.** That is the only honest way to call a
    later failure pre-existing, and it costs one test run at a moment when master is already built.
 7. **Audit before the gate, then stop.** The commits and the pull request text go to a fresh
-   subagent that has none of your context (phase 7), and only then do you stop and wait for the
-   user (phase 8). Neither may be skipped, even when the user asked for the whole pipeline up front.
-8. **Ask again before each outward-facing command**: `git push`, `gh issue create`, `gh pr create`.
-9. **One issue per independent defect.** Two defects that must land together are still two issues;
+   subagent that has none of your context (phase 7), a new one each round until the audit passes,
+   and only then do you stop and wait for the user (phase 8). Neither may be skipped, even when the user asked for the whole pipeline up front.
+8. **Write for a human reviewer.** Commit messages, the issue and the pull request text carry facts
+   only: no narration, filler, hype, decoration or empty sections. The checklist is *Writing for a
+   human reviewer* in [fix-and-ship.md](fix-and-ship.md), and the audit checks it.
+9. **Ask again before each outward-facing command**: `git push`, `gh issue create`, `gh pr create`.
+10. **One issue per independent defect.** Two defects that must land together are still two issues;
    one pull request closes both.
-10. **`git fetch --prune origin` before every comparison against `origin/*`.** A stale ref turns a
+11. **`git fetch --prune origin` before every comparison against `origin/*`.** A stale ref turns a
     stop verdict into a wrong one, and without `--prune` a branch deleted upstream still looks alive.
 
 ## What the report has to give you
