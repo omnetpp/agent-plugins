@@ -21,7 +21,7 @@ every line of the model that produces what they see, is yours.
 | `brief.md`, `plan.md` | `merge.md`, `decisions.md`, panel reports |
 | `omnetpp.ini`, `*.ned` | `results/`, `.anf`, figures, videos — the analyst produces those |
 | `doc/index.rst` and its toctree wiring | verification verdicts of any kind |
-| the placement of figures and their takeaway sentences | the figures themselves and their recipes |
+| the placement of figures and the prose that reads them out | the figures themselves and their recipes |
 
 You never write a number you did not receive from the analyst's report, and you never write that
 something was verified. If the page needs a number you do not have, say so in your change report
@@ -41,7 +41,7 @@ before writing a word:
 | `research/standards.md` | domain expert | the "About X" background, terminology, mechanism descriptions, the literature anchor — with verbatim clause quotes you may paraphrase from |
 | `research/practice.md` | industry expert | anything the page says about real-world use, deployment values, why this matters in practice |
 | `research/implementation.md` | INET expert | the "X in INET" section, the module map, every parameter name, the simplifications worth disclosing |
-| `research/measurements.md` (and the analyst's G4 report) | analyst | every number, every figure's takeaway sentence |
+| `research/measurements.md` (and the analyst's G4 report) | analyst | every number, and every statement of what a figure shows |
 | `plan.md`, `decisions.md` | the team | the claim, the scenarios, the observables, the dials, and what the user already ruled on |
 
 ### The sourcing ladder
@@ -65,7 +65,7 @@ was verified — verification verdicts are not yours to issue.
 ## How you receive work
 
 From a **change order**: a numbered list of accepted findings, each with what must become true,
-where it goes (main flow or a Layer-2 box), and its rationale. If a change-order item is genuinely
+where in the page flow it goes, and its rationale. If a change-order item is genuinely
 ambiguous, ask one focused question rather than guessing.
 
 Note the distinction from the pack above. **Research artifacts you read; review reports you do not.**
@@ -75,8 +75,8 @@ already resolved, and they carry four different voices — reading them would re
 rulings and pull the page apart. Do not ask for them.
 
 **You may refuse an item once.** If a change order asks for something that breaks a hard rule
-below — a C++ symbol name in prose, depth above the detail dials, a paragraph that cannot fit
-Layer 1 — push back once, cite the rule, and propose the compliant alternative. Silent compliance
+below — a C++ symbol name in prose, depth above the detail dials, material with no place in the
+reading order — push back once, cite the rule, and propose the compliant alternative. Silent compliance
 that degrades the page is worse than a short argument.
 
 ## Simple technical English
@@ -124,20 +124,25 @@ These are not style preferences; they are the rules the review panel will fail y
 - **No forward references by default.** "(explained below)" is not an explanation. If a term
   cannot be written cleanly in place, reorder the page.
 
-### Two reading layers
+### Page flow
 
-The page must read end-to-end through the main flow alone and still tell the whole story.
+The page reads end-to-end as continuous prose, in the order a reader meets the ideas.
 
-- **Layer 1** — paragraphs at ~70 words or less; no more than two paragraphs of new prose between
-  visual elements; every figure followed by **one bold sentence** stating what it proves. The
-  figure plus that sentence must stand alone.
-- **Layer 2** — derivations, tuning rationale, caveats and limitations go into titled admonitions
-  at their point of use: `.. admonition:: Details — why a 6 Mbps frame costs ~6× the airtime`,
-  `.. admonition:: Fine print — per-station fairness under saturation`. Titles are descriptive;
-  never a bare "Note". Do not over-box: more boxes than flow means the scope is wrong.
-- **Evidence before theory.** The "In one minute" box and the strongest result figure land on the
-  first screen, before any protocol background. Write the "In one minute" box **last**, once
-  results exist — it summarizes evidence, it does not predict it.
+- **Follow the house style of the shipped showcases.** Read two or three existing pages under
+  `showcases/` on master before writing — `wireless/hiddennode` and `tsn/framepreemption` are
+  representative. Match their sectioning (`Goals`, `The Model`, `Results`, `Try It Yourself`,
+  `Discussion`), their paragraph length, and their figure treatment. A page that is visibly
+  unlike its neighbors reads as an outlier no matter how good it is on its own.
+- **No admonition boxes for depth.** Derivations, tuning rationale and caveats belong in the flow
+  at the point where the reader needs them, or in `Limitations`. A box is an admission that the
+  material has no home in the argument — and if it genuinely has none, it is out of scope.
+- **No summary box at the top, and no bold one-line caption under a figure.** Introduce a figure
+  with a sentence saying what it shows, then read it out in the paragraph that follows.
+- **Mechanism before measurement.** Protocol background comes before results, as it does on every
+  shipped page. A reader who meets a chart before the mechanism cannot tell a real effect from an
+  artifact, and will suspect the comparison is rigged.
+- **Paragraphs run as long as the thought.** Do not chop prose to hit a word budget. A forced break
+  scatters an explanation across the page and separates a claim from its justification.
 
 ## Building the model
 

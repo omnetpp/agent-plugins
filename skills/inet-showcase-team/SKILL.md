@@ -14,7 +14,7 @@ description: |
 Loading this skill makes **you** the coordinator. You decide, you do not produce.
 
 > **You author nothing that ships.** Not the plan, not the ini, not the NED, not the page, not a
-> figure, not a takeaway sentence. The `author-expert` writes; the `simulation-analyst` runs,
+> figure, not a caption. The `author-expert` writes; the `simulation-analyst` runs,
 > measures and produces evidence; four reviewers advise. You convene them, rule on what they
 > disagree about, issue change orders, and talk to the user. If you find yourself editing
 > `doc/index.rst`, you have left your seat.
@@ -43,7 +43,7 @@ page keeps one voice and the analyst keeps its run history.
 
 | Agent | `subagent_type` | Owns |
 |---|---|---|
-| Author | `author-expert` | `brief.md`, `plan.md`, `omnetpp.ini`, `*.ned`, `doc/index.rst`, toctree wiring, figure placement and takeaway sentences |
+| Author | `author-expert` | `brief.md`, `plan.md`, `omnetpp.ini`, `*.ned`, `doc/index.rst`, toctree wiring, figure placement and captions |
 | Analyst | `simulation-analyst` | running every config, `results/`, `.anf`, charts, sequence charts, videos, screenshots, figure/video recipes, the observable classification |
 
 **Reviewers** — they write only their own report. They are blind: no authoring rationale, no prior
@@ -477,8 +477,8 @@ On the finished `doc/index.rst` with its Results artifacts.
 - **Industry expert** reviews applicability: liftability, overclaiming, unstated limitations that would
   bite in a real deployment.
 - **Analyst** runs the claim-to-evidence traceability audit: every quantitative statement and every
-  behavioral assertion traced to a result file or artifact, every figure's bold takeaway checked
-  against what the figure actually plots, every config re-run after the final edits, and the shipped
+  behavioral assertion traced to a result file or artifact, every figure's caption and the prose that
+  reads it out checked against what the figure actually plots, every config re-run after the final edits, and the shipped
   `results/` confirmed to match the shipped page.
 
 Order every `blocker` and `major`; collect `minor` and order them once at the end. Re-review the
@@ -497,9 +497,9 @@ decides what ships, what becomes a follow-up, and when the plan moves to `plan/d
    agreement is the strongest signal you have, and it outranks any single reviewer's severity.
 3. **Check each finding against its role's blocker definition.** Demote what misses the bar, and
    record the demotion.
-4. **Classify** every finding: **accept**, **relocate** (accepted, but the depth goes into a Layer-2
-   admonition rather than the main flow), **reject** (with a reason), **contest** (two lenses
-   disagree), **escalate** (the user must rule).
+4. **Classify** every finding: **accept**, **relocate** (accepted, but it belongs at a different
+   point in the reading order, or in `Limitations`), **reject** (with a reason), **contest** (two
+   lenses disagree), **escalate** (the user must rule).
 5. **Write `merge.md`**: the classification of every finding, the running cost total against the
    plan's budget, and the list going to cross-examination.
 6. **Write `change-order.md`** — never prose, only instructions.
@@ -511,7 +511,7 @@ decides what ships, what becomes a follow-up, and when the plan moves to `plan/d
 
 ## C1 — <what must become true>
 - Source: F3 (domain), F7 (university) — two lenses
-- Placement: main flow, section "The Model" | Layer-2 box titled "Details — …"
+- Placement: section "The Model", immediately after the topology figure
 - Rationale: <one sentence; the reviewer's reasoning, not yours>
 - Constraint: stays within dial "standards detail = 4"
 ```
@@ -542,10 +542,11 @@ Apply in order. Stop at the first rung that settles it.
    is settled by the three 0–10 dials the user set. A request above the dial is relocated or dropped,
    with the reason recorded. A reviewer contesting a dial is an escalation, not a finding — the dials
    belong to the user.
-4. **Layer discipline decides placement.** Accepted depth goes into a titled `Details — why …` or
-   `Fine print — …` admonition. Layer 1's ≤70-word paragraph budget, figure cadence, and
-   one-bold-takeaway-per-figure rule are hard constraints. Most "add more" findings are
-   accept-with-relocation.
+4. **Placement follows reading order.** Accepted depth goes into the running prose at the point
+   where the reader needs it, or into `Limitations`. Never resolve an "add more detail" finding by
+   relocating the material into a box: that separates a claim from its justification, and it is how
+   a page ends up justifying its own first figure twenty screens later. If accepted depth has no
+   natural place in the flow, the scope is wrong — drop it, or renegotiate the claim with the user.
 5. **Cost budget.** When accepted contributions exceed the plan's declared budget (configs, figures,
    target length), rank by severity, then by cross-lens agreement, and drop the tail **explicitly** in
    `merge.md`. A silently dropped finding reads later as one that was never raised.

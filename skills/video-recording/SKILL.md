@@ -88,6 +88,45 @@ time limit, so the wall-clock bubble catches almost nothing). Consequences:
 - **Preserve iterations** — move superseded videos to `media/unused/` rather than deleting, in case you need to go back.
 - **Verify before encoding** — confirm the recording *shows what you intended* (crop good, the intended overlay present, no stale or unwanted artifacts) **and is *watchable*** (packet/message labels readable at playback rate, no dead air). See **Verifying the recording** → **Pacing & legibility** below. Don't declare done without it.
 
+## Driving the simulation — traps that silently corrupt a capture
+
+These three cost a session's worth of mislabelled artifacts. All of them fail *quietly*:
+nothing errors, and you only notice by cross-checking the content.
+
+- **Two Qtenv instances will bind the same MCP port without complaint.** The second one
+  does not fail to start; both listen, and the kernel then spreads your JSON-RPC calls
+  between them. A capture you labelled `NoTunnel` is then quite possibly showing
+  `RoutingLoop`, and an option you passed on the command line appears to have been
+  ignored (because the request went to the older process). **Before every capture, call
+  `get_config` and confirm the active configuration is the one you asked for**, and
+  after every capture free the port and wait for it to clear.
+- **`bin/inet` is a shell wrapper, so `$!` is not the simulation's pid.** The real
+  process is an `opp_run_release` child. Killing the pid you captured at launch leaves
+  the child holding the port, which sets up the trap above. Kill by *port holder*
+  instead: `ss -ltnp | grep <port> | sed 's/.*pid=\([0-9]*\).*/\1/'` — and take care
+  not to kill a Qtenv the user started themselves on a different port.
+- **`pgrep -f <pattern>` / `pkill -f <pattern>` match your own command line.** If the
+  pattern appears in the shell command you are running, you kill your own shell. Use a
+  pid file, or derive pids from `ss` output.
+
+**String parameters need embedded quotes on the command line.** `--*.x.y.labelFormat=""`
+passes an empty string; `--*.x.y.labelFormat=` is an error, and
+`--*.x.y.interfaceFilter=not(tun*)` is parsed as an *expression* and stops Qtenv on a
+modal dialog **before it binds the MCP port** — which looks exactly like a slow start.
+If the port never appears, read the launch log for a parse error.
+
+**A filter parameter replaces its default rather than adding to it.**
+`interfaceTableVisualizer.interfaceFilter` defaults to `not(lo*)`; setting it to
+`not(tun*)` brings the loopback labels back. Prefer a positive match (`"eth*"`) when you
+want a specific set.
+
+**Qtenv's canvas toolbar floats over the top-right of the canvas** and is *inside* the
+`crop_rect` that `start_video_recording` reports, so `crop_area: 'with_padding'` does not
+exclude it. No showcase video on master shows it. Drop the top strip in the ffmpeg crop
+(≈85 px was right for a 418 px-tall canvas — it also removes the `configurator` /
+`visualizer` icons, which sit in the same band). Stills taken with `get_canvas_image` are
+unaffected: that renders the canvas directly, like Qtenv's "Export to Image".
+
 ## Verifying the recording
 
 Before encoding, verify the recording **shows what you intended** — *not* by pixel-matching overlay
@@ -319,3 +358,50 @@ Field notes:
 
 The anchors are the point: they let the AI decide *for itself* whether the recipe is
 still valid or needs updating, instead of blindly replaying a stale procedure.
+
+## Visualizer fade-outs are animations, not just opacity
+
+`PacketDropCanvasVisualizer::setAlpha()` derives both the icon's opacity **and its
+position** from the same alpha: `px = 4*dx*(1-alpha)`, `py = a*px^2 + b*px`, so the
+marker flies out of the node along a parabola while it fades. **The fade IS the
+animation; there is no separate motion clock.** Other fading visualizers work the same
+way. Two consequences, and getting either wrong costs a whole recording cycle:
+
+- A marker at alpha ≈ 1 for the whole clip does not move at all. It reads as a frozen
+  decoration, and the reviewer will call it frozen.
+- A fade that completes in a handful of rendered frames makes the icon teleport, so
+  nothing appears in the file at all.
+
+So the fade has to span **many rendered frames**. The knob for that is
+`fadeOutAnimationSpeed`: while a marker is on screen the visualizer pins the canvas
+animation speed to it (Qtenv takes the minimum over all requesters), and during
+recording `sim_time_per_frame = (1/fps) * animation_speed * playback_speed`. The arc
+therefore lasts `30 * fadeOutTime / (fadeOutAnimationSpeed * playback_speed)` frames — a
+number you choose. It must be **lower** than the model's own animation speed, or the
+minimum picks the model's instead and nothing changes.
+
+`fadeOutMode` choice, for a window of simulated time recorded as seconds of video:
+`realTime` fades in wall-clock seconds and loses to slow frame-grabbing every time;
+`animationTime` survives that, but an express warm-up advances animation time by only a
+few seconds however much simulated time it covers, so markers from an earlier burst are
+still fresh at recording start and sit on screen from frame one; `simulationTime` works
+if the value is smaller than the gap to the previous burst and comparable to the
+recorded window.
+
+## Stop the recording on an event limit, not a time limit
+
+Qtenv's run loop (`src/qtenv/qtenv.cc`, the `runUntil.time` branch) breaks out at the
+last event *before* the limit and never animates the remaining time — the source even
+says `// TODO: animate until the target simtime`. If the last event of the burst is well
+before the limit, the run stops there and whatever is on screen freezes for the rest of
+the clip. The **event-limit** branch a few lines below calls `animateUntilNextEvent()`
+before breaking, so frames keep being rendered and a fade can finish. Use
+`record_video` with `event_limit` whenever anything on screen has to finish animating.
+
+## Frame counts are not reproducible across builds
+
+The number of frames a window yields depends on the animation speed the message animator
+asks for, which changes with the model and has changed under an unmodified recipe here
+(a RoutingLoop capture that shipped 422 frames now yields 5205). Never carry a frame
+count forward from an earlier recording: read it off the run and let the input framerate
+absorb it.
