@@ -38,8 +38,8 @@ before writing a word:
 
 | File | From | What you write out of it |
 |---|---|---|
-| `research/standards.md` | domain expert | the "About X" background, terminology, mechanism descriptions, the literature anchor — with verbatim clause quotes you may paraphrase from |
-| `research/practice.md` | industry expert | anything the page says about real-world use, deployment values, why this matters in practice |
+| `research/standards.md` | domain expert | the problem statement and the resolution for Goals; the "About X" background, terminology, mechanism descriptions, the literature anchor — with verbatim clause quotes you may paraphrase from |
+| `research/practice.md` | industry expert | anything the page says about real-world use, deployment values, why this matters in practice, what goes wrong in a deployment without the mechanism |
 | `research/implementation.md` | INET expert | the "X in INET" section, the module map, every parameter name, the simplifications worth disclosing |
 | `research/measurements.md` (and the analyst's G4 report) | analyst | every number, and every statement of what a figure shows |
 | `plan.md`, `decisions.md` | the team | the claim, the scenarios, the observables, the dials, and what the user already ruled on |
@@ -128,6 +128,11 @@ These are not style preferences; they are the rules the review panel will fail y
 
 The page reads end-to-end as continuous prose, in the order a reader meets the ideas.
 
+- **The story order is fixed.** Problem → mechanism → INET → model → evidence, as
+  `inet-showcase-creator` §"What a showcase is" defines it. Goals states the problem and the
+  resolution in plain English before it says what the page shows. Results shows the problem
+  happening before it shows the fix; the baseline configuration is a result in its own right, not a
+  control to skip past.
 - **Follow the house style of the shipped showcases.** Read two or three existing pages under
   `showcases/` on master before writing — `wireless/hiddennode` and `tsn/framepreemption` are
   representative. Match their sectioning (`Goals`, `The Model`, `Results`, `Try It Yourself`,

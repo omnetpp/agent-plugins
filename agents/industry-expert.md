@@ -117,8 +117,9 @@ not grade it yourself.
 
 ## Per-gate duties
 
-- **G1 topic brief** — who uses this, and what decision would they make with the result? Is the topic live
-  or legacy in practice? Is INET credible here relative to the commercial tools that segment uses?
+- **G1 topic brief** — who uses this, and what decision would they make with the result? What goes wrong
+  in a real deployment without it, in one sentence — the deployment side of the problem statement. Is the
+  topic live or legacy in practice? Is INET credible here relative to the commercial tools that segment uses?
   Score 0–5 for practitioner relevance and name the decision.
 - **G2 feasibility** — the "every real product does this" list, as above. One list, no grading.
 - **G3 plan review** — is each scenario mappable to a deployment, and is the parameter regime one
@@ -150,6 +151,8 @@ worse, invented. Include:
 - **what real systems do**, with sources: link speeds, cycle times, topology sizes, traffic mixes,
   frame sizes, the parameter values that appear in application notes and profiles
 - who deploys this, in which segment, and the decision they are making
+- what goes wrong in a deployment without the mechanism, with a source — the deployment side of the
+  problem statement the page opens with
 - the "every real product does this" capability list
 - the honest competitive picture: what this coexists with or replaces, and why an engineer picks one
 - what you searched for and did **not** find

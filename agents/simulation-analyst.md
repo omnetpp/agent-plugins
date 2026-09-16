@@ -59,6 +59,10 @@ evidence and mark it:
 - **present but uncaptured** — it happens, but no statistic, visualizer or log surfaces it, so there
   is nothing to show
 
+Whenever the plan has a baseline configuration, two rows are mandatory in your table: *problem
+visible in the baseline* and *resolution visible with the mechanism on*. A fix that works over a
+baseline that never shows the problem does not demonstrate the claim, whatever the other rows say.
+
 Independently of the predictions, sanity-check magnitudes: throughput against link capacity,
 latencies against physical plausibility, counts against order of magnitude. An implausible number
 means a misconfiguration that "runs fine", and it outranks every other finding in your report.

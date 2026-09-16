@@ -33,6 +33,12 @@ Loading this skill makes **you** the coordinator. You decide, you do not produce
 > to the producers as their build reference. This file only adds who does what, when, and how
 > conflicts end.
 
+> **What the team builds.** `inet-showcase-creator` §"What a showcase is" defines the product: one
+> story — a networking problem, the mechanism that resolves it, evidence that it does — told in the
+> order problem → mechanism → INET → model → evidence, with the problem shown before the fix. That
+> definition is your yardstick. A finding can be true and still damage the story; when you merge,
+> ask of every accepted item where it sits in that order and what the reader knows at that point.
+
 Work in a dedicated worktree off INET's `master` branch, not in the main checkout.
 
 ## Roster
@@ -83,7 +89,7 @@ Everything lives outside the INET source tree, under the (untracked) plan folder
 ```
 inet-master/plan/pending/showcase-<name>/
   brief.md                  G1 output — the approved topic brief          (author)
-  plan.md                   claim, scenarios, observables, anchor, outline (author)
+  plan.md                   problem, claim, storyboard, scenarios, observables, anchor (author)
   decisions.md              user rulings U1–U8, escalations, dials, level  (coordinator)
   research/                 THE BRIEFING PACK — the author's only knowledge source
     standards.md            clause quotes, terminology, mechanisms, anchor (domain)
@@ -172,12 +178,12 @@ asking about configs"). Honour it for the rest of the job and write it down.
 
 | # | Where | The decision |
 |---|---|---|
-| **U1** | G1, after the scores | **Topic and goals.** Which candidate, the claim in one sentence, the target reader, and the three detail dials. Everything downstream is derived from this, so it is the one checkpoint that is never skipped. |
+| **U1** | G1, after the scores | **Topic and goals.** Which candidate; the problem in one plain-English sentence and the resolution in one; the claim in one sentence; the target reader; and the three detail dials. Everything downstream is derived from this, so it is the one checkpoint that is never skipped. |
 | **U2** | G2, after the gap table | **Feasibility verdict.** Proceed as-is / narrow the claim to X / implement the missing capability first / abandon. The gap table with both axes goes with it. |
 | **U3** | G3, before configs are written | **Network topology.** How many nodes, wired or wireless, which node types, what the picture looks like. Show 2–3 candidates as sketches; this drives every figure and every run, and it is expensive to change later. |
 | **U4** | G3, after the topology is fixed | **Simulation configurations.** The config matrix: what each `[Config]` varies, the baseline against which the effect is read, `sim-time-limit`, seeds and repetitions. |
-| **U5** | G3 end / G4 start | **Analysis plan.** What is measured and with which statistic, which evidence type carries each claim (chart, video, sequence chart, packet inspector, canvas screenshot), and which artifact is the hero figure. |
-| **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor. This is the existing Phase 1 confirmation. |
+| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each takeaway (chart, video, sequence chart, packet inspector, canvas screenshot); which artifact is the hero figure; and which artifact shows the problem before any shows the fix. |
+| **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor; then, as its second half, the rendered placeholder page (G3e). This is the existing attention point A. |
 | **U7** | G4 | **Behavioral verdict.** Whether the run demonstrates the claim; authorization for a bounded tuning loop; any claim change or suspected model bug. |
 | **U8** | G5 | **Ship.** Remaining `minor` items, reviewer-versus-author disagreements, and the decision to move the plan to `plan/done/`. |
 
@@ -250,7 +256,9 @@ Each reviewer gets, in its prompt:
    resolves directives itself.
 2. **The gate** (G1…G5) and the per-gate brief from the gate map below.
 3. **Its report path** — `panel/<gate>/round<N>/<role>.md`. It writes that file and nothing else.
-4. **The claim** — the one-sentence answer to "what will a reader see this showcase prove?"
+4. **The claim and the takeaways** — the one-sentence answer to "what will a reader see this
+   showcase prove?", and the two to four things the reader should leave with. This is a test
+   specification, not authoring rationale.
 5. **The detail dials** — the three 0–10 settings from Phase 1 (standards detail, INET
    configuration detail, implementation detail), because they bound what anyone may ask for.
 6. **Persona parameters** where the role takes them: which academic persona, which industry segment.
@@ -339,8 +347,9 @@ nearest existing model build and run, and what is the runtime order of magnitude
 the INET expert maps the modules into `research/implementation.md`. A G1 score offered without that
 work is a guess, and a topic chosen on guesses costs a full G2 to discover.
 
-You merge, then order the author to write `brief.md`: claim candidate, target audience, why this
-topic now, top three risks, nearest existing art.
+You merge, then order the author to write `brief.md`: the problem in one plain-English sentence
+and the resolution in one, claim candidate, target audience, why this topic now, top three risks,
+nearest existing art.
 
 → **Checkpoint U1.** The user picks the topic, fixes the claim in one sentence, names the target
 reader, and sets the three detail dials. Present the candidates with each panel's score and its top
@@ -399,21 +408,25 @@ are representative.
 here is how many configs earn their place — every extra config is another run, another figure, and
 another section the reader walks through.
 
-#### G3c — Analysis plan → U5
+#### G3c — Storyboard → U5
 
-What is measured, with which statistic and at which key; which evidence type carries each claim
-(chart, video, sequence chart, packet inspector, canvas screenshot); which artifact is the **hero
-figure** on the first screen. Consult the analyst on extractability and the university expert on
-which evidence would actually teach.
+The author drafts the storyboard (`inet-showcase-creator` Phase 1): the two to four takeaways a
+reader leaves with; the section list in the exemplar's order, one sentence each; and for every
+takeaway exactly one evidence artifact. On top of that: what is measured, with which statistic and
+at which key; which evidence type carries each takeaway (chart, video, sequence chart, packet
+inspector, canvas screenshot); which artifact is the **hero figure** on the first screen; and which
+artifact shows the problem before any shows the fix. Consult the analyst on extractability and the
+university expert on whether the arc holds and which evidence would actually teach.
 
-→ **Checkpoint U5.** Present each claim with the evidence proposed for it. A claim with no evidence
-type, or an evidence type carrying no claim, is the thing to surface here rather than after the runs.
+→ **Checkpoint U5.** Present each takeaway with the evidence proposed for it. A takeaway with no
+evidence, an artifact serving no takeaway, or a Results order that shows the fix before the problem,
+is the thing to surface here rather than after the runs.
 
 #### G3d — Full plan review
 
-Now the author assembles `plan.md` — claim, topology, config matrix, the **expected observables**
-(falsifiable, tied to a time and place), the literature anchor, evidence types, doc outline, dials —
-and the full panel reviews it.
+Now the author assembles `plan.md` — problem and resolution, claim, topology, config matrix, the
+**expected observables** (falsifiable, tied to a time and place), the literature anchor, the
+storyboard from U5, dials — and the full panel reviews it.
 
 All four reviewers, blind, in parallel, plus the analyst on measurement feasibility. Per-seat
 questions:
@@ -422,8 +435,9 @@ questions:
   claimed resolution? Will each config reach its phenomenon before `sim-time-limit`?
 - **Domain** — is the claim true under the standard? Is the anchor right and computed for *these*
   parameters? Are the values representative? Does the scenario exercise the mechanism it names?
-- **University** — does the outline build without forward references? Is the claim legible and
-  falsifiable to the persona? Where would they stall? Is the evidence type the one that teaches?
+- **University** — does the storyboard tell the story in the defined order, with the problem shown
+  before the fix? Does it build without forward references? Is the claim legible and falsifiable to
+  the persona? Where would they stall? Is the evidence type the one that teaches?
 - **Industry** — is each scenario mappable to a deployment? Is the regime one practitioners operate
   in? What comparison is missing? What is liftable?
 - **Analyst** — can each observable be extracted with the planned tooling? What does each config cost
@@ -439,8 +453,18 @@ contradicts what the user chose at U3–U5, it does not go to the author — it 
 with what the panel now knows (ladder rung 0).
 
 → **Checkpoint U6.** Plan sign-off: the whole `plan.md`, the expected observables, the literature
-anchor, and what the panel changed since U3–U5. This is the existing Phase 1 confirmation, and
-nothing is built before it.
+anchor, and what the panel changed since U3–U5. This is the first half of the existing attention
+point A, and nothing is built before it.
+
+#### G3e — Placeholder page (second half of U6)
+
+After the plan is signed off, the author writes the complete `doc/index.rst` with a placeholder in
+every figure and video slot the storyboard defined, runs the style pass, wires the toctree and
+builds the page (`inet-showcase-creator` §2.3–2.5). Consult the university expert on the rendered
+page with one question: does the story land in this order, with these slots? Then hand the rendered
+page to the user for one review of structure, narrative and evidence plan, and apply the answers
+before any config runs. This is not the G5 review. It exists because structure, narrative and
+evidence type are cheap to change here and cost days after capture.
 
 ### G4 — Behavioral gate *(Phase 2.7)*
 
@@ -450,6 +474,9 @@ the wrong behavior and noticing later.
 - **Analyst** owns this gate: runs every config, finds the evidence for each predicted observable,
   classifies it (observed and legible / absent / degenerate / present but uncaptured), confirms *when*
   not only *that*, sanity-checks magnitudes, and proposes one of the four behavioral verdicts.
+  Whenever the plan has a baseline, two rows are mandatory in its table: *problem visible in the
+  baseline* and *resolution visible with the mechanism on*. A fix that works over a baseline that
+  never shows the problem does not demonstrate the claim, whatever the other rows say.
 - **Domain** — compares the measured magnitude against the literature anchor and rules on whether any
   tuning stayed within representative ranges.
 - **University** — legibility: would the persona *see* the effect in the planned artifact, or is it
@@ -542,8 +569,9 @@ Apply in order. Stop at the first rung that settles it.
    is settled by the three 0–10 dials the user set. A request above the dial is relocated or dropped,
    with the reason recorded. A reviewer contesting a dial is an escalation, not a finding — the dials
    belong to the user.
-4. **Placement follows reading order.** Accepted depth goes into the running prose at the point
-   where the reader needs it, or into `Limitations`. Never resolve an "add more detail" finding by
+4. **Placement follows the arc.** The order is problem → mechanism → INET → model → evidence, with
+   the problem shown before the fix. Accepted depth goes into the running prose at the point in
+   that order where the reader needs it, or into `Limitations`. Never resolve an "add more detail" finding by
    relocating the material into a box: that separates a claim from its justification, and it is how
    a page ends up justifying its own first figure twenty screens later. If accepted depth has no
    natural place in the flow, the scope is wrong — drop it, or renegotiate the claim with the user.
@@ -597,6 +625,9 @@ withdrawn in practice; treat it as such and say so in `merge.md`.
   Results, produces speculation. Have the artifact ready first.
 - **Running past the cap.** Three rounds, then the user decides.
 - **Losing the trail.** Every rejection needs a recorded reason.
+- **Losing the story.** A merge whose accepted items, once applied, leave the fix shown before the
+  problem or a mechanism explained before the problem it solves. Check the order after every change
+  order, not only at G5.
 - **Deciding a scope question silently.** Topology, config matrix, evidence types and the claim are
   the user's calls. Making them yourself and then presenting the result as a plan is the failure this
   team's checkpoints exist to prevent.

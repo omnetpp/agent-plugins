@@ -167,8 +167,9 @@ composed from memory. Judgements are not enough; it must carry the substance:
   paraphrase from these, and from nothing else
 - the standard's own terminology: the correct name for every message, state, entity and parameter,
   and the terms the reader will meet elsewhere and should not confuse with these
-- what problem the protocol solves and how it approaches it, in plain terms — the background the
-  "About X" section needs
+- **the problem statement**: two sentences on what goes wrong without the mechanism and two on how
+  the mechanism resolves it, in plain terms a non-specialist reads on the first pass. This seeds
+  Goals and the "About X" section, so it is mandatory, not colour
 - the literature anchor: formula, parameter substitution, computed value, citation
 - what you could **not** verify, so the author knows not to write it
 
