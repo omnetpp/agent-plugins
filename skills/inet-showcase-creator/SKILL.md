@@ -12,6 +12,31 @@ description: |
 > two producers and four blind reviewers at five gates. It uses this file as its build reference.
 > Pick one skill per showcase; do not run both on the same page.
 
+# What a showcase is
+
+A showcase is a runnable INET simulation and a short page that tell one story: a networking
+problem, the mechanism that resolves it, and evidence that it does. The reader arrives with the
+problem and leaves able to explain it in plain words, to watch it happen in the simulation, and
+to reuse the configuration that resolves it.
+
+The page keeps a fixed order, and every decision in this skill serves it:
+
+1. **Goals** states the problem and the resolution in plain English, then what the page shows.
+2. **About X** explains the problem and the mechanism without INET.
+3. **X in INET** says how INET expresses the mechanism.
+4. **The Model** shows the network and, where the topic allows, a configuration in which the
+   problem is visible and one in which the mechanism is on.
+5. **Results** shows the problem happening before it shows the resolution.
+
+For a tool or visualizer showcase the problem is something the reader needs to see or measure,
+and the resolution is the INET feature; the same order holds. The compressed forms in the
+exemplar table are legitimate: `wireless/txop` states the problem in one clause, the visualizer
+tours have no baseline. The problem may shrink and the baseline may be absent, but the order
+never inverts.
+
+A showcase succeeds when a reader who skips every figure still follows the story, and a reader
+who reads only the figures still sees the problem before the fix.
+
 # Attention points
 
 The workflow alternates between segments that need the user and segments that run unattended.
@@ -254,6 +279,7 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
   planned scenario's parameters and register it, with its source, as one more
   expected observable. Phase 2.7 Step 2 compares the run against it.
 - The **storyboard** — the page in miniature, approved before anything is built:
+  - the problem in one sentence and the resolution in one sentence, in plain English
   - the claim in one sentence, and the two to four takeaways a reader should leave with
   - the section list in the exemplar's order, one sentence per section
   - for every takeaway exactly one evidence artifact: its type (chart, video, sequence
@@ -340,7 +366,7 @@ Title
 
 Goals
 -----
-[What is demonstrated and why]
+[The problem, the resolution, then what the page shows — in that order]
 
 | Verified with INET version: ``X.Y``
 | Source files location: `inet/showcases/... <GitHub URL>`__
@@ -666,8 +692,10 @@ Do not modify files outside the new showcase except required `index.rst` wiring.
 
 The full rules live in `references/writing.md` and are applied by the style pass (2.3b), not
 read while authoring. When writing, work from `references/exemplars.md`, the closest exemplar
-page, and these six essentials:
+page, and these seven essentials:
 
+- Problem → resolution → what we show, at page level and inside each mechanism: motivate before
+  explaining, and show the problem happening before showing the fix (§"What a showcase is").
 - One idea per sentence, under about 25 words; active voice, present tense, plain verbs.
 - One term per concept, fixed at first use; define acronyms and protocol message names once.
 - No C++ symbol names in prose, and no phrasing that only makes sense inside INET.
