@@ -26,7 +26,11 @@ The page keeps a fixed order, and every decision in this skill serves it:
 3. **X in INET** says how INET expresses the mechanism.
 4. **The Model** shows the network and, where the topic allows, a configuration in which the
    problem is visible and one in which the mechanism is on.
-5. **Results** shows the problem happening before it shows the resolution.
+5. **Results** walks the reader through what happens when the simulation runs: which node
+   sends which message to whom and why, what state changes, and where the non-obvious moment
+   is. The problem happens before the resolution. The walkthrough proves the claim as a side
+   effect of showing it; a figure that only proves a point, with no one explaining what
+   happens in it, does not teach.
 
 For a tool or visualizer showcase the problem is something the reader needs to see or measure,
 and the resolution is the INET feature; the same order holds. The compressed forms in the
@@ -66,7 +70,8 @@ the rework supplies the storyboard after the fact and rebuilds the page into it.
 1. **Reverse-storyboard the existing page.** Extract what it actually delivers: the claim, the
    takeaways a reader leaves with, the section list, and every figure or video with the
    takeaway it serves. Artifacts serving no takeaway, and takeaways with no artifact, are the
-   first findings.
+   first findings. So is a Results section that states outcomes but never walks through
+   what happens in the run.
 2. **Write the target storyboard** (Phase 1 shape) against the exemplar of the right kind, after
    reading `references/exemplars.md`. Map every existing artifact to **keep**, **re-capture**
    (same slot, different window, crop, pacing or type) or **cut**. Keep the existing observables
@@ -282,11 +287,18 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
   - the problem in one sentence and the resolution in one sentence, in plain English
   - the claim in one sentence, and the two to four takeaways a reader should leave with
   - the section list in the exemplar's order, one sentence per section
-  - for every takeaway exactly one evidence artifact: its type (chart, video, sequence
-    chart, packet inspector, canvas screenshot — see the evidence types in 2.3), what it
-    shows (which nodes, which time window, which axes or which visualizer), and the
-    sentence that will stand under it. One hero artifact per claim. Every further
-    artifact names the takeaway it serves, or it is cut.
+  - the **run walkthrough outline** for Results: the run as a numbered sequence of steps in
+    time order, one line each. Every step names the time (or event), the nodes involved,
+    the messages exchanged (by protocol name, with the fields that matter), the state that
+    changes, and what the reader should notice. Mark the step where the problem shows and
+    the step where the mechanism resolves it. Write this from the protocol and the
+    configuration first; Phase 2.7 checks it against the real run
+  - for every walkthrough step and every takeaway, the evidence artifact that shows it: its
+    type (sequence chart, packet inspector, video, table or canvas screenshot, chart — see
+    the evidence types in 2.3), what it shows (which nodes, which time window, which axes or
+    which visualizer), and the sentence that will stand under it. One artifact can cover
+    several steps. One hero artifact per claim. Every further artifact names the step or
+    takeaway it serves, or it is cut
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
@@ -355,7 +367,8 @@ capture.
   ```
 
 - Wire the toctree (2.4), run the style pass (2.3b), build the Sphinx HTML, and hand the user
-  the rendered page (the `preview-artifact` skill publishes it as a link). Ask for one
+  the rendered page (snapshot it into the Showcase Previewer with `sp add`, see
+  §"Showcase Previewer"; the `preview-artifact` skill publishes it as a shareable link). Ask for one
   review of structure, narrative and evidence plan. Apply the answers before 2.6.
 
 Create `doc/index.rst` following this structure:
@@ -397,7 +410,9 @@ The Model
 
 Results
 -------
-[Choose evidence types based on what makes the showcase's behavior visible and interesting]
+[Walk through the run in time order, following the storyboard's walkthrough outline:
+ what happens, which messages are exchanged, what the reader sees in each figure.
+ Performance charts, if any, after the walkthrough]
 
 Sources: :download:`omnetpp.ini <../omnetpp.ini>`, :download:`*.ned <../*.ned>`
 
@@ -418,7 +433,17 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Configuration parameters explained once:** Explain parameters (with rationale for non-obvious choices) in the INET section. Per-config sections should just show the literalinclude and walk through the scenario behavior.
 - **Implementation notes/limitations:** Place near the implementation description in the INET section, not at the end or scattered in config sections.
 
-**Results section guidance:** Think about what makes the showcase's behavior visible and interesting. The evidence type for each takeaway is chosen in the storyboard (Phase 1), from this list:
+**Results section guidance:** Results is a guided walk through the run, not a list of verdicts. Its job is that the reader understands how the protocol works in this scenario; the claim is proved along the way. Write it from the storyboard's walkthrough outline:
+
+- **Narrate in time order.** "At 1.2 s the mobile node leaves the home link. Its access router notices the new attachment and sends a Proxy Binding Update to the home agent..." Each paragraph covers one step: who acts, what message goes where, why, and what changes as a result.
+- **Name the messages and the fields that matter.** Say which message it is, who sends it, who receives it, and the one or two fields that drive the behavior (a flag, a lifetime, a sequence number, an address). Give each message's action as a verb (see references/writing.md). Show the packet inspector or a sequence chart where the field is visible.
+- **Read every figure out loud.** Before or after each sequence chart, screenshot or video, the prose tells the reader where to look and what they see: which arrow is which message, which table row changed, which node turns red. A figure without that reading is a puzzle, not evidence.
+- **Point out the non-obvious.** A retransmission, a message that is absent, a timer that fires, a race, a surprising order, a state that lasts longer than expected. These are why the reader opens the page; say why they happen.
+- **Problem before resolution.** Where the page has a baseline, walk the problem run first, then the run with the mechanism, and name the step where the two diverge.
+- **A "why" the model cannot answer is a finding.** Explaining each message against the eventlog also checks the model: on the Proxy Mobile IPv6 page it exposed three INET defects (a stale destination cache, a routing loop, a duplicate Router Discovery entry) and a behaviour that breaks RFC 4862, all hidden by the outcome-only page. Do not write around such a gap; hand it to the user as a 2.7 finding.
+- **Numbers and charts follow the walkthrough.** A performance chart confirms at scale what the walkthrough showed for single messages. It does not replace the walkthrough.
+
+A reader who finishes Results should be able to retell the exchange message by message and say why each message was sent. The evidence type for each walkthrough step and takeaway is chosen in the storyboard (Phase 1), from this list:
 
 - **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video. Use the `video-recording` skill for the recording workflow.
 - **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
@@ -427,7 +452,7 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Eventlog excerpts or sequence charts** — best for protocol handshakes or message exchanges where the exact ordering matters. Use the `omnetpp-ide-mcp` skill to drive the IDE's Sequence Chart tool: it can open an `.elog`, search for the relevant exchange by message-name pattern, configure axes/zoom/timeline, and return a PNG — all without manual clicking. Particularly useful when you want a tight frame around a specific protocol exchange (e.g. a DORA handshake) on a chosen subset of axes.
 - **Network screenshots with visualizer overlays** — annotated snapshots at key moments (e.g., "after prune" vs "after graft"). Useful when a video would be overkill but a static image captures the state well.
 
-Think about which moments or artifacts are most surprising, educational, or confirming for the reader. The Results section should provide evidence that the described behavior actually happens — not just restate the config section's predictions. Capture these artifacts only after Phase 2.7 confirms the run actually demonstrates the claim; capturing earlier risks recording the wrong behavior.
+Think about which moments are most surprising or educational for the reader, and give them the most space. The Results section shows the described behavior happening, step by step, in the real run — not a restatement of the config section's predictions, and not bare proof with no explanation of what happens. Capture these artifacts only after Phase 2.7 confirms the run actually demonstrates the claim; capturing earlier risks recording the wrong behavior.
 
 ### 2.3b Style pass (unattended, before the user sees any draft)
 
@@ -518,6 +543,12 @@ For each predicted observable, find the evidence in the actual run:
   the positive counterpart of Step 4's ban on contrived tuning. A large unexplained
   deviation is a *Needs tuning* or *Something is wrong in the model* signal to
   resolve, not a discrepancy to narrate around.
+- walk the storyboard's run walkthrough outline against the eventlog, step by step: the
+  messages, their order, their senders and receivers, the fields that matter, the times.
+  Correct the outline to the real run: add the messages the outline missed, drop the ones
+  that do not occur, and flag every surprise. A surprise the model explains is material for
+  Results (the non-obvious moment); one it does not explain is a *Something is wrong in the
+  model* signal
 
 #### Step 3: Classify each observable
 
@@ -578,6 +609,20 @@ artifact's type, or restructure the page here. If the run shows that a planned a
 carry its takeaway, that is a 2.7 finding: hand it to the user with the options, do not
 substitute silently. Add a FIGURE RECIPE or VIDEO RECIPE comment after every artifact so it
 can be redone from the comment alone.
+
+- **Capture at the width the reader sees.** The page column is about 834 px at a 1440 px
+  viewport. Qtenv and the IDE do not scale label fonts with window size or zoom, so a capture
+  far wider than the column is shrunk on the page and its labels with it: sequence charts
+  captured 2088-2160 px wide rendered their labels at about 6 px, and every review passed them.
+  Capture close to the rendered width (about 1000 px for a full-width figure), split a chart
+  that does not fit legibly, and measure label height on the built page, not in the image
+  file. Look for an axis or element that reads as a border or disappears at page size.
+- **Question inherited `known:` notes.** A recipe's `known:` limitation is not settled because
+  an earlier pass wrote it. If it touches the showcase's main subject (the node, message or
+  state the page is about), treat it as a defect to raise with the user: fix it in INET, work
+  around it with another visualizer or filter, or state it on the page by the user's choice.
+  A route visualizer that never reached the mobile node was carried through a whole rework as
+  "known" until the user pointed at it.
 
 ## Phase 3: Review and revise (after Results are captured, unattended)
 
@@ -677,6 +722,13 @@ rendered finished page together with the Phase 3 report. This is attention point
 question that was deferred during the unattended phases into it. Apply the answers, then
 present the ship decision (attention point C): remaining minor items, reviewer disagreements,
 and the commit.
+
+# Showcase Previewer: snapshot every commit
+
+After every commit that touches the showcase directory, snapshot the page into the Showcase
+Previewer: `sp add <worktree> <showcase-dir> --agent <name>`. A placeholder draft (2.3) is worth
+a snapshot too. When you hand the user a rendered page (2.3, attention points B and C), give the
+previewer link. The `showcase-previewer` skill has the details: backfill, locks, flags.
 
 # Output
 
