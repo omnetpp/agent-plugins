@@ -182,7 +182,7 @@ asking about configs"). Honour it for the rest of the job and write it down.
 | **U2** | G2, after the gap table | **Feasibility verdict.** Proceed as-is / narrow the claim to X / implement the missing capability first / abandon. The gap table with both axes goes with it. |
 | **U3** | G3, before configs are written | **Network topology.** How many nodes, wired or wireless, which node types, what the picture looks like. Show 2–3 candidates as sketches; this drives every figure and every run, and it is expensive to change later. |
 | **U4** | G3, after the topology is fixed | **Simulation configurations.** The config matrix: what each `[Config]` varies, the baseline against which the effect is read, `sim-time-limit`, seeds and repetitions. |
-| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each takeaway (chart, video, sequence chart, packet inspector, canvas screenshot); which artifact is the hero figure; and which artifact shows the problem before any shows the fix. |
+| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the run walkthrough outline for Results (the run as numbered steps in time order: nodes, messages exchanged, state changes, the step where the problem shows and the step where the mechanism resolves it); the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each walkthrough step and takeaway (sequence chart, packet inspector, video, canvas screenshot, chart); which artifact is the hero figure; and which artifact shows the problem before any shows the fix. |
 | **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor; then, as its second half, the rendered placeholder page (G3e). This is the existing attention point A. |
 | **U7** | G4 | **Behavioral verdict.** Whether the run demonstrates the claim; authorization for a bounded tuning loop; any claim change or suspected model bug. |
 | **U8** | G5 | **Ship.** Remaining `minor` items, reviewer-versus-author disagreements, and the decision to move the plan to `plan/done/`. |
@@ -411,14 +411,18 @@ another section the reader walks through.
 #### G3c — Storyboard → U5
 
 The author drafts the storyboard (`inet-showcase-creator` Phase 1): the two to four takeaways a
-reader leaves with; the section list in the exemplar's order, one sentence each; and for every
-takeaway exactly one evidence artifact. On top of that: what is measured, with which statistic and
-at which key; which evidence type carries each takeaway (chart, video, sequence chart, packet
-inspector, canvas screenshot); which artifact is the **hero figure** on the first screen; and which
+reader leaves with; the **run walkthrough outline** — the run as numbered steps in time order, each
+naming the nodes, the messages exchanged and the fields that matter, and the state that changes;
+the section list in the exemplar's order, one sentence each; and for every walkthrough step and
+takeaway the evidence artifact that shows it (one artifact may cover several steps). Results walks
+the reader through this outline; the takeaways are proved along the way, not instead of it. On top of that: what is measured, with which statistic and
+at which key; which evidence type carries each step and takeaway (sequence chart, packet
+inspector, video, canvas screenshot, chart); which artifact is the **hero figure** on the first screen; and which
 artifact shows the problem before any shows the fix. Consult the analyst on extractability and the
 university expert on whether the arc holds and which evidence would actually teach.
 
-→ **Checkpoint U5.** Present each takeaway with the evidence proposed for it. A takeaway with no
+→ **Checkpoint U5.** Present the walkthrough outline and each takeaway with the evidence proposed for
+it. A walkthrough that only lists outcomes and never says which message goes where is a finding. A takeaway with no
 evidence, an artifact serving no takeaway, or a Results order that shows the fix before the problem,
 is the thing to surface here rather than after the runs.
 
@@ -437,7 +441,9 @@ questions:
   parameters? Are the values representative? Does the scenario exercise the mechanism it names?
 - **University** — does the storyboard tell the story in the defined order, with the problem shown
   before the fix? Does it build without forward references? Is the claim legible and falsifiable to
-  the persona? Where would they stall? Is the evidence type the one that teaches?
+  the persona? Where would they stall? Is the evidence type the one that teaches? Does the
+  walkthrough outline let the persona follow the run message by message, and does it give the most
+  space to the non-obvious moments?
 - **Industry** — is each scenario mappable to a deployment? Is the regime one practitioners operate
   in? What comparison is missing? What is liftable?
 - **Analyst** — can each observable be extracted with the planned tooling? What does each config cost
@@ -477,6 +483,9 @@ the wrong behavior and noticing later.
   Whenever the plan has a baseline, two rows are mandatory in its table: *problem visible in the
   baseline* and *resolution visible with the mechanism on*. A fix that works over a baseline that
   never shows the problem does not demonstrate the claim, whatever the other rows say.
+  The analyst also walks the storyboard's run walkthrough outline against the eventlog and returns
+  it corrected to the real run: messages, order, senders and receivers, times, and every surprise
+  with its explanation. The author writes Results from this corrected outline, not from the plan.
 - **Domain** — compares the measured magnitude against the literature anchor and rules on whether any
   tuning stayed within representative ranges.
 - **University** — legibility: would the persona *see* the effect in the planned artifact, or is it
@@ -488,7 +497,7 @@ the wrong behavior and noticing later.
 **You issue the verdict.** Only *demonstrates the claim cleanly* unlocks artifact capture.
 
 → **Checkpoint U7.** Bring the observable classification table, the measured-versus-anchor comparison,
-and the proposed verdict. *Needs tuning* needs the user's authorization for the bounded loop — say
+the corrected walkthrough outline, and the proposed verdict. *Needs tuning* needs the user's authorization for the bounded loop — say
 which parameters would move, by how much, and why that is still representative. *Claim must change*
 and *something is wrong in the model* are the user's to rule on, always, at any involvement level.
 A verdict of *demonstrates cleanly* can be reported in the digest at the **light** level; the other
@@ -498,11 +507,19 @@ three never can.
 
 On the finished `doc/index.rst` with its Results artifacts.
 
-- **University expert** runs the `review-as-user` method in full, wearing the named persona.
+- **University expert** runs the `review-as-user` method in full, wearing the named persona. One
+  question is mandatory: after Results, can the persona retell what happened in the run, message by
+  message, and say why each message was sent? A Results section that proves the claim but leaves
+  the persona unable to retell the run is a `major`.
 - **INET and domain experts** split `review-as-pro`: INET verifies the prose against the code, domain
   against the standard. Two reviewers, two authorities, nothing to argue about between them.
 - **Industry expert** reviews applicability: liftability, overclaiming, unstated limitations that would
   bite in a real deployment.
+- **Visual check** (the analyst, or you, running the `review-as-designer` method): build the page,
+  render it in headless Chrome at a normal desktop width, and judge every figure and video frame
+  at the size the reader sees it: label height measured on the page, nothing reading as a border,
+  nothing hidden under another label. No content seat looks at this; a panel of five passed
+  sequence charts whose labels rendered at 6 px.
 - **Analyst** runs the claim-to-evidence traceability audit: every quantitative statement and every
   behavioral assertion traced to a result file or artifact, every figure's caption and the prose that
   reads it out checked against what the figure actually plots, every config re-run after the final edits, and the shipped
@@ -635,6 +652,18 @@ withdrawn in practice; treat it as such and say so in `merge.md`.
   costed, the panel's split stated, and your recommendation. "What would you like?" hands the user
   the team's job.
 - **Re-asking what is already in `decisions.md`.** Read it before every checkpoint.
+- **Guessing what an ambiguous request refers to.** "Arrows at the mobile node" meant the videos,
+  not the sequence charts; a screenshot the user sent came from one of two near-identical videos.
+  When a request names a figure loosely, look at the figure (extract a frame, open the image)
+  before answering or dispatching work.
+- **Trusting a producer's numbers.** After every author pass, grep each number on the page against
+  the measurement files (`results-walkthrough*.md`, the previous page) and chase every one that
+  does not appear. It is cheaper than reading and it catches what reading misses; producers' reports
+  carry arithmetic slips too ("118 µs" that was 6.35 ms).
+- **Sending an agent into a shared worktree without boundaries.** Two agents in one worktree will
+  collide. The first message to every producer or fix agent names its worktree, forbids switching
+  branches in the others, and says what it must not touch. A fix agent works in its own worktree
+  based on master and cherry-picks, and tests the showcase effect in a throwaway worktree.
 - **Batching a checkpoint with the thing it constrains.** Topology, configs and analysis are decided
   in that order because each narrows the next; presenting all three at once means all three were
   already decided by you.
