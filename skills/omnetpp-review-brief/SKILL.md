@@ -155,8 +155,8 @@ Then do the judgment work that neither the script nor a plain diff read does:
    base tip -- '*.ini'`: a rewritten key is the strongest evidence and gives
    the old -> new key), and compatibility guards for old names. Mark each
    rename as confirmed or candidate.
-3. **Build the migration list:** old ini key or NED name -> new one, for
-   everything in the *breaks* class.
+3. **Build the migration list:** for everything in the *breaks* class, one
+   instruction per bullet, e.g. "Replace `<old key>` with `<new key>`."
 4. **Check the C++ side of each parameter change.** Is a removed parameter
    still read (`git grep -n 'par("<name>")' <tip>`)? Is a new `par()` read
    without a NED declaration? Both are runtime errors.
@@ -236,15 +236,17 @@ Find code that moved between modules with `git diff --color-moved=zebra
 --color-moved-ws=allow-indentation-change base tip`, file renames with
 `git diff -M`, and pairs of removed and added functions with similar bodies.
 
-Report only modules whose SET of duties changed, in these forms:
+Report only modules whose SET of duties changed. The kinds of change, and
+how a finding of each kind reads in the brief:
 
-- **transferred** `X -> Y: <duty>`;
-- **gained** `X: <duty>` -- say whether it is new behavior or accumulated
-  from elsewhere;
-- **dropped** `X: <duty>` -- and who does it now. If nobody does, say that
-  plainly: a dropped duty without a new owner is the most important kind of
-  finding here;
-- **split** / **merged** / **new module** / **removed module**.
+- **transferred**: "Y now <does the duty>, which X used to do."
+- **gained**: "X now <does the duty>." Say whether it is new behavior or
+  accumulated from elsewhere.
+- **dropped**: "X no longer <does the duty>." Say who does it now. If
+  nobody does, say that plainly: a dropped duty without a new owner is the
+  most important kind of finding here.
+- **split**, **merged**, **new module**, **removed module**: say it the
+  same way, as a sentence.
 
 Flag accumulation: a module that gains a duty from a different layer, plane
 or domain than its existing ones. Signs: new dependencies on unrelated
@@ -310,8 +312,10 @@ For the modules touched by the range, build the interaction edge list
 (from, to, mechanism, what flows) at base and at tip. Report:
 
 - new edges and removed edges;
-- **mechanism changes**: "A -> B: was <mechanism>, now <mechanism>", e.g.
-  method call -> signal, parameter -> setter call, gate -> method call;
+- **mechanism changes**, written as a sentence: "A now notifies B with
+  signal S instead of calling B's method M", "A now gets X from a setter
+  call instead of a NED parameter", "A now calls B instead of sending it a
+  packet";
 - **direction changes**: pull became push, or the other way round;
 - new coupling to infrastructure modules.
 
@@ -350,10 +354,33 @@ Keep each item short; include only what applies:
 
 ## Step 7 -- write the brief
 
-Fill in [TEMPLATE.md](TEMPLATE.md). **No tables**: the brief is read in its
-Markdown source, where tables, especially wide ones, are unreadable. Write
-each item as a bullet: a paragraph that starts with a few words in bold (the
-title or topic), followed by the facts, the evidence and the commit.
+Fill in [TEMPLATE.md](TEMPLATE.md). The brief is read in its Markdown source
+by a human. Write it as prose that reads well there:
+
+- **No tables.** Tables, especially wide ones, are unreadable in the source.
+  Write each item as a bullet: a paragraph that starts with a bold title.
+- **The bold title is a full sentence that states the finding**, e.g.
+  "**The UE's MAC submodule was renamed from `cellularNic.mac` to
+  `cellularNic.lteMac`.**" -- not a label such as "**UE submodule rename.**"
+  or "**ConnectionControlEnb -> UE.**".
+- **The body is full English sentences.** Say what it was before, what it
+  is now, and why it matters to the reader. Never collapse a table row into
+  a run of fragments separated by colons, semicolons and arrows.
+- **No arrows for "renamed", "changed to", "became" or "calls".** Write the
+  verb: "X was renamed to Y", "the default changed from A to B", "A now
+  calls B instead of emitting a signal". Arrows are acceptable only in
+  quoted code.
+- **No shorthand markers.** Write "I verified this by reading both
+  versions" or "This is an inference from the commit message", not "V" or
+  "I". Do not invent abbreviations; say "base station", not "BS", unless the
+  codebase itself uses the abbreviation as a name.
+- **Evidence goes in its own closing sentence**: "The declaration is at
+  `<file:line>`; the change is in commit `<hash>` ("<subject>")."
+- **Every commit citation carries its subject**, also the second and later
+  times. An abbreviated subject ("...the UE's LTE-leg submodules have the
+  lte prefix") is fine; a bare hash is not.
+- **Name things the way a user names them**: the module type, the
+  submodule path, the parameter name -- then the C++ detail if it matters.
 
 The TL;DR comes first: 5-10 bullets
 that fit on one screen, ranked by blast radius:
