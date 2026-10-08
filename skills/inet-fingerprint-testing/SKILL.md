@@ -24,8 +24,11 @@ cd tests/fingerprint && rm -f *.UPDATED *.ERROR *.FAILED
 
 Flags (NOTE: `-m` and `-f` do not mean what they mean in other INET test runners):
 
-- `-s` — run the **release** binary; default (`-d`) is debug. Debug is much
-  slower but is the only mode where the signal validator runs (see gotchas).
+- `-s` — run the **release** binary (`opp_run_release`); `-d` — run the
+  **debug** binary (`opp_run_dbg`). With neither flag the plain `opp_run` runs,
+  which is the release build — so a "debug run" needs `-d` explicitly. Debug
+  is much slower but is the only mode where the signal validator runs (see
+  gotchas).
 - `-m <regex>` — **line filter**: regex matched against the whole CSV line
   (directory, ini file, config name all match). This is NOT a build-mode flag.
 - `-f <ingredient>` — run only rows with that ingredient (e.g. `-f tplx`).
