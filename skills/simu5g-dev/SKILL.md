@@ -1,6 +1,11 @@
 ---
 name: simu5g-dev
-description: Rules for working with Simu5G, incl. which INET/OMNeT++ skills apply and the commit-subject format (change-type markers)
+description: >
+  Entry point for developing Simu5G: which INET/OMNeT++ skills apply and how Simu5G
+  overrides them, the commit-subject format (group prefix, change-type markers),
+  architecture red lines and rules, code/NED style, build/run and testing rules, and
+  working rules. Use at the start of any Simu5G development task (coding, testing,
+  refactoring, rebasing, committing) before reaching for individual skills.
 ---
 
 # INET and OMNeT++ skills
@@ -36,6 +41,24 @@ foreign `SIMU5G_ROOT` silently tests another worktree):
 
 When the work changes INET itself (an INET fix proposed for a Simu5G need), the
 `inet-*` skills apply in full, without Simu5G overrides.
+
+Key pairs: fingerprints -> `omnetpp-fingerprint-testing` +
+`simu5g-fingerprint-testing`; refactoring -> `omnetpp-model-refactoring`
+(+ per-step fingerprint gate); git -> `omnetpp-git-workflow`.
+
+# Build and run
+
+- Build: `make MODE=debug -j12` (debug builds with parallelism; see Testing
+  for why debug only).
+- Run: `simu5g_dbg` is in `$PATH` (don't search for it); the ini file is a
+  positional argument; `-c <ConfigName>`, `-u Cmdenv`. Set the working
+  directory via the tool's cwd parameter rather than `cd` in the command.
+  Example: `simu5g_dbg -u Cmdenv -c VoIP-DL-MultiQfi omnetpp_drb.ini`
+- Multi-step refactoring gate (per step): compile debug -> commit -> run the
+  fingerprint suite -> do NOT proceed until green. Re-record baselines
+  without asking only when the evidence is complete, and skip the suite only
+  for changes that cannot affect behavior -- both as defined in
+  `simu5g-fingerprint-testing`.
 
 # Commit subject format
 
@@ -130,6 +153,17 @@ history then demonstrates each defect before the commit that fixes it. Every
 commit must still COMPILE, and the test commit's message says plainly that
 the suite reports failures until the following fixes land, so a bisecting
 reader is not ambushed.
+
+# Architecture red lines (3GPP-mandated Control/Data Plane separation)
+
+- **Control Plane** = RRC and its submodules (e.g. `BearerManagement`) in the
+  NIC. It CONFIGURES the Data Plane (entity setup/teardown). Processing data
+  packets in Control Plane code is STRICTLY FORBIDDEN. Control Plane entities
+  communicate via C++ method calls, NOT packets -- adding gates to
+  `BearerManagement` is a strict no.
+- **Data Plane** = everything else in the NIC outside RRC. It processes data
+  packets SOLELY; configuration-changing code (e.g. `deleteEntities()`) does
+  not belong there -- that is Control Plane (likely BearerManagement) work.
 
 # Architecture rules
 
@@ -274,8 +308,9 @@ reader is not ambushed.
   INET's `NodeBase` re-lays out gateless aux modules at INITSTAGE_LAST
   (y in 100-unit steps, in submodule order).
 - **Layout groups (`g=`) may be used**: Qtenv supports them, and neddoc is
-  built with an OMNeT++ version that does too (the released 6.4 IDE editor
-  may still draw group members on top of each other). Moving node aux
+  built with an OMNeT++ version that does too. The 6.4.0 IDE's graphical
+  editor still draws group members on top of each other; that is fixed in
+  6.4.1/6.5, and is no reason to avoid `g=`. Moving node aux
   columns to `g=aux` starts in INET, then follows here.
 - **Moving modules one level deeper into a compound** -- check before the
   move:

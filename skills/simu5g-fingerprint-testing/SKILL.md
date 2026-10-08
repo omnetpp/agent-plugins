@@ -99,6 +99,10 @@ ASK first when any row moves on `~tNl`, when recorded values differ, when
 explained. That is a behavior change: present the evidence and let the user
 decide. NEVER re-record while errors exist.
 
+Consent is given per statement, not per plan: an approved plan that predicts
+a commit's fingerprint changes does NOT count as consent to re-record them.
+Show the actual drift and its evidence, and wait for the user's explicit OK.
+
 The runner writes a full `<name>.csv.UPDATED` next to each CSV that had
 mismatches (`simulations.csv`, `simulations_d2d.csv`):
 
