@@ -200,7 +200,12 @@ reader is not ambushed.
   `CFLAGS_EXTRA="-Wsuggest-override -Woverloaded-virtual"` (zero hits before
   and after) and `nm -D --undefined-only <lib> | c++filt | grep simu5g::`
   (must print nothing: a declared-but-undefined member that becomes virtual
-  breaks `dlopen` while `make` stays green).
+  breaks `dlopen` while `make` stays green). Run the same `nm` check after
+  any scripted code move: a class whose KEY FUNCTION (first non-inline
+  virtual member, often the destructor) lost its definition gives an
+  undefined `_ZTV...` vtable symbol -- e.g. a function-map regex like
+  `Class::[A-Za-z_]*(` misses `Class::~Class`, and the destructor moves out
+  with its neighbors. Include `~` in such regexes.
 - **Error handling in emulation.** The base rule -- abort on an invalid state
   or input, never recover and continue -- is in `omnetpp-coding-conventions`.
   It rests on a closed world: every input comes from the experiment

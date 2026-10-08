@@ -59,6 +59,19 @@ Everything below is Simu5G-specific.
 2. For errors: `grep 'ERROR (should be PASS)' fp_stdout.log` — each match
    carries the simulation directory, args, and full error message; re-run
    manually for a stack trace.
+3. The `actual '...'` / `expected '...'` strings show only the MISMATCHING
+   ingredients. A row whose `~tNl` did not move shows only `tplx` there --
+   that does not mean the row lacks `~tNl`. Check the CSV before claiming an
+   ingredient is absent.
+4. **`Killed` partway through, with no `.FAILED` file, is an out-of-memory
+   kill, not a test failure**: the runner starts one simulation per CPU, and
+   the heavy rows can exhaust memory on a busy machine. Re-run with
+   `./fingerprints -d -t 6`.
+
+Scripts that touch the CSVs must match rows on (working directory, args)
+and assert the match is unique: config names repeat across directories
+(`-c VoIP-DL -r 0` exists in more than one), so matching on args alone
+updates the wrong row.
 
 ## Re-recording
 

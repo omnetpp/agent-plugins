@@ -35,6 +35,14 @@ description: >
   `set()`. The evaluator produces exactly the container ownership an
   ini-file object parameter has. Free it with a plain `delete` in the
   destructor.
+- **Never `dropAndDelete()` an object a module or channel owns** -- use plain
+  `delete`. For a component (a `cSoftOwner`), `dropAndDelete()` clears the
+  object's owner without removing it from the component's owned-object list,
+  and the component's destructor later crashes on the freed entry
+  (`reportUndisposed()`, SIGSEGV at network teardown, release builds too).
+  `dropAndDelete()` is right only in container classes that own objects
+  through `obj->owner` alone (`cArray`/`cQueue`-style). Defect in OMNeT++
+  6.4.0 and earlier; the documented `drop(obj); delete obj;` works.
 
 ## MSG / NED pitfalls
 
