@@ -360,6 +360,21 @@ reader is not ambushed.
   is renamed or a package moved, grep `emulation/` explicitly -- the suite
   will not tell you.
 
+# Scope and decomposition rule
+
+Before starting implementation, estimate the work required.
+
+If the task appears likely to take more than **a few hours**, do not start
+implementing. Ask the user to revise the plan and break the work into
+smaller, independently deliverable parts.
+
+Each part should have one primary purpose:
+
+- **Refactoring** — change structure without changing behavior.
+- **Bug fix** — correct existing behavior without adding unrelated
+  functionality.
+- **Feature** — add new behavior.
+
 # Working rules
 
 - **Never write to GitHub** -- no `git push`, release assets, tags, issues,
