@@ -201,6 +201,27 @@ reader is not ambushed.
   and after) and `nm -D --undefined-only <lib> | c++filt | grep simu5g::`
   (must print nothing: a declared-but-undefined member that becomes virtual
   breaks `dlopen` while `make` stays green).
+- **Error handling in emulation.** The base rule -- abort on an invalid state
+  or input, never recover and continue -- is in `omnetpp-coding-conventions`.
+  It rests on a closed world: every input comes from the experiment
+  definition, so an invalid one is a bug. Real packets entering through an
+  ext interface (LLDP, IPv6 ND, mDNS from the host) break that premise.
+  - Who owns the violated expectation decides: ABORT when it is owned by the
+    experiment definition (code, NED, ini, replayed trace files -- a malformed
+    pcap still aborts); DISCARD and continue only for input from the
+    uncontrolled environment (live traffic).
+  - The tolerance lives at the INGRESS BOUNDARY only: the ext-interface seam
+    reduces the open world to what the model handles. Interior code keeps
+    asserting -- an unknown packet deep in the stack is still a bug (the
+    ingress filter let it through). Never spread defensive guards through the
+    stack for emulation's sake.
+  - The discard is LOUD: an EV line plus a drop counter per reason, else the
+    results silently exclude offered load.
+  - A strictness switch at the boundary (drop-unknown vs abort-on-unknown) is
+    legitimate; strict mode makes the ingress a testbed sanity check.
+  - Example: a packet no bearer/QoS flow covers throws, and stays so;
+    emulation configs add an explicit catch-all filter row (real UEs have a
+    default QoS rule, too).
 
 # Working rules
 
