@@ -18,6 +18,16 @@ description: >
 - **NEVER use `git add -A` or `git commit -a`** — repos contain unrelated
   untracked files. Stage with `git add -u` (tracked, changed files) plus
   `git add <file>` for files YOU created, then commit.
+- **Check what you commit.** Run `git diff --cached --stat` immediately
+  before every `git commit` and check that the file list matches the commit's
+  intent (a test-only or docs-only commit touching `src/` is the smell). A
+  green test suite proves nothing about what is committed: the build uses the
+  working tree, not the index. Never claim "tree clean" without running
+  `git status` at that moment.
+- **`git checkout <rev> -- <path>` also writes the INDEX.** Restoring the file
+  afterwards with `cp` fixes only the working tree; the old version stays
+  staged and the next commit silently reverts the file. For an A/B against an
+  older version of a file, use `git show <rev>:<path> > <path>` instead.
 - Disable pagers/editors in scripted use: `GIT_PAGER=cat`, `GIT_EDITOR=true`.
 - Before any history rewrite, tag the original tip
   (`git tag <branch>-orig`) so the pre-rewrite state stays reachable.

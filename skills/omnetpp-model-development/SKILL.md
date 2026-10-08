@@ -28,6 +28,34 @@ description: >
   the config; the ini file is a positional argument (no `-f` flag).
 - Wrap ad-hoc runs in the `timeout` command — a buggy model can loop forever.
 
+## Checking layouts visually (headless Qtenv)
+
+To check a network or compound-module layout without a display, render Qtenv
+under Xvfb and take screenshots (needs `xvfb-run`, ImageMagick `import`,
+`xdotool`). Script, with `V` = a scratch directory and `CLICK="x y"` the
+screen coordinates of the node to open:
+
+```
+cd <simulation dir>
+<wrapper>_dbg -u Qtenv -c <Config> -r 0 omnetpp.ini \
+  --output-scalar-file=$V/x.sca --output-vector-file=$V/x.vec > $V/q.log 2>&1 &
+P=$!; sleep 15; import -window root $V/net.png
+xdotool mousemove $CLICK; xdotool click --repeat 2 --delay 80 1; sleep 3
+xdotool key ctrl+minus   # repeat if the node opens zoomed in
+import -window root $V/node.png; kill $P
+```
+
+Run it as `timeout 120 xvfb-run -a -s "-screen 0 2700x1700x24" bash script.sh`.
+Two passes: first screenshot the network to find the node icon (an image
+viewer may show it scaled -- convert back to screen coordinates), then
+double-click into it.
+
+Traps: use a real example config -- a test network that merely `extends` a
+node type usually dies in `initialize()` (missing infrastructure modules) and
+Qtenv then shows nothing. Qtenv rewrites the directory's `.qtenvrc` (tracked
+in some directories): back it up and restore it. Unassigned parameters pop up
+a dialog that blocks the run; assign them in the ini.
+
 ## Troubleshooting runtime errors
 
 - If the executable is missing or possibly stale, (re)build first; if the
