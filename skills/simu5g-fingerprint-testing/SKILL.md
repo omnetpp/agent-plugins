@@ -34,6 +34,14 @@ Everything below is Simu5G-specific.
   with a literal comma. Use `-m demo -m standalone_drb` or
   `-m 'demo|standalone_drb'`, and always check the number of tests run.
 - Partial runs are for intermediate steps only — finish with the full suite.
+- **The suite tests whatever `SIMU5G_ROOT` names** (`./fingerprints` passes
+  it as the directory and binary). In a secondary worktree export it
+  explicitly, and verify a running suite with
+  `tr '\0' '\n' < /proc/<pid>/environ | grep SIMU5G_ROOT`.
+- **`make` compiles every `.cc` in the tree, tracked or not** (`all` re-runs
+  `opp_makemake --deep`). When validating commits one by one, move files
+  meant for a LATER commit out of the tree before building each state, or
+  they contaminate the library.
 - **Never `pkill -f` a fingerprint run** (nor its `simu5g`/`simu5g_dbg`
   children): other sessions may be running the suite in a sibling worktree
   with pattern-identical command lines. Trace the ancestry (`ps -o ppid=`) up

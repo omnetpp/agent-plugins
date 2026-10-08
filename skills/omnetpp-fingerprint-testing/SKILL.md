@@ -33,7 +33,11 @@ Reference files (read as needed):
    non-deterministic and sends you chasing ghosts. Delete them before running,
    and trust only the current run's log output — never a leftover file.
 2. **Run the suite** with the project's runner (see the project skill), saving
-   the output to a log file.
+   the output to a log file. Do not edit NED or ini files in that tree while
+   it runs: each row reads them when it starts, while the C++ library was
+   fixed at launch, so later rows run new NED against the old library ("Class
+   not found", "Unknown parameter" errors that look like a broken baseline).
+   Edit only `.cc`/`.h` files there, or work in another worktree.
 3. **Read the summary line** at the end of the log: `OK`,
    `FAILED (failures=N)`, or `FAILED (errors=M, ...)`.
    - **errors** = simulations that crashed or hit a runtime error. NEVER

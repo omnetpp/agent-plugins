@@ -27,6 +27,15 @@ description: >
   when a null result is a legitimate, handled case.
 - Never add static variables unless explicitly requested.
 
+## Object values in C++
+
+- To build a long-lived nested `cValueMap`/`cValueArray` in module code (e.g.
+  a built-in table), write it as an ini-syntax literal and evaluate it with
+  `cDynamicExpression`, instead of assembling it by hand with `new` and
+  `set()`. The evaluator produces exactly the container ownership an
+  ini-file object parameter has. Free it with a plain `delete` in the
+  destructor.
+
 ## MSG / NED pitfalls
 
 - In msg-file generated code, a `namespace` directive applies only from the
