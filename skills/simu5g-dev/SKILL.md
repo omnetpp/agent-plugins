@@ -3,14 +3,37 @@ name: simu5g-dev
 description: Rules for working with Simu5G, incl. which INET/OMNeT++ skills apply and the commit-subject format (change-type markers)
 ---
 
-# Using INET and OMNeT++ skills
+# INET and OMNeT++ skills
 
-Simu5G is an INET-based project which follows the same architecture and conventions
-as INET, so INET-related skills are highly relevant! Make use of INET-related skills
-(unless overridden by Simu5G-specific rules). 
+Simu5G is built on INET and follows INET's architecture and conventions. Rules
+apply in this order of precedence:
 
-Simu5G and INET are written for OMNeT++, so OMNeT++ skills related to model development
-are relevant, too. However, ignore skills that are about developing OMNeT++ **itself**.
+1. `simu5g-*` skills and the rules in this file -- they WIN on any conflict.
+2. `inet-*` skills -- the baseline for everything Simu5G does not regulate
+   itself: coding and documentation conventions, NED/C++ idioms, module design,
+   test authoring, cosmetic cleanup, branch cleanup.
+3. `omnetpp-*` skills -- platform mechanics and generic workflows. Skip the ones
+   about developing OMNeT++ itself (e.g. `omnetpp-release-engineering`).
+
+An INET rule stays in force here unless a Simu5G rule overrides it. Silence in
+the Simu5G skills means "INET's rule applies", not "no rule".
+
+INET skills also describe INET's own repo mechanics: test runner commands and
+flags, `INET_ROOT`/setenv, baseline file locations, the WHATSNEW workflow.
+These do NOT carry over literally. Use the Simu5G counterpart where one exists,
+and check it, because the same flag can mean something different (e.g.
+fingerprint `-m`: a regex in INET, a substring in Simu5G):
+
+| INET skill                | In Simu5G                                         |
+|---------------------------|---------------------------------------------------|
+| inet-fingerprint-testing  | simu5g-fingerprint-testing (concepts carry over)  |
+| inet-dev-environment      | same traps, with SIMU5G_ROOT for INET_ROOT        |
+| inet-statistical-tests    | workflow applies; Simu5G's own statistics/ repo   |
+| inet-test-suites          | authoring idioms apply to Simu5G's tests/module   |
+| inet-release-notes        | does not apply (WHATSNEW only on request)         |
+
+When the work changes INET itself (an INET fix proposed for a Simu5G need), the
+`inet-*` skills apply in full, without Simu5G overrides.
 
 # Commit subject format
 

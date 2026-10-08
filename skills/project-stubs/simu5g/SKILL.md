@@ -22,10 +22,12 @@ and run its `./install.sh`, then continue.
 
 - `omnetpp-*` — platform mechanics and shared workflows (fingerprint
   concepts, coding conventions, refactoring, git workflow, debugging).
-- `simu5g-*` — Simu5G specifics; these AUGMENT the corresponding `omnetpp-*`
-  skill and WIN on any conflict.
-- `inet-*` does NOT apply here (INET is a dependency, not this repo) —
-  except as background when debugging into INET code.
+- `simu5g-*` — Simu5G specifics; these AUGMENT the corresponding `inet-*`
+  and `omnetpp-*` skills and WIN on any conflict.
+- `inet-*` — the baseline for conventions and idioms Simu5G does not regulate
+  itself; INET's repo mechanics (runner flags, INET_ROOT, baseline paths) do
+  not carry over literally. Precedence and the per-skill mapping are in
+  `simu5g-dev`.
 
 Key pairs: fingerprints → `omnetpp-fingerprint-testing` +
 `simu5g-fingerprint-testing`; refactoring → `omnetpp-model-refactoring`
