@@ -46,7 +46,10 @@ Commit subjects carry a change-type marker after the module/subsystem prefix:
 ```
 
 e.g. `binder: fix: out-of-bounds read in getServingNode()`. Multi-subsystem
-commits list the modules comma-separated (`mac,phy: ...`).
+commits list the modules comma-separated (`mac,phy: ...`). A change that
+touches one KIND of thing across the whole tree names that kind instead of
+listing directories: `NED cosmetics: <topic>`, not
+`src,simulations,emulation: cosmetics: <topic>`.
 
 Related commits are grouped VISUALLY in the log by a GROUP PREFIX in front of
 the module list:
@@ -81,6 +84,13 @@ Features get NO marker -- they keep the plain `<module>: <topic>` form.
 Pick the marker by what the commit actually does, not by which files it
 touches.
 
+A fix of a LATENT bug -- one that no current configuration reaches -- is still
+`fix:`, never `refactor:`. `refactor:` is reserved for changes whose behavior
+is identical in EVERY state, reachable or not; "no config reaches the
+difference" does not make a change a refactoring. A preparatory change that
+removes a trap for the next commit is a fix, too. Write "latent" and
+"fingerprint-inert" in the body, in the "Fault: ... Fix: ..." form below.
+
 The markers separate the risk classes: a `fix:` commit is where behavior
 (and thus fingerprints) may legitimately change; `refactor:`, `cosmetics:`,
 `cleanup:` and `docs:` commits are expected to be fingerprint-inert. The
@@ -95,3 +105,71 @@ and the fix, including the literal word "Fix:" -- the established pattern is
 "the DC networks DELIBERATELY stay SDAP-less") also belong in the message of
 the commit that defines the change, so a log reader cannot mistake them for
 omissions.
+
+# Tests that found bugs go first
+
+When a new test suite exposes defects, and the tests are refined while the
+defects are fixed, the tests go FIRST in history, in their FINAL form, as one
+commit; the code fixes follow it. Do not let test edits ride inside the fix
+commits, and do not add a later "fold the checks back in" commit. The suite
+is red from the test commit until the last fix lands -- accepted, because the
+history then demonstrates each defect before the commit that fixes it. Every
+commit must still COMPILE, and the test commit's message says plainly that
+the suite reports failures until the following fixes land, so a bisecting
+reader is not ambushed.
+
+# Working rules
+
+- **Never write to GitHub** -- no `git push`, release assets, tags, issues,
+  PRs, comments or release-note edits -- unless the user asked for it AND you
+  have asked "ARE YOU SURE?" twice, in separate turns. Never force-push, not
+  even then: report the local and remote hashes and leave it to the user.
+  Prepare artifacts locally and say where they are.
+- **A question is not a change request.** A question about a design detail
+  asks for information: answer it on its merits (facts, trade-offs,
+  consequences) and keep the design. If the answer reveals a real problem,
+  report it as a finding ("this suggests X; do you want to change it?")
+  without switching. Never write "so the plan becomes ...". Keep track of
+  which points the user decided and which are your open proposals.
+- **Push back on anything questionable**, including the user's own
+  suggestions and instructions. Split a suggestion into its parts -- one part
+  can be right while another is wrong -- and flag the wrong part before
+  acting. Silent wholesale compliance is the failure mode. Hold a position
+  until given a reason, in both directions.
+- **Verify negative capability claims.** Before saying "X cannot do Y" --
+  especially when it decides a design -- check the underlying mechanism
+  (OMNeT++ modules and gates can be created at run time, signals propagate to
+  ancestors), then search for existing uses of it. A subagent's "not found"
+  is unverified until you have checked it yourself.
+- **Surface decisions adopted by default.** When a plan or design rests on a
+  choice nobody explicitly made, name it and ask, instead of letting it
+  become the design silently.
+- **Never edit WHATSNEW.md** unless the user asks for an entry -- not in the
+  implementing commit, not in a follow-up commit. If a change is
+  user-visible, say so in the report and offer draft text in chat.
+- **Plans, logbooks, designs and reports** live in the separate repo
+  `~/projects/ai-plans` (`executions/`, `designs/`, `plans/`, `reports/`;
+  `~/projects/ai-logs` is a symlink to it). Write to absolute paths there: a
+  relative `ai-logs/` path creates a stray directory in the Simu5G checkout.
+  Commit to ai-plans only when asked.
+- **Cite commits by hash AND abbreviated subject**, everywhere -- chat,
+  commit bodies, plans, notes: `a6707eb81 ("a UE attaches by requesting an
+  RRC connection")`. Branches are rebased often and old hashes stop
+  resolving; the subject finds the new commit. Branch tips likewise: the
+  branch name plus the tip's subject, not just "@ <hash>".
+- **Pushed topic branches of the Simu5G development fork may be rewritten**
+  (amended, reordered): nobody else follows them. "Already pushed" is no
+  argument against a rewrite, "not pushed yet" no reason for urgency. Check
+  push state with git (`git rev-parse <b> origin/<b>`), never from notes. The
+  push itself still follows the GitHub rule above.
+- **D2D is a legacy research prototype**: keep it working, add no features.
+  When a cross-cutting change touches D2D, extend D2D only where that comes
+  free or cheap; otherwise skip it, make the limitation explicit, and say
+  which D2D parts were skipped.
+- **INET changes are on the table.** When a Simu5G design hits an INET
+  limitation, propose a general INET fix or extension instead of only
+  designing around it. State what Simu5G does without it, and the release
+  constraint: Simu5G builds against an INET release, so an INET change is
+  usable only after the next INET release or a base move -- sequence the
+  Simu5G work so it does not block on that. Record new INET gaps in
+  `~/projects/ai-plans/reports/inet-*.md`, in the report whose kind fits.
