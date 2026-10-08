@@ -284,6 +284,40 @@ reader is not ambushed.
   - Keep the inner submodule order as the nodes had it (initialization
     order). Expect `tplx`/`tilx` to move with `~tNl` and `sz` identical.
 
+# Testing
+
+- **Test with debug builds only** (`make MODE=debug`, `bin/simu5g_dbg`,
+  fingerprint runner `-d`). Release builds compile every `ASSERT` out, so a
+  scenario can run green in release while violating assertions; they bring
+  almost no extra benefit at double the runtime, and CI runs the fingerprint
+  suite in both modes anyway. Rebuild debug after every source change and,
+  when a run exists to exercise an assertion, check the library is fresh:
+  `[ out/clang-debug/src/libsimu5g_dbg.so -nt src/<edited file> ]`.
+- **Example simulations must all run to completion.** A configuration that
+  must be REJECTED is a module test in `tests/module` (INET-style
+  `opp_test`, `make moduletests`) with `%exitcode: 1` and `%contains: stderr`
+  of the intended message -- never an example config with an expected-ERROR
+  fingerprint row (the fingerprint runner does not check the message).
+  Traps: `opp_test -p` needs an absolute program path; `opp_run_dbg` appends
+  `_dbg` to `-l` itself; include `../../lib/defaults.ini` at the END of
+  `[General]`.
+- **A spec oracle is a verbatim transcription of the spec**, regardless of
+  what the model does -- including constants that look like sloppy rounding
+  (3GPP's `c = 3.0e8`). No accommodation toward the implementation, however
+  small. Where the model disagrees, that is the finding: move the affected
+  checks into their own `.test` file with `%expected-failure` and a
+  `%description` of the deviation, instead of adjusting expected values or
+  loosening tolerances.
+- **Compiling is enough** for WATCH-only commits and for layout-only
+  (display string) changes, see `simu5g-fingerprint-testing` for what counts
+  as inert. Write no fingerprint claims ("byte-identical, N/N") into their
+  commit messages unless the suite actually ran. During layout sessions, do
+  not start the fingerprint suite even for small structural side changes:
+  note what needs a fingerprint check, and remind the user instead.
+- **The fingerprint suite has ZERO emulation coverage.** Whenever a module
+  is renamed or a package moved, grep `emulation/` explicitly -- the suite
+  will not tell you.
+
 # Working rules
 
 - **Never write to GitHub** -- no `git push`, release assets, tags, issues,
