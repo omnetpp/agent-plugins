@@ -46,6 +46,29 @@ Commit subjects carry a change-type marker after the module/subsystem prefix:
 e.g. `binder: fix: out-of-bounds read in getServingNode()`. Multi-subsystem
 commits list the modules comma-separated (`mac,phy: ...`).
 
+Related commits are grouped VISUALLY in the log by a GROUP PREFIX in front of
+the module list:
+
+```
+<group>: <module/subsystem>: <type>: <topic>
+```
+
+A group is a series of commits that serve ONE goal that can be stated in one
+sentence: a plan, a feature, a refactoring, a tree-wide sweep. The group name
+names that goal, so in `git log --oneline` the series reads as one block. For
+a plan executed on a topic branch, the name is the branch name without
+`topic/` (`teid:`, `cplane:`, `ipv6-sessions:`); otherwise a short name for
+the goal (`layout:`, `watches:`).
+
+The goal decides membership, not when or where a commit was made. A commit
+belongs to the group if it is a step toward the goal. That includes the tests
+written for the goal and the `fix:` commits that the work exposed or depends
+on. A commit made alongside the work for an unrelated reason does not belong
+to it: it gets no group prefix, or its own group.
+
+e.g. `teid: gtp,ip2nic: refactor: ...`, `layout: statsCollector: cosmetics: ...`,
+`watches: apps: state members are WATCHed`.
+
 The subsystem prefix for the Sphinx website under `doc/src/` is `website:`,
 not `doc:` -- e.g. `website: added Releases item to the main menu` or
 `website: docs: README describes how the website is deployed`. Older `doc:`
