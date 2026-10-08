@@ -23,6 +23,11 @@ Commit subjects carry a change-type marker after the module/subsystem prefix:
 e.g. `binder: fix: out-of-bounds read in getServingNode()`. Multi-subsystem
 commits list the modules comma-separated (`mac,phy: ...`).
 
+The subsystem prefix for the Sphinx website under `doc/src/` is `website:`,
+not `doc:` -- e.g. `website: added Releases item to the main menu` or
+`website: docs: README describes how the website is deployed`. Older `doc:`
+subjects on `doc/src/` predate this and are not a counter-example.
+
 Markers in use: `fix:`, `refactor:`, `cosmetics:`, `cleanup:`, `docs:`.
 Features get NO marker -- they keep the plain `<module>: <topic>` form.
 Pick the marker by what the commit actually does, not by which files it
