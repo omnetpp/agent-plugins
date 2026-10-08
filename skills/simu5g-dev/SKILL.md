@@ -131,6 +131,77 @@ commit must still COMPILE, and the test commit's message says plainly that
 the suite reports failures until the following fixes land, so a bisecting
 reader is not ambushed.
 
+# Architecture rules
+
+- **No dynamic creation of infrastructure modules, ever.** Singleton and
+  infrastructure modules (binders, configurators, ...) are declared in NED and
+  reached through a module-path parameter (`inet::ModuleRefByPar`, like
+  `binderModule`) -- never find-or-create, never `createScheduleInit` on first
+  use. A network shared by configs with and without a feature gets a switch
+  named like the node switch, so one line enables everything:
+  `bool hasD2D = default(false)` + `d2dBinder: D2dBinder if hasD2D`.
+  Entities created by events (per-bearer RLC/PDCP entities, MEC app
+  instances, session ports) are a different, accepted category.
+- **A signal is never a request.** Signals are notifications only. Test for
+  every `emit()`: would the emitter, and everything its caller does next,
+  behave correctly with ZERO listeners? If not -- a listener leaves a result,
+  directly or in some third module, that the emitting side reads after
+  `emit()` returns -- it is a call in disguise and is forbidden. Make an
+  honest call through an interface instead. A direct call that looks
+  architecturally wrong is still better than the disguise: keep it until the
+  real restructuring moves it.
+- **Configuration is pushed through C++ setters.** Runtime configuration
+  reaches a module through an `Enter_Method` setter (`configureDrb()`,
+  `setLegSelection()` style) that validates the value at delivery time --
+  never `module->par(...).parse(...)` on an already-built module. Needing
+  `@mutable` for a config push is the sign the mechanism is wrong. (Setting a
+  dynamically created module's OWN parameters before `finalizeParameters()`
+  is fine.)
+- **RRC state is push-only inside a node.** Consumers (splitter, Ip2Nic,
+  packet holder, ...) keep small RRC-pushed mirrors with named variables and
+  `Enter_Method` setters; RRC fans out on every change and initializes
+  dynamically created consumers at creation. No pull calls into RRC on the
+  data path, no `bearerManagementModule`-style refs in consumers.
+  Communication between nodes follows the 3GPP interfaces (the gNB RRC
+  initiates handover over Xn and N2), not a direction rule.
+- **No reading other modules' parameters.** A cross-module `par()` read
+  hides a dependency that belongs in the NED wiring. Declare a LOCAL
+  parameter and let the enclosing compound set it (explicit assignment or a
+  lenient `*.`/`**.` pattern).
+- **Module paths are passed down with `absPath`.** The compound keeps the
+  path natural to itself and converts it before propagating, so each
+  submodule resolves it in its own frame:
+
+  ```ned
+  string macModule = default("^.mac");
+  *.macModule = default(absPath(this.macModule));
+  ```
+
+  Never write submodule-frame paths (`^.^.mac`) on a compound parameter.
+  `*.` is lenient: submodules without the parameter are skipped.
+- **No boolean arguments that select a mode.** `getStackServingNode(false)`
+  says nothing at the call site. Use SEPARATE named functions
+  (`setServingNodeId()` / `setNrServingNodeId()`); an enum argument was
+  considered and rejected. Likewise two named variables over a 2-element array
+  indexed by a bool. Applies to new code; the legacy `bool isNr` arguments
+  are cleanup material.
+- **Radio medium vs node, as in INET.** The medium models propagation up to
+  the antenna -- geometry, path loss, LOS state, shadowing, fading,
+  interference -- and computes the SINR. The antenna (gain, pattern,
+  orientation) and everything after it belong to the node: noise figure,
+  error model (BLER from SINR + MCS), HARQ combining, the reception decision,
+  CQI/feedback. The medium returns per-RB SINR/RSRP for a (transmission,
+  receiver) pair; it never decides a reception.
+- **Which methods are virtual.** Stack classes are meant to be overridable:
+  make methods virtual EXCEPT trivial one-line accessors/mutators, value and
+  state structs, packet and chunk classes, generated `_m.h` code,
+  constructors, and helper classes held BY VALUE (a vptr buys nothing
+  there). Prove such a change inert with
+  `CFLAGS_EXTRA="-Wsuggest-override -Woverloaded-virtual"` (zero hits before
+  and after) and `nm -D --undefined-only <lib> | c++filt | grep simu5g::`
+  (must print nothing: a declared-but-undefined member that becomes virtual
+  breaks `dlopen` while `make` stays green).
+
 # Working rules
 
 - **Never write to GitHub** -- no `git push`, release assets, tags, issues,
