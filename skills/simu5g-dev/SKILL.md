@@ -38,6 +38,8 @@ foreign `SIMU5G_ROOT` silently tests another worktree):
 | inet-statistical-tests    | workflow applies; Simu5G's own statistics/ repo   |
 | inet-test-suites          | authoring idioms apply to Simu5G's tests/module   |
 | inet-release-notes        | does not apply (WHATSNEW only on request)         |
+| inet-showcase-creator     | workflow applies; same `showcases/<category>/<name>/doc` layout; links point to Simu5G's repo, pages wired into `doc/src/showcases` |
+| inet-branch-cleanup       | method applies; use simu5g-fingerprint-testing's runner, or omnetpp-branch-cleanup when opp_repl is up |
 
 When the work changes INET itself (an INET fix proposed for a Simu5G need), the
 `inet-*` skills apply in full, without Simu5G overrides.
