@@ -364,7 +364,7 @@ reader is not ambushed.
 
 Before starting implementation, estimate the work required.
 
-If the task appears likely to take more than **a few hours**, do not start
+If the task appears likely to take more than **10 hours**, do not start
 implementing. Ask the user to revise the plan and break the work into
 smaller, independently deliverable parts.
 
@@ -382,6 +382,19 @@ work left, etc.) before starting the next.
 During implementation, if the work turns out larger than estimated, or
 requires decisions the plan does not cover, stop and ask the user to revise
 the plan.
+
+During implementation, stop and ask before you:
+- add or remove a module, NED parameter, gate, message, or a call between
+  modules, or change a default, that the plan does not name;
+- introduce a behavior change in a code change meant to be a refactoring;
+- drop, defer or reverse anything the plan states, including validation steps;
+- implement a plan you wrote yourself that the user has not seen.
+
+At each stop, list EVERY deviation from the plan, including omissions. A
+deviation stated only in a commit message or the plan file is not reported.
+
+An unanswered question stays open across sessions and context overflows;
+never decide it yourself.
 
 # Working rules
 
