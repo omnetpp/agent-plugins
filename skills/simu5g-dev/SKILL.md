@@ -223,6 +223,67 @@ reader is not ambushed.
     emulation configs add an explicit catch-all filter row (real UEs have a
     default QoS rule, too).
 
+# Code and NED style
+
+- **Parameter and gate comments are one-liners**: capital first letter
+  (unless the first word is an identifier or a proper spelling: `rlcMode`,
+  `eNodeB`, `dBm`), no closing full stop on a single-sentence comment
+  (multi-sentence prose keeps its punctuation), no ASCII-art noise (`-->`,
+  `// --- SECTION --- //`, dangling empty `//`). Examples, shapes and
+  rationale go into the module's main doc comment; the parameter gets a
+  one-liner such as `// per-leg descriptors (see module comment)`.
+  Trap for sweeps: some NED types declare parameters with NO `parameters:`
+  label, directly in the module body -- find parameters by brace depth, not
+  by the section label.
+- **NED doc comments:** a network's doc comment describes its TOPOLOGY only
+  (nodes, core network, links); what the simulation does belongs in the ini
+  file. A doc comment does not open with the type's own name (neddoc already
+  prints it as the heading).
+- **Comments describe the current code, never its history.** No
+  `// changed to X because ...`, `// was Y`, `// fix for Z`, `// NEW:`. The
+  change and its rationale go into the commit message.
+- **ASCII-only punctuation** in all source comments (`--`, `->`, `<-`), as
+  in `omnetpp-coding-conventions`.
+- **`WATCH` runtime state only**: counters, windows, tables, current ids,
+  identity learned from the network. Members that merely cache a NED
+  parameter (`x_ = par("x")`, never changed) get no WATCH -- the parameter is
+  already visible in Qtenv; existing ones may be removed. A member
+  initialized from a parameter but modified at runtime is state.
+- **Name gates after what they carry** (`userDataIn/userDataOut`); a
+  readable, slightly vague name beats a precise 3GPP acronym. No
+  `upperLayer*`/`lowerLayer*` where there is no real layer relation.
+  Discuss gate and module names with the user BEFORE implementing. Never
+  name the gates of a module that is not a network layer `ifIn`/`ifOut`:
+  INET's `InterfaceTable` takes any module with those gate names next to a
+  NIC for a network layer and calls `getIndex()` on them (throws for scalar
+  gates).
+- **Node layouts follow INET's node-base grid.** Module rows at y=75/225/375
+  (app, transport, network); dispatchers at x=750 (y=150/300/450, cb 600,
+  bl 750, li 900); interfaces around y=975. Aux column x=125 in 80-unit
+  slots: status 80, mobility 160, interfaceTable 240, clock 320, energy*
+  400-560, measurer 640, pcapRecorder 720, environment 800. INET's optional
+  slots stay reserved; Simu5G-only aux modules go below 800. Aux modules get
+  `is=s`. Keep structural placeholders even when functionally unused (e.g. a
+  UE's unconnected link-layer dispatchers): an empty box with its
+  dispatchers reads as structure, without them as a layout error. In Qtenv,
+  INET's `NodeBase` re-lays out gateless aux modules at INITSTAGE_LAST
+  (y in 100-unit steps, in submodule order).
+- **Layout groups (`g=`) may be used**: Qtenv supports them, and neddoc is
+  built with an OMNeT++ version that does too (the released 6.4 IDE editor
+  may still draw group members on top of each other). Moving node aux
+  columns to `g=aux` starts in INET, then follows here.
+- **Moving modules one level deeper into a compound** -- check before the
+  move:
+  - `getParentModule()->par(...)` / `->hasPar(...)` / `->getFullName()` now
+    hit the compound and silently change meaning (often no error). Grep the
+    moved modules for `getParentModule`; fix with local parameters set by
+    the enclosing NED, and `getContainingNode()` for the node name.
+  - `gate(x)->isConnected()` is always true inside a compound, and
+    `isPathOK()` alone is true for an UNCONNECTED gate; the right test is
+    `isConnected() && isPathOK()`.
+  - Keep the inner submodule order as the nodes had it (initialization
+    order). Expect `tplx`/`tilx` to move with `~tNl` and `sz` identical.
+
 # Working rules
 
 - **Never write to GitHub** -- no `git push`, release assets, tags, issues,
