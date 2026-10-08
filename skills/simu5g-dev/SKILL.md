@@ -375,6 +375,14 @@ Each part should have one primary purpose:
   functionality.
 - **Feature** — add new behavior.
 
+Stop after each part, review it, and check with the user (e.g. present
+deviations/improvisations from the plan, future risks, estimated amount of
+work left, etc.) before starting the next.
+
+During implementation, if the work turns out larger than estimated, or
+requires decisions the plan does not cover, stop and ask the user to revise
+the plan.
+
 # Working rules
 
 - **Never write to GitHub** -- no `git push`, release assets, tags, issues,
