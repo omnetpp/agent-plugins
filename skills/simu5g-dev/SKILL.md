@@ -79,10 +79,23 @@ not `doc:` -- e.g. `website: added Releases item to the main menu` or
 `website: docs: README describes how the website is deployed`. Older `doc:`
 subjects on `doc/src/` predate this and are not a counter-example.
 
-Markers in use: `fix:`, `refactor:`, `cosmetics:`, `cleanup:`, `docs:`.
-Features get NO marker -- they keep the plain `<module>: <topic>` form.
+Markers: `fix:`, `refactor:`, `cosmetics:`, `cleanup:`, `docs:`, `test:`
+(`test:` = the commit only adds or changes tests or fingerprint baselines).
 Pick the marker by what the commit actually does, not by which files it
-touches.
+touches. Variants seen in older history -- `rename:`, `refactoring:`,
+`fixes:`, `bugfix:`, `feature:` -- are drift; do not use them or copy them
+as precedent.
+
+Every marker is a claim a reviewer can check: `refactor:`, `cosmetics:`,
+`cleanup:`, `docs:` and `test:` claim that the model's behavior does not
+change; `fix:` claims a correction. NO marker means an INTENDED change of
+behavior or interface: a feature, a deliberate behavior change, a
+restructuring, a removal, a dependency upgrade. These are the commits to read
+carefully, and the candidates for WHATSNEW. There is deliberately no
+`feature:` marker: the markers are useful because they are exhaustive, and an
+optional one would make both `grep` and the absence of a marker meaningless.
+To flag an unmarked commit whose effect matters, end the subject with
+`(behavior change)` or `(fingerprint change: <what moved>)`.
 
 A fix of a LATENT bug -- one that no current configuration reaches -- is still
 `fix:`, never `refactor:`. `refactor:` is reserved for changes whose behavior
@@ -91,11 +104,11 @@ difference" does not make a change a refactoring. A preparatory change that
 removes a trap for the next commit is a fix, too. Write "latent" and
 "fingerprint-inert" in the body, in the "Fault: ... Fix: ..." form below.
 
-The markers separate the risk classes: a `fix:` commit is where behavior
-(and thus fingerprints) may legitimately change; `refactor:`, `cosmetics:`,
-`cleanup:` and `docs:` commits are expected to be fingerprint-inert. The
-markers also make each class of change mechanically greppable when
-assembling release notes or auditing what moved between releases.
+So the markers separate the risk classes: `fix:` and unmarked commits are
+where behavior (and thus fingerprints) may legitimately change; `refactor:`,
+`cosmetics:`, `cleanup:`, `docs:` and `test:` commits are expected to be
+fingerprint-inert. They also make each class of change mechanically greppable
+when assembling release notes or auditing what moved between releases.
 
 A fix is normally its OWN commit. When a fix exceptionally rides inside a
 larger feature commit, the message body must explicitly call out the fault
