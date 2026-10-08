@@ -62,6 +62,7 @@ omnetpp-git-workflow/          staging/commit/rebase discipline, PR integration
 omnetpp-sim-debugging/         vanishing packets, gdb, pcap diffing, log attribution
 omnetpp-branch-cleanup/        opp_repl-driven branch cleanup (framework + walkthrough)
 omnetpp-branch-rebase/         opp_repl-driven staged rebase framework
+omnetpp-review-brief/          reviewer's brief for a PR/branch: NED interface, duties, data, communication
 omnetpp-release-engineering/   OMNeT++ core ChangeLogs, API-changes.txt, WHATSNEW
 
 # INET (inet-*)

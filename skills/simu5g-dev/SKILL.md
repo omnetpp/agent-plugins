@@ -46,7 +46,23 @@ When the work changes INET itself (an INET fix proposed for a Simu5G need), the
 
 Key pairs: fingerprints -> `omnetpp-fingerprint-testing` +
 `simu5g-fingerprint-testing`; refactoring -> `omnetpp-model-refactoring`
-(+ per-step fingerprint gate); git -> `omnetpp-git-workflow`.
+(+ per-step fingerprint gate); git -> `omnetpp-git-workflow`; review
+briefs -> `omnetpp-review-brief`.
+
+Review briefs (`omnetpp-review-brief`) in Simu5G:
+
+- Write the brief to
+  `~/projects/ai-plans/reports/review-<branch-or-pr>-<YYYY-MM-DD>.md`.
+- Pass `--external $INET_ROOT/src` to `ned_interface_diff.py`, and check
+  that `INET_ROOT` points to the INET version the tip builds against.
+- Rule conflicts: check against the "Architecture red lines" and
+  "Architecture rules" sections below.
+- The commit markers are claims for section E: an unmarked commit is
+  where intended behavior changes are expected; `refactor:`/`cosmetics:`/
+  `cleanup:`/`docs:`/`test:` commits must not change the NED interface,
+  defaults or baselines.
+- A range that touches `emulation/` lists it as an unchecked area: the
+  fingerprint suite does not cover it.
 
 # Build and run
 
