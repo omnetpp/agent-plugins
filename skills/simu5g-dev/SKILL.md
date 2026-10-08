@@ -21,8 +21,10 @@ the Simu5G skills means "INET's rule applies", not "no rule".
 INET skills also describe INET's own repo mechanics: test runner commands and
 flags, `INET_ROOT`/setenv, baseline file locations, the WHATSNEW workflow.
 These do NOT carry over literally. Use the Simu5G counterpart where one exists,
-and check it, because the same flag can mean something different (e.g.
-fingerprint `-m`: a regex in INET, a substring in Simu5G):
+and check it in the Simu5G tool's source, because commands and flags differ
+(e.g. INET runs `./fingerprinttest`; Simu5G runs the `./fingerprints` wrapper,
+which takes the binary and the directory from `SIMU5G_ROOT` -- a stale or
+foreign `SIMU5G_ROOT` silently tests another worktree):
 
 | INET skill                | In Simu5G                                         |
 |---------------------------|---------------------------------------------------|

@@ -2,8 +2,9 @@
 name: simu5g-fingerprint-testing
 description: >
   Simu5G specifics for fingerprint testing: the tests/fingerprint/fingerprints runner (NOTE:
-  -m is a substring filter here, unlike INET), the fp_stdout.log-only triage protocol, and
-  updating simulations.csv. Use when running, triaging, or re-recording fingerprint tests in
+  -m is a regex line filter; a filter matching nothing exits 0), the fp_stdout.log-only triage
+  protocol, re-recording rules (when no consent is needed), and when the suite can be skipped.
+  Use when running, triaging, or re-recording fingerprint tests in
   the Simu5G repo. Builds on the generic omnetpp-fingerprint-testing skill — read that first
   for concepts, ingredient semantics, drift interpretation, and the acceptance discipline.
 ---
@@ -19,13 +20,25 @@ Everything below is Simu5G-specific.
 (cd tests/fingerprint/ && ./fingerprints -d) 2>&1 | tee fp_stdout.log
 ```
 
-- Runs all simulations (examples/, showcases/, ...) against the baselines in
-  `tests/fingerprint/simulations.csv`. Full suite ≈ a few minutes.
+- Runs all simulations against the baselines in every `*.csv` in
+  `tests/fingerprint/` (`simulations.csv`, `simulations_d2d.csv`). Full suite
+  ≈ a few minutes.
 - `-d` = debug binary.
-- **`-m <substring>`** — filter to simulations whose config name/directory
-  contains any of the given substrings. This is a plain SUBSTRING match
-  (unlike INET's `fingerprinttest`, where `-m` takes a regex). Partial runs
-  are for intermediate steps only — finish with the full suite.
+- **`-m <regex>`** — line filter, as in INET's `fingerprinttest`: Python
+  `re.search` against `<workingdir> <args> <tags>` of each CSV row. Repeatable;
+  a row runs if ANY `-m` matches. Without regex metacharacters it acts as a
+  substring match. `-x <regex>` excludes rows the same way.
+- **A filter that matches nothing is NOT an error**: the runner prints
+  `NO TESTS RAN` and "Test results equals to expected results", and exits 0.
+  The classic cause is a comma list: `-m demo,standalone_drb` is ONE regex
+  with a literal comma. Use `-m demo -m standalone_drb` or
+  `-m 'demo|standalone_drb'`, and always check the number of tests run.
+- Partial runs are for intermediate steps only — finish with the full suite.
+- **Never `pkill -f` a fingerprint run** (nor its `simu5g`/`simu5g_dbg`
+  children): other sessions may be running the suite in a sibling worktree
+  with pattern-identical command lines. Trace the ancestry (`ps -o ppid=`) up
+  to your own process and kill by PID -- this also applies to the orphaned
+  simulation children a killed run leaves behind.
 
 ## Triage protocol
 
