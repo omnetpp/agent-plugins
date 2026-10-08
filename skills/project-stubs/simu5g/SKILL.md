@@ -52,5 +52,7 @@ Key pairs: fingerprints → `omnetpp-fingerprint-testing` +
   directory via the tool's cwd parameter rather than `cd` in the command.
   Example: `simu5g_dbg -u Cmdenv -c VoIP-DL-MultiQfi omnetpp_drb.ini`
 - Multi-step refactoring gate (per step): compile debug → commit → run
-  fingerprint suite → do NOT proceed until green; never update fingerprint
-  baselines without explicit user consent.
+  fingerprint suite → do NOT proceed until green. Re-record baselines without
+  asking only when the evidence is complete, and skip the suite only for
+  changes that cannot affect behavior -- both as defined in
+  `simu5g-fingerprint-testing`.
