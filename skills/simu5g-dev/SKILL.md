@@ -57,11 +57,14 @@ Review briefs (`omnetpp-review-brief`) in Simu5G:
   that `INET_ROOT` points to the INET version the tip builds against.
 - Rule conflicts: check against the "Architecture red lines" and
   "Architecture rules" sections below.
-- The commit markers are claims for section E: an unmarked commit is
-  where intended behavior changes are expected; `refactor:`/`cosmetics:`/
+- The commit markers are claims for the claims check: an unmarked commit
+  is where intended behavior changes are expected; `refactor:`/`cosmetics:`/
   `cleanup:`/`docs:`/`test:` commits must not change the NED interface,
-  defaults or baselines.
-- A range that touches `emulation/` lists it as an unchecked area: the
+  defaults or baselines. The commit-structure rules of this skill (group
+  prefix, "Tests that found bugs go first", citation format) are checked the
+  same way.
+- Test oracles in `tests/` are held to the spec-oracle rule under Testing.
+- A range that touches `emulation/` says so in the verification line: the
   fingerprint suite does not cover it.
 
 # Build and run
