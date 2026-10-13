@@ -297,6 +297,11 @@ its own line, body never parsed as RST. Anchor/self-check philosophy shared with
   `[unit]` automatically. For a derived quantity with no convertible unit, put the unit in the axis
   title and clear `df["unit"] = ""`, but leave the unit props **declared-but-empty** — do not delete
   them (see "Axis units and labels").
+- **A time x axis is titled `Simulation time [s]`**, not `Time`, `time [s]` or `t [s]`, so the reader
+  cannot take it for wall-clock time. Set it as `xaxis_title` in the dialog; on a line chart that
+  keeps the empty unit props, hand-set it (`p.set_xlabel("Simulation time [s]")`), because the
+  title→x-label fallback is off there (see "Axis units and labels"). Use another unit only when the
+  data needs it (`Simulation time [ms]`), and match the wording in the caption and prose.
 - **Always guard empty data**: `if df.empty: raise chart.ChartScriptError(...)`.
 - **Input patterns are relative to the `.anf` dir** — `results/General-*.sca` + `…-*.vec`, or
   config-specific `results/<Config>-#0.sca`. Keep them as patterns so the chart survives re-runs.
