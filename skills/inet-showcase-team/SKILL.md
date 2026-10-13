@@ -128,7 +128,9 @@ knowledge the showcase will be built from:
 - `research/measurements.md` — the analyst: every number with its extraction provenance
 
 Assemble the pack before the author's first write, and refresh it before every subsequent one. Hand
-it over as **paths**, together with `plan.md` and `decisions.md`.
+it over as **paths**, together with `plan.md`, `decisions.md`, and
+`inet-showcase-creator/references/exemplars.md` — the measured house style of eleven shipped pages,
+which is the spec the page is held to for voice, figure treatment and size.
 
 **Research artifacts go to the author; review reports never do.** The distinction is what the file
 is *about*: `research/*.md` is knowledge about the topic, and the author needs all of it. A
@@ -182,7 +184,7 @@ asking about configs"). Honour it for the rest of the job and write it down.
 | **U2** | G2, after the gap table | **Feasibility verdict.** Proceed as-is / narrow the claim to X / implement the missing capability first / abandon. The gap table with both axes goes with it. |
 | **U3** | G3, before configs are written | **Network topology.** How many nodes, wired or wireless, which node types, what the picture looks like. Show 2–3 candidates as sketches; this drives every figure and every run, and it is expensive to change later. |
 | **U4** | G3, after the topology is fixed | **Simulation configurations.** The config matrix: what each `[Config]` varies, the baseline against which the effect is read, `sim-time-limit`, seeds and repetitions. |
-| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the run walkthrough outline for Results (the run as numbered steps in time order: nodes, messages exchanged, state changes, the step where the problem shows and the step where the mechanism resolves it); the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each walkthrough step and takeaway (sequence chart, packet inspector, video, canvas screenshot, chart); which artifact is the hero figure; and which artifact shows the problem before any shows the fix. |
+| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the run walkthrough outline for Results (the run as numbered steps in time order: nodes, messages exchanged, state changes, the step where the problem shows and the step where the mechanism resolves it); the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each walkthrough step and takeaway (sequence chart, packet inspector, video, canvas screenshot, chart); which artifact is the hero figure; which artifact shows the problem before any shows the fix; and the **size budget** (total words, figure count, words per figure, and the words Results may spend). |
 | **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor; then, as its second half, the rendered placeholder page (G3e). This is the existing attention point A. |
 | **U7** | G4 | **Behavioral verdict.** Whether the run demonstrates the claim; authorization for a bounded tuning loop; any claim change or suspected model bug. |
 | **U8** | G5 | **Ship.** Remaining `minor` items, reviewer-versus-author disagreements, and the decision to move the plan to `plan/done/`. |
@@ -259,8 +261,9 @@ Each reviewer gets, in its prompt:
 4. **The claim and the takeaways** — the one-sentence answer to "what will a reader see this
    showcase prove?", and the two to four things the reader should leave with. This is a test
    specification, not authoring rationale.
-5. **The detail dials** — the three 0–10 settings from Phase 1 (standards detail, INET
-   configuration detail, implementation detail), because they bound what anyone may ask for.
+5. **The detail dials and the size budget** — the three 0–10 settings from Phase 1 (standards
+   detail, INET configuration detail, implementation detail) and the U5 size budget with the page's
+   current numbers, because together they bound what anyone may ask for.
 6. **Persona parameters** where the role takes them: which academic persona, which industry segment.
 7. **At a research gate**, the path of its `research/*.md` file and the instruction that the research
    comes before the opinion — the standard opened, the search run, the code read.
@@ -304,10 +307,12 @@ segment spoken for (industry) / code paths read (INET) / configs run, command an
 - **Lens**: why this matters from my seat
 - **Evidence**: src/…:NNN | RFC NNNN §x | IEEE 802.1Q-2022 cl. 8.6.8 | measured value | run output
 - **Proposed change**: what must become true (not finished prose)
-- **Cost**: words / figures / configs / sim time
+- **Cost**: net words (+/-) / figures / configs / sim time
 
 ## Contributions
-Things to ADD that nobody asked for and the showcase is worse without. Same fields.
+Things to ADD that nobody asked for and the showcase is worse without. Same fields, plus
+**Displaces**: what comes out to pay for it (a sentence, a paragraph, a figure), unless the page is
+under its size budget by more than the cost.
 
 ## Cut
 At least one thing to remove, with what is lost by removing it.
@@ -328,6 +333,10 @@ Each role's charter defines what a blocker means **from its seat** — a univers
 broken prerequisite chain, not a wish for more detail; an industry-expert blocker is a claim that
 would misinform a real decision, not a preference about scale. Hold them to their own definitions; a
 finding that misses its role's bar gets demoted on merge, with the reason recorded.
+
+An unanswered question or a missing comparison is `major` only when, without it, the reader cannot
+reach or trust a takeaway. Otherwise it is `minor`: collected once, never looped on. Most growth in
+team-built pages came from `major` findings that were really curiosity.
 
 ## Gate map
 
@@ -420,6 +429,14 @@ at which key; which evidence type carries each step and takeaway (sequence chart
 inspector, video, canvas screenshot, chart); which artifact is the **hero figure** on the first screen; and which
 artifact shows the problem before any shows the fix. Consult the analyst on extractability and the
 university expert on whether the arc holds and which evidence would actually teach.
+
+The storyboard also declares the **size budget**, and U5 approves it into `decisions.md`: total
+words, figure and video count, words per figure, and the share Results may spend. Take the numbers
+from `exemplars.md` §1 "Paragraph and sentence style": the eleven shipped pages run 1162–4248 words
+and 150–387 words per figure (median 254). A bigger topic earns more figures, not more words per
+figure. A budget above about 400 words per figure or about 4300 words total needs the user's ruling
+at U5. Cost the run walkthrough explicitly: each walkthrough step gets a lead-in, its figure, and the
+paragraph that reads it; a step with no figure is a candidate to merge into its neighbor.
 
 → **Checkpoint U5.** Present the walkthrough outline and each takeaway with the evidence proposed for
 it. A walkthrough that only lists outcomes and never says which message goes where is a finding. A takeaway with no
@@ -524,11 +541,18 @@ On the finished `doc/index.rst` with its Results artifacts.
   behavioral assertion traced to a result file or artifact, every figure's caption and the prose that
   reads it out checked against what the figure actually plots, every config re-run after the final edits, and the shipped
   `results/` confirmed to match the shipped page.
+- **Size check** (the analyst): words, figures, words per figure, paragraphs over 70 words,
+  admonitions, and section names, each against the U5 budget and `exemplars.md`. Over budget is a
+  `blocker` until a change order brings the page back inside it or the user raises the budget.
 
 Order every `blocker` and `major`; collect `minor` and order them once at the end. Re-review the
 revised doc. Stop when a round surfaces no blockers or majors, or after **3 rounds**. **On recurrence**
 — a reviewer re-flags something already addressed — stop and hand it to the user; that is
 author-versus-reviewer disagreement, a human call, not something to churn on.
+
+After the last correctness round, issue one **subtraction order**: cut, merge, and reword only;
+nothing added. Its target is material that fails the load-bearing test (ladder rung 4) and any
+section over its share of the budget. The analyst repeats the size check on the result.
 
 → **Checkpoint U8.** Ship: the remaining `minor` items with your recommendation on each, every
 author-versus-reviewer disagreement, and anything the panel wanted that the budget dropped. The user
@@ -544,8 +568,8 @@ decides what ships, what becomes a follow-up, and when the plan moves to `plan/d
 4. **Classify** every finding: **accept**, **relocate** (accepted, but it belongs at a different
    point in the reading order, or in `Limitations`), **reject** (with a reason), **contest** (two
    lenses disagree), **escalate** (the user must rule).
-5. **Write `merge.md`**: the classification of every finding, the running cost total against the
-   plan's budget, and the list going to cross-examination.
+5. **Write `merge.md`**: the classification of every finding, the running net word delta against
+   the U5 size budget, and the list going to cross-examination.
 6. **Write `change-order.md`** — never prose, only instructions.
 
 ### Change order format
@@ -558,7 +582,12 @@ decides what ships, what becomes a follow-up, and when the plan moves to `plan/d
 - Placement: section "The Model", immediately after the topology figure
 - Rationale: <one sentence; the reviewer's reasoning, not yours>
 - Constraint: stays within dial "standards detail = 4"
+- Net words: +60, paid by C4 (cut the second retransmission paragraph in "Results")
 ```
+
+**Net-zero rule.** An item with a positive net word delta names the item that pays for it. When the
+running total in `merge.md` is over budget, the same change order carries the cuts that bring it
+back; a change order never leaves the page further over budget than it found it.
 
 State outcomes, not sentences. "Define *access category* before the first EDCA parameter appears" is
 an order; a drafted paragraph is you authoring. If you cannot express an item without writing the
@@ -592,8 +621,12 @@ Apply in order. Stop at the first rung that settles it.
    relocating the material into a box: that separates a claim from its justification, and it is how
    a page ends up justifying its own first figure twenty screens later. If accepted depth has no
    natural place in the flow, the scope is wrong — drop it, or renegotiate the claim with the user.
-5. **Cost budget.** When accepted contributions exceed the plan's declared budget (configs, figures,
-   target length), rank by severity, then by cross-lens agreement, and drop the tail **explicitly** in
+   **Load-bearing test** before placing anything: if deleting the sentence changes neither what the
+   reader concludes nor what the reader could do, it is inventory, not depth — drop it. Depth that
+   passes the test but serves no takeaway has two house-style homes: the `literalinclude`d config
+   (the parameter speaks for itself) and `Try It Yourself`. The default is to drop, not to relocate.
+5. **Cost budget.** When accepted contributions exceed the U5 size budget (words, figures, words
+   per figure, configs), rank by severity, then by cross-lens agreement, and drop the tail **explicitly** in
    `merge.md`. A silently dropped finding reads later as one that was never raised.
 6. **Escalate to the user** when two blockers are mutually exclusive, a dial is contested, a scenario
    needs implementation work, or the claim itself must change.
@@ -641,6 +674,10 @@ withdrawn in practice; treat it as such and say so in `merge.md`.
 - **Convening on nothing.** A panel on a plan without expected observables, or on a page without
   Results, produces speculation. Have the artifact ready first.
 - **Running past the cap.** Three rounds, then the user decides.
+- **Growing the page by consensus.** A section that exists because a seat asked for it; a round that
+  adds net words with no cut ordered; an arc whose sections could be put in another order without the
+  page getting worse. Four reviewers can each add a reasonable paragraph per round; only the
+  budget stops the sum.
 - **Losing the trail.** Every rejection needs a recorded reason.
 - **Losing the story.** A merge whose accepted items, once applied, leave the fix shown before the
   problem or a mechanism explained before the problem it solves. Check the order after every change

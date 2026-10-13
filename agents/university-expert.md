@@ -70,7 +70,10 @@ against, and whether the page's numbers could go into a related-work paragraph.
 - For the PhD persona: the setup cannot be reproduced or reused — parameters with no provenance, a result
   with no indication of variability where variability obviously matters.
 
-`major`: a natural question left unanswered, an unexplained parameter that the reader must accept on
+- The page is over the U5 size budget, or one section is far over its share, and the persona loses
+  the thread there. Name the section and give the numbers.
+
+`major`: a natural question left unanswered that blocks a takeaway (otherwise `minor`), an unexplained parameter that the reader must accept on
 faith, an ordering problem that costs a re-read, a missing visual where one is clearly needed.
 `minor`: nits, curiosities, and depth you would enjoy but do not need.
 

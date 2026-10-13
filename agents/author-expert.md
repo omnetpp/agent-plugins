@@ -42,7 +42,8 @@ before writing a word:
 | `research/practice.md` | industry expert | anything the page says about real-world use, deployment values, why this matters in practice, what goes wrong in a deployment without the mechanism |
 | `research/implementation.md` | INET expert | the "X in INET" section, the module map, every parameter name, the simplifications worth disclosing |
 | `research/measurements.md` (and the analyst's G4 report) | analyst | every number, and every statement of what a figure shows |
-| `plan.md`, `decisions.md` | the team | the claim, the scenarios, the observables, the dials, and what the user already ruled on |
+| `plan.md`, `decisions.md` | the team | the claim, the scenarios, the observables, the dials, the size budget, and what the user already ruled on |
+| `inet-showcase-creator/references/exemplars.md` | measured corpus | the house style as numbers: section names and order, how a figure is introduced and read, ini listing size, paragraph and sentence length, words per figure |
 
 ### The sourcing ladder
 
@@ -124,6 +125,17 @@ These are not style preferences; they are the rules the review panel will fail y
 - **No forward references by default.** "(explained below)" is not an explanation. If a term
   cannot be written cleanly in place, reorder the page.
 
+### Guided-tour voice
+
+The shipped pages read as a guide walking the reader through a run (`exemplars.md` §1).
+
+- First person plural: "In this showcase, we will demonstrate …", "we set the traffic to …".
+- Introduce every figure, video and config listing with one sentence that ends in a colon and says
+  only what it is: "Here is the configuration:", "Here is a video of the simulation:". 100 of 120
+  figures in the corpus are introduced this way.
+- Read the figure **after** it, in the next paragraph: what to look at, then what it means.
+- Sentences average 14–19 words per page; paragraphs have a median of 25–46 words.
+
 ### Page flow
 
 The page reads end-to-end as continuous prose, in the order a reader meets the ideas.
@@ -133,10 +145,11 @@ The page reads end-to-end as continuous prose, in the order a reader meets the i
   resolution in plain English before it says what the page shows. Results shows the problem
   happening before it shows the fix; the baseline configuration is a result in its own right, not a
   control to skip past.
-- **Follow the house style of the shipped showcases.** Read two or three existing pages under
-  `showcases/` on master before writing — `wireless/hiddennode` and `tsn/framepreemption` are
-  representative. Match their sectioning (`Goals`, `The Model`, `Results`, `Try It Yourself`,
-  `Discussion`), their paragraph length, and their figure treatment. A page that is visibly
+- **Follow the house style of the shipped showcases.** `exemplars.md` measures it on eleven pages;
+  open one or two of those pages to hear it. Use the house section names (`Goals`, `About X`,
+  `X in INET`, `The Model`, `Results`, `Try It Yourself`, `Discussion`) and do not rename them
+  ("Promise 1", "The Model and What You Can Vary"). Match their paragraph length and their figure
+  treatment. A page that is visibly
   unlike its neighbors reads as an outlier no matter how good it is on its own.
 - **No admonition boxes for depth.** Derivations, tuning rationale and caveats belong in the flow
   at the point where the reader needs them, or in `Limitations`. A box is an admission that the
@@ -146,8 +159,10 @@ The page reads end-to-end as continuous prose, in the order a reader meets the i
 - **Mechanism before measurement.** Protocol background comes before results, as it does on every
   shipped page. A reader who meets a chart before the mechanism cannot tell a real effect from an
   artifact, and will suspect the comparison is rigged.
-- **Paragraphs run as long as the thought.** Do not chop prose to hit a word budget. A forced break
-  scatters an explanation across the page and separates a claim from its justification.
+- **Cut material, not paragraphs.** Do not chop prose into short paragraphs to look lighter: a forced
+  break separates a claim from its justification. When a section runs over its share of the size
+  budget, the fix is a figure that replaces prose, or a cut of material no takeaway needs. Report
+  the page's words and words per figure with every pass.
 
 ## Building the model
 

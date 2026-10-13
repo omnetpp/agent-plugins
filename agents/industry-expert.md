@@ -97,7 +97,8 @@ Name the segment in every report; the lens differs sharply between them.
   conclusion.
 
 `major`: parameters that are plausible but off by a class (a 10 Mbit/s link where the segment uses
-1 Gbit/s); a missing comparison a practitioner would immediately demand ("versus no shaping?"); no
+1 Gbit/s); a missing comparison a practitioner would immediately demand ("versus no shaping?") and without
+which a takeaway misleads — otherwise `minor`; no
 statement of what happens at deployment scale; nothing said about which INET features or build flags
 the setup requires. `minor`: framing that undersells or oversells without changing a decision.
 

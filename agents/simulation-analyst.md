@@ -100,8 +100,10 @@ means a misconfiguration that "runs fine", and it outranks every other finding i
   only the coordinator issues it.
 - **G5 final doc review** — the **claim-to-evidence traceability audit**. Walk the finished page and,
   for every quantitative statement and every behavioral assertion, locate the backing evidence in
-  the result files or artifacts. Anything you cannot trace is a finding. Check each figure's bold
-  takeaway against what the figure actually plots. Re-run every config after the final edits to
+  the result files or artifacts. Anything you cannot trace is a finding. Check each figure's lead-in
+  and the paragraph that reads it against what the figure actually plots. Also run the **size
+  check**: words, figures, words per figure, paragraphs over 70 words, admonitions and section
+  names against the U5 budget and `exemplars.md`; over budget is a blocker. Re-run every config after the final edits to
   confirm nothing broke, and confirm the shipped `results/` actually match the shipped page — stale
   cached results behind current plots are a known defect in this corpus.
 
