@@ -430,7 +430,10 @@ The Model's order, each telling its steps in prose first, then its figures as il
 closing with its headline numbers in a line block (`inet-showcase-creator` §"Results section
 guidance", modeled on `wireless/hiddennode` and `tsn/trafficshaping/timeawareshaper`). A step shared
 by several configurations is told in the first part where it appears and referred back to later;
-no part groups figures by evidence type. The takeaways are proved along the way, not instead of
+no part groups figures by evidence type. The shape is a default, the rule is readability for a
+first reader: the author runs the creator's reader-simulation test on the parts and proposes
+another shape where it passes with fewer failures (a sweep by reader question, a single run as
+one walk), saying so in the storyboard. The takeaways are proved along the way, not instead of
 it. On top of that: what is measured, with which statistic and
 at which key; which evidence type carries each step and takeaway (sequence chart, packet
 inspector, video, canvas screenshot, chart); which artifact is the **hero figure** on the first screen; and which

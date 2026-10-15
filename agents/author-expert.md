@@ -138,7 +138,10 @@ The shipped pages read as a guide walking the reader through a run (`exemplars.m
   that is periodic rather than solicited). Do not read the whole figure back: prose telling plus a
   full figure reading is the same content twice. No primer on how to read a sequence chart; one
   clause in the lead-in of the first chart is enough.
-- In Results, one `~` part per configuration in The Model's order, from the storyboard's Results
+- In Results the rule is readability for a first reader who has read the rest of the page; the
+  shape below is the default that usually delivers it (`inet-showcase-creator` §"Results section
+  guidance" has the reader-simulation test and the cases where another shape passes it better).
+  Default: one `~` part per configuration in The Model's order, from the storyboard's Results
   parts. Time order holds inside a part, never across the section: do not group figures by
   evidence type. A phase shared by several configurations is told in the first part where it
   appears and referred back to later in one clause. Keep timestamps and packet names out of the
