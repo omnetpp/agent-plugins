@@ -109,6 +109,13 @@ to `showcases/`. Pages are 1162-4248 words (median 2542), 212-611 lines.
   chart after. Charts come in pairs (count + throughput) in aggregation, fragmentation, coexistence.
 - Zoomed copy right after an overview chart: clockdrift (8), framepreemption (1). Predictions
   before the numbers ("expect"): 3 of 11. Numbers approximated with "about": 8 of 11.
+- Results shape on the multi-configuration pages outside the eleven (`wireless/hiddennode`,
+  `tsn/trafficshaping/timeawareshaper`, `wireless/qos`): one `~` part per configuration in the
+  configurations' order; each part tells the behaviour in prose and then shows the figure
+  ("The following sequence chart ...", "Here is ..."), with almost no figure-reading prose and
+  almost no timestamps; the headline numbers close a part in a line block
+  (`| The number of received packets ...: **1966**`). This is not the bold-takeaway-under-a-
+  figure anti-pattern below: it is one line block per part, after the prose, not under a figure.
 - Implementation caveats named as such ("limitation", "implementation detail", "currently"): 5 of 11.
 
 ### Admonitions

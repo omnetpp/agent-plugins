@@ -26,11 +26,11 @@ The page keeps a fixed order, and every decision in this skill serves it:
 3. **X in INET** says how INET expresses the mechanism.
 4. **The Model** shows the network and, where the topic allows, a configuration in which the
    problem is visible and one in which the mechanism is on.
-5. **Results** walks the reader through what happens when the simulation runs: which node
-   sends which message to whom and why, what state changes, and where the non-obvious moment
-   is. The problem happens before the resolution. The walkthrough proves the claim as a side
-   effect of showing it; a figure that only proves a point, with no one explaining what
-   happens in it, does not teach.
+5. **Results** tells the reader what happens when the simulation runs, one part per
+   configuration in The Model's order: which node sends which message to whom and why, what
+   state changes, and where the non-obvious moment is. The problem happens before the
+   resolution. The telling proves the claim as a side effect of showing it; a figure that
+   only proves a point, with no one explaining what happens in it, does not teach.
 
 For a tool or visualizer showcase the problem is something the reader needs to see or measure,
 and the resolution is the INET feature; the same order holds. The compressed forms in the
@@ -299,6 +299,12 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
     which visualizer), and the sentence that will stand under it. One artifact can cover
     several steps. One hero artifact per claim. Every further artifact names the step or
     takeaway it serves, or it is cut
+  - the **Results parts**: the walkthrough steps mapped onto one part per configuration, in
+    The Model's order, each part with its figures, its one closing headline line and the
+    steps it tells; a step shared by several configurations is told in the first part
+    where it appears and only referred back to later. The walkthrough outline is the
+    analysis artifact (Phase 2.7 checks it against the eventlog); the Results parts are
+    what the page shows
 - Final path: `showcases/<category>/<showcaseName>/`
 - Which `index.rst` to update
 - Files to create
@@ -410,9 +416,18 @@ The Model
 
 Results
 -------
-[Walk through the run in time order, following the storyboard's walkthrough outline:
- what happens, which messages are exchanged, what the reader sees in each figure.
- Performance charts, if any, after the walkthrough]
+[One or two sentences on what every part below has in common: what the charts
+ plot, an artifact every run shows. Then one part per configuration:]
+
+[Config Name]
+~~~~~~~~~~~~~
+[What happens, told in prose first: which node sends which message to whom and
+ why, what changes. Then the figure as illustration ("Here is ...", "The
+ following sequence chart shows ..."), with at most one sentence on what is not
+ obvious in it. A mechanism shared with an earlier part is referred back to, not
+ retold. Close the part with the headline numbers in a line block:
+ | Outage on the way out: **5.95 s**
+ | Round-trip time while away: **40 ms**]
 
 Sources: :download:`omnetpp.ini <../omnetpp.ini>`, :download:`*.ned <../*.ned>`
 
@@ -433,17 +448,19 @@ Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting 
 - **Configuration parameters explained once:** Explain parameters (with rationale for non-obvious choices) in the INET section. Per-config sections should just show the literalinclude and walk through the scenario behavior.
 - **Implementation notes/limitations:** Place near the implementation description in the INET section, not at the end or scattered in config sections.
 
-**Results section guidance:** Results is a guided walk through the run, not a list of verdicts. Its job is that the reader understands how the protocol works in this scenario; the claim is proved along the way. Write it from the storyboard's walkthrough outline:
+**Results section guidance:** Results tells what happens in the run, not a list of verdicts. Its job is that the reader understands how the protocol works in this scenario; the claim is proved along the way. Its shape is the one the human-written pages use (`wireless/hiddennode`, `tsn/trafficshaping/timeawareshaper`, `wireless/qos`), written from the storyboard's Results parts:
 
-- **Narrate in time order.** "At 1.2 s the mobile node leaves the home link. Its access router notices the new attachment and sends a Proxy Binding Update to the home agent..." Each paragraph covers one step: who acts, what message goes where, why, and what changes as a result.
+- **One part per configuration, in The Model's order.** The reader built a mental model of each configuration in The Model; Results fills those slots in the same order. Do not group by evidence type (all charts, then the video, then all sequence charts, then packets): every regrouping makes the reader restart the run, and a reader who only cares about one configuration cannot stop after its part. Time order holds inside a part, never across the section. Remarks that hold for every run (a boot artifact on all charts, what the axes are) go in the one or two sentences that open the section, not under the first figure.
+- **Prose first, figure as illustration.** Tell what happens in plain sentences: who acts, what message goes where, why, what changes. Then show the figure ("Here is ...", "The following sequence chart shows ..."). Spend at most one sentence on what is not obvious in the figure (the doubled labels in an access point's band, a periodic advertisement among the solicited ones); do not read the whole figure back. Figure-reading prose after a full prose telling is the same content twice. No primer on how to read a sequence chart; one clause in the lead-in of the first chart ("each horizontal line is one node, each arrow one hop") is enough.
+- **Tell the shared mechanism once.** When several configurations share a phase (the same handover, the same registration), tell it fully in the first part where it appears and refer back later in one clause ("the same up to the Binding Acknowledgement"). Never make the reader hop between configurations inside one part.
 - **Name the messages and the fields that matter.** Say which message it is, who sends it, who receives it, and the one or two fields that drive the behavior (a flag, a lifetime, a sequence number, an address). Give each message's action as a verb (see references/writing.md). Show the packet inspector or a sequence chart where the field is visible.
-- **Read every figure out loud.** Before or after each sequence chart, screenshot or video, the prose tells the reader where to look and what they see: which arrow is which message, which table row changed, which node turns red. A figure without that reading is a puzzle, not evidence.
+- **Few numbers in the prose.** A timestamp belongs in a sentence only where the length of a wait is the point; otherwise name the message, not the time. A ping name or a 3-decimal time in nearly every sentence makes a page unreadable even when its order is right: order and number density are separate dials, fix and check both. The headline numbers of a part (an outage, a plateau, a count) go in a bold line block that closes the part, as hiddennode's `| ... **1966**` does, once, not under each figure and not repeated in prose.
 - **Point out the non-obvious.** A retransmission, a message that is absent, a timer that fires, a race, a surprising order, a state that lasts longer than expected. These are why the reader opens the page; say why they happen.
-- **Problem before resolution.** Where the page has a baseline, walk the problem run first, then the run with the mechanism, and name the step where the two diverge.
-- **A "why" the model cannot answer is a finding.** Explaining each message against the eventlog also checks the model: on the Proxy Mobile IPv6 page it exposed three INET defects (a stale destination cache, a routing loop, a duplicate Router Discovery entry) and a behaviour that breaks RFC 4862, all hidden by the outcome-only page. Do not write around such a gap; hand it to the user as a 2.7 finding.
-- **Numbers and charts follow the walkthrough.** A performance chart confirms at scale what the walkthrough showed for single messages. It does not replace the walkthrough.
+- **Problem before resolution.** Where the page has a baseline, its part comes first, then the configuration with the mechanism, and the prose names where the two diverge.
+- **A "why" the model cannot answer is a finding.** Explaining each message of the walkthrough outline against the eventlog (Phase 2.7) also checks the model: on the Proxy Mobile IPv6 page it exposed three INET defects (a stale destination cache, a routing loop, a duplicate Router Discovery entry) and a behaviour that breaks RFC 4862, all hidden by the outcome-only page. Do not write around such a gap; hand it to the user as a 2.7 finding. The message-by-message walk is the analysis; the page shows what the analysis found, in the shape above.
+- **Charts sit in their part.** A configuration's performance chart belongs in that configuration's part, next to the behaviour it quantifies, with a one-sentence reading. It does not replace the telling, and it is not pulled forward into a chart gallery.
 
-A reader who finishes Results should be able to retell the exchange message by message and say why each message was sent. The evidence type for each walkthrough step and takeaway is chosen in the storyboard (Phase 1), from this list:
+A reader who finishes Results should be able to retell each configuration's exchange message by message and say why each message was sent, and should know after each part which number to remember. The evidence type for each walkthrough step and takeaway is chosen in the storyboard (Phase 1), from this list:
 
 - **Videos/animations** — best for time-dependent behavior (protocol state changes, tree building, failover, handover). Show the simulation running with appropriate visualizers. Most showcases benefit from at least one video. Use the `video-recording` skill for the recording workflow.
 - **Qtenv packet inspector screenshots** — best for showcases where packet structure matters (encapsulation, protocol headers, nested packets, tagged frames). Preferred over PCAP/Wireshark screenshots because they show structured protocol layers in a readable tree without introducing an external tool.
@@ -459,9 +476,13 @@ Think about which moments are most surprising or educational for the reader, and
 Spawn one fresh subagent with four paths and nothing else: the draft `doc/index.rst`, the
 closest exemplar's `doc/index.rst`, and `references/exemplars.md` and `references/writing.md`
 from this skill. It returns a list of violations, each with the line, the convention or rule it
-breaks (with the exemplar count or the rule name), and a proposed replacement. Apply them. Run the pass on every draft the user will read — the placeholder
-draft and the final page — so the user's review is spent on narrative and evidence, not on
-idioms, unearned absolutes and section order.
+breaks (with the exemplar count or the rule name), and a proposed replacement. It also
+compares the Results section's shape with the exemplar's, not only its sentences: one part
+per configuration, prose before each figure, how many times the reader's clock restarts
+(target: once per part), how many timestamps and packet names the prose carries, and whether
+each part closes with its headline line block. Apply them. Run the pass on every draft the
+user will read — the placeholder draft and the final page — so the user's review is spent on
+narrative and evidence, not on idioms, unearned absolutes and section order.
 
 ### 2.4 Wire into toctree
 
