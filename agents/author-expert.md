@@ -138,8 +138,13 @@ The shipped pages read as a guide walking the reader through a run (`exemplars.m
   that is periodic rather than solicited). Do not read the whole figure back: prose telling plus a
   full figure reading is the same content twice. No primer on how to read a sequence chart; one
   clause in the lead-in of the first chart is enough.
-- In Results the rule is readability for a first reader who has read the rest of the page; the
-  shape below is the default that usually delivers it (`inet-showcase-creator` §"Results section
+- In Results the rule is readability for a first reader who has read the rest of the page. The reader should only ever have to read forward. The work the page may ask of them is reading the next sentence. It may not ask them to do anything else to follow it, such as:
+  - scroll back to a figure or a paragraph to recover something the current sentence depends on
+  - keep a number in mind until a later paragraph tells them what it measures
+  - decode a figure to reconstruct what the prose did not say
+  - re-order events in their head because the text presents them out of time order
+  - translate a timestamp or a packet name into "which moment of the run is this"
+  The shape below is the default that usually delivers it (`inet-showcase-creator` §"Results section
   guidance" has the reader-simulation test and the cases where another shape passes it better).
   Default: one `~` part per configuration in The Model's order, from the storyboard's Results
   parts. Time order holds inside a part, never across the section: do not group figures by
