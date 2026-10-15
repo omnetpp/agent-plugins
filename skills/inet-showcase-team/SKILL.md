@@ -184,7 +184,7 @@ asking about configs"). Honour it for the rest of the job and write it down.
 | **U2** | G2, after the gap table | **Feasibility verdict.** Proceed as-is / narrow the claim to X / implement the missing capability first / abandon. The gap table with both axes goes with it. |
 | **U3** | G3, before configs are written | **Network topology.** How many nodes, wired or wireless, which node types, what the picture looks like. Show 2–3 candidates as sketches; this drives every figure and every run, and it is expensive to change later. |
 | **U4** | G3, after the topology is fixed | **Simulation configurations.** The config matrix: what each `[Config]` varies, the baseline against which the effect is read, `sim-time-limit`, seeds and repetitions. |
-| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the run walkthrough outline for Results (the run as numbered steps in time order: nodes, messages exchanged, state changes, the step where the problem shows and the step where the mechanism resolves it); the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each walkthrough step and takeaway (sequence chart, packet inspector, video, canvas screenshot, chart); which artifact is the hero figure; which artifact shows the problem before any shows the fix; and the **size budget** (total words, figure count, words per figure, and the words Results may spend). |
+| **U5** | G3 end / G4 start | **Storyboard.** The two to four takeaways a reader leaves with; the run walkthrough outline (the run as numbered steps in time order: nodes, messages exchanged, state changes, the step where the problem shows and the step where the mechanism resolves it) and the **Results parts** it maps onto (one part per configuration in The Model's order, each with its figures and its closing headline line; a shared step told in the first part only); the section list in the exemplar's order, one sentence each; what is measured and with which statistic; which evidence type carries each walkthrough step and takeaway (sequence chart, packet inspector, video, canvas screenshot, chart); which artifact is the hero figure; which artifact shows the problem before any shows the fix; and the **size budget** (total words, figure count, words per figure, and the words Results may spend). |
 | **U6** | end of G3 | **Plan sign-off.** The whole `plan.md`, including the expected observables and the literature anchor; then, as its second half, the rendered placeholder page (G3e). This is the existing attention point A. |
 | **U7** | G4 | **Behavioral verdict.** Whether the run demonstrates the claim; authorization for a bounded tuning loop; any claim change or suspected model bug. |
 | **U8** | G5 | **Ship.** Remaining `minor` items, reviewer-versus-author disagreements, and the decision to move the plan to `plan/done/`. |
@@ -423,8 +423,15 @@ The author drafts the storyboard (`inet-showcase-creator` Phase 1): the two to f
 reader leaves with; the **run walkthrough outline** — the run as numbered steps in time order, each
 naming the nodes, the messages exchanged and the fields that matter, and the state that changes;
 the section list in the exemplar's order, one sentence each; and for every walkthrough step and
-takeaway the evidence artifact that shows it (one artifact may cover several steps). Results walks
-the reader through this outline; the takeaways are proved along the way, not instead of it. On top of that: what is measured, with which statistic and
+takeaway the evidence artifact that shows it (one artifact may cover several steps). The outline is
+the analysis artifact: G4 checks it against the eventlog. The page does not follow it as one long
+timeline. The storyboard also maps it onto the **Results parts**: one `~` part per configuration in
+The Model's order, each telling its steps in prose first, then its figures as illustration, and
+closing with its headline numbers in a line block (`inet-showcase-creator` §"Results section
+guidance", modeled on `wireless/hiddennode` and `tsn/trafficshaping/timeawareshaper`). A step shared
+by several configurations is told in the first part where it appears and referred back to later;
+no part groups figures by evidence type. The takeaways are proved along the way, not instead of
+it. On top of that: what is measured, with which statistic and
 at which key; which evidence type carries each step and takeaway (sequence chart, packet
 inspector, video, canvas screenshot, chart); which artifact is the **hero figure** on the first screen; and which
 artifact shows the problem before any shows the fix. Consult the analyst on extractability and the
@@ -435,13 +442,18 @@ words, figure and video count, words per figure, and the share Results may spend
 from `exemplars.md` §1 "Paragraph and sentence style": the eleven shipped pages run 1162–4248 words
 and 150–387 words per figure (median 254). A bigger topic earns more figures, not more words per
 figure. A budget above about 400 words per figure or about 4300 words total needs the user's ruling
-at U5. Cost the run walkthrough explicitly: each walkthrough step gets a lead-in, its figure, and the
-paragraph that reads it; a step with no figure is a candidate to merge into its neighbor.
+at U5. Cost Results explicitly per part: each part gets its prose telling, a lead-in sentence per
+figure, at most one sentence on what is not obvious in each figure, and its closing line block. A
+timestamp or packet name counts against the part: the prose carries one only where the length of a
+wait is the point. A step with no figure is a candidate to merge into its neighbor.
 
-→ **Checkpoint U5.** Present the walkthrough outline and each takeaway with the evidence proposed for
-it. A walkthrough that only lists outcomes and never says which message goes where is a finding. A takeaway with no
-evidence, an artifact serving no takeaway, or a Results order that shows the fix before the problem,
-is the thing to surface here rather than after the runs.
+→ **Checkpoint U5.** Present the walkthrough outline, the Results parts it maps onto, and each
+takeaway with the evidence proposed for it. A walkthrough that only lists outcomes and never says
+which message goes where is a finding. So is a Results plan that groups figures by evidence type
+(all charts, then the video, then the sequence charts) instead of by configuration, or that
+retells a shared phase in every part. A takeaway with no evidence, an artifact serving no takeaway,
+or a Results order that shows the fix before the problem, is the thing to surface here rather than
+after the runs.
 
 #### G3d — Full plan review
 
@@ -460,7 +472,8 @@ questions:
   before the fix? Does it build without forward references? Is the claim legible and falsifiable to
   the persona? Where would they stall? Is the evidence type the one that teaches? Does the
   walkthrough outline let the persona follow the run message by message, and does it give the most
-  space to the non-obvious moments?
+  space to the non-obvious moments? How many times does the planned Results make the persona's
+  clock restart (target: once per configuration part)?
 - **Industry** — is each scenario mappable to a deployment? Is the regime one practitioners operate
   in? What comparison is missing? What is liftable?
 - **Analyst** — can each observable be extracted with the planned tooling? What does each config cost
@@ -502,7 +515,8 @@ the wrong behavior and noticing later.
   never shows the problem does not demonstrate the claim, whatever the other rows say.
   The analyst also walks the storyboard's run walkthrough outline against the eventlog and returns
   it corrected to the real run: messages, order, senders and receivers, times, and every surprise
-  with its explanation. The author writes Results from this corrected outline, not from the plan.
+  with its explanation. The author writes Results from this corrected outline, not from the plan,
+  in the storyboard's per-configuration parts, prose first, figures as illustration.
 - **Domain** — compares the measured magnitude against the literature anchor and rules on whether any
   tuning stayed within representative ranges.
 - **University** — legibility: would the persona *see* the effect in the planned artifact, or is it
@@ -525,9 +539,11 @@ three never can.
 On the finished `doc/index.rst` with its Results artifacts.
 
 - **University expert** runs the `review-as-user` method in full, wearing the named persona. One
-  question is mandatory: after Results, can the persona retell what happened in the run, message by
-  message, and say why each message was sent? A Results section that proves the claim but leaves
-  the persona unable to retell the run is a `major`.
+  question is mandatory: after Results, can the persona retell what happened in each configuration,
+  message by message, and say why each message was sent, and do they know which number to remember
+  from each part? A Results section that proves the claim but leaves the persona unable to retell
+  the run is a `major`. So is one that makes the persona restart the run more than once per
+  configuration part, or that carries a timestamp or packet name in most sentences.
 - **INET and domain experts** split `review-as-pro`: INET verifies the prose against the code, domain
   against the standard. Two reviewers, two authorities, nothing to argue about between them.
 - **Industry expert** reviews applicability: liftability, overclaiming, unstated limitations that would

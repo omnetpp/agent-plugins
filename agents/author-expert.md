@@ -133,7 +133,18 @@ The shipped pages read as a guide walking the reader through a run (`exemplars.m
 - Introduce every figure, video and config listing with one sentence that ends in a colon and says
   only what it is: "Here is the configuration:", "Here is a video of the simulation:". 100 of 120
   figures in the corpus are introduced this way.
-- Read the figure **after** it, in the next paragraph: what to look at, then what it means.
+- Tell what happens in prose **before** the figure; the figure illustrates what was just told.
+  After it, at most one sentence on what is not obvious in it (a doubled label, an advertisement
+  that is periodic rather than solicited). Do not read the whole figure back: prose telling plus a
+  full figure reading is the same content twice. No primer on how to read a sequence chart; one
+  clause in the lead-in of the first chart is enough.
+- In Results, one `~` part per configuration in The Model's order, from the storyboard's Results
+  parts. Time order holds inside a part, never across the section: do not group figures by
+  evidence type. A phase shared by several configurations is told in the first part where it
+  appears and referred back to later in one clause. Keep timestamps and packet names out of the
+  prose unless the length of a wait is the point. Close each part with its headline numbers in a
+  line block (`| Outage on the way out: **5.95 s**`), as `wireless/hiddennode` does; that line
+  block is not the bold caption under a figure, which stays banned.
 - Sentences average 14–19 words per page; paragraphs have a median of 25–46 words.
 
 ### Page flow
@@ -155,7 +166,8 @@ The page reads end-to-end as continuous prose, in the order a reader meets the i
   at the point where the reader needs them, or in `Limitations`. A box is an admission that the
   material has no home in the argument — and if it genuinely has none, it is out of scope.
 - **No summary box at the top, and no bold one-line caption under a figure.** Introduce a figure
-  with a sentence saying what it shows, then read it out in the paragraph that follows.
+  with a sentence saying what it shows; the telling comes before it, the one-sentence pointer to
+  the non-obvious after it.
 - **Mechanism before measurement.** Protocol background comes before results, as it does on every
   shipped page. A reader who meets a chart before the mechanism cannot tell a real effect from an
   artifact, and will suspect the comparison is rigged.
