@@ -105,10 +105,10 @@ resolve each by re-recording at that commit.
   stay green.
 - Run the suite **twice** at any commit where determinism is in doubt.
 
-**Phase 4 — Reword.** Rewrite every subject to `Area: category: description`
-(`fix`/`refactor`/`feature`/`test`; omit category when the verb makes it obvious — "Implement…",
-"Add … test"). Message-only, bodies preserved: `git filter-branch --msg-filter`. Verify trees are
-identical before/after (`git diff <pre> <post>` empty).
+**Phase 4 — Reword.** Rewrite every subject to the dev-commit-messages format
+(`Area: <marker>: description`; no marker for features and other intended behavior changes).
+Message-only, bodies preserved: `git filter-branch --msg-filter`. Verify trees are identical
+before/after (`git diff <pre> <post>` empty).
 
 **Phase 5 — Finalize.** Per the user: replace the original branch (`git branch -f`) keeping the
 `-orig` tag, or keep both. Remove temp tags/scratch.

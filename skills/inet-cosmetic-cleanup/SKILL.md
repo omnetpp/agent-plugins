@@ -91,8 +91,9 @@ Renaming is the risky smell because identifiers can be bound outside C++. Triage
    Any moved fingerprint = a non-cosmetic change leaked in -> investigate.
 6. Present Tier-3 rename proposals to the user; apply approved ones with full reference updates,
    then rebuild + re-verify fingerprints.
-7. Commit per area: `Area: refactor: <what>` (e.g.
-   `Mipv6: refactor: tidy log messages, drop commented-out code, fix abbreviation casing`).
+7. Commit per area: `Area: cosmetics: <what>`, or `Area: cleanup: <what>` when the commit
+   mainly removes dead or commented-out code (e.g.
+   `Mipv6: cosmetics: tidy log messages, fix abbreviation casing`; markers: dev-commit-messages).
 
 ## Why fingerprints can't move
 

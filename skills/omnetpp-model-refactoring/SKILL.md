@@ -67,4 +67,4 @@ description: >
 
 ## Git usage
 
-Follow the staging, commit-prefix, and rename rules in the dev-git-workflow skill. Prefix commit subjects with a very short refactoring name and step number, e.g. "RRC structuring step 1: ...".
+Follow the staging and rename rules in dev-git-workflow, and the commit subject format in dev-commit-messages. Prefix commit subjects with a very short refactoring name and step number, e.g. "RRC structuring step 1: ...".

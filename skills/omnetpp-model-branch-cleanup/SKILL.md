@@ -53,7 +53,7 @@ places where the generic procedures say "regression tests", "baselines" and "tes
 - **State file header**: the opp_repl test invocation (types, run 0, scope rule) and the
   baseline-store paths (`fingerprint.json`, `.sca` dir, `dependency.json`).
 - **Progress log phrasing**:
-  - refactor/chore oracle line: `fingerprint IDENTICAL vs prev on configs {…} —
+  - behavior-preserving commit oracle line: `fingerprint IDENTICAL vs prev on configs {…} —
     behavior-preserving confirmed`;
   - "What changed" examples: `fingerprint hash changed on config X run 0`;
     `+954 statistical rows, additive only, 0 conflicting values`;

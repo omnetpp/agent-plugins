@@ -22,5 +22,5 @@ The detailed skills live in the shared skills repo (**TODO: final URL**). If
 
 All Simu5G rules live in the `simu5g-dev` skill: which `inet-*`,
 `omnetpp-model-*` and `dev-*` skills apply and how Simu5G overrides them, the commit-subject
-format, the architecture red lines and rules, code/NED style, build/run and
+format specifics, the architecture red lines and rules, code/NED style, build/run and
 testing rules, and the working rules. Load it before starting any task.

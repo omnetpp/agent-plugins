@@ -36,7 +36,7 @@ By task:
 | Writing/porting module code | omnetpp-model-coding-conventions + inet-module-development |
 | Refactoring | omnetpp-model-refactoring |
 | Designing a feature, writing a plan | dev-design |
-| Git, commits, rebases, PRs | dev-git-workflow + omnetpp-model-git-workflow |
+| Git, commits, rebases, PRs | dev-git-workflow + dev-commit-messages + omnetpp-model-git-workflow |
 | Branch cleanup / big rebase | inet-branch-cleanup (CLI) or omnetpp-model-branch-cleanup / omnetpp-model-branch-rebase (opp_repl) |
 | Debugging a sim | omnetpp-model-debugging (+ omnetpp-model-development for flags) |
 | Cosmetic code cleanup | inet-cosmetic-cleanup |

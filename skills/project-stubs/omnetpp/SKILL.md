@@ -28,6 +28,6 @@ apply to the OMNeT++ code base. By task:
 | Task | Skills |
 |---|---|
 | Designing a feature, writing or implementing a plan | dev-design |
-| Git, commits, rebases, PRs | dev-git-workflow |
+| Git, commits, rebases, PRs | dev-git-workflow + dev-commit-messages |
 | Branch cleanup / big rebase | dev-branch-cleanup / dev-branch-rebase |
 | ChangeLogs, API-changes.txt, WHATSNEW | omnetpp-release-engineering |

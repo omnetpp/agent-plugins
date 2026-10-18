@@ -58,6 +58,7 @@ Rules that keep the layering honest:
 # Universal (dev-*)
 dev-design/                         prototypes are not templates, named design decisions, fix structures
 dev-git-workflow/                   staging/commit/rebase discipline, the why in commit messages, PR integration
+dev-commit-messages/                commit subject format: area prefix, change-type markers and what they claim
 dev-branch-cleanup/                 test-oracle-driven branch cleanup (framework + interactive walkthrough)
 dev-branch-rebase/                  test-oracle-driven staged rebase framework
 

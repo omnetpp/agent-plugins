@@ -6,9 +6,9 @@ description: >
   in commit messages, green-at-every-commit for multi-step work, backup tags
   before history rewrites, incremental rebase tactics, intent-preserving conflict
   resolution, and integrating third-party PRs. Use for any commit, rebase,
-  cherry-pick, branch reorganization, or PR-integration work. Commit-subject
-  formats are project-specific: see the project's entry-point skill. For
-  simulation-model projects, omnetpp-model-git-workflow adds to this skill.
+  cherry-pick, branch reorganization, or PR-integration work. The commit
+  subject format is in dev-commit-messages. For simulation-model projects,
+  omnetpp-model-git-workflow adds to this skill.
 ---
 
 # Git workflow
@@ -48,10 +48,10 @@ each commit must build cleanly (all relevant build modes) and pass the
 relevant test suites; behavior-preserving steps must leave the recorded
 regression baselines unchanged. Commit after each completed step; don't batch.
 Any commit that legitimately changes recorded test baselines updates them *in
-the same commit* and explains the change in the message. Commit-subject
-conventions differ per project (e.g. INET's `Area: category: description`) —
-apply them as a final message-only rewrite pass when the history is otherwise
-final, so intermediate rebases don't invalidate the wording.
+the same commit* and explains the change in the message. Write subjects in
+the dev-commit-messages format from the start. While a branch is still being
+reshaped, recheck them in a final message-only pass when the history is
+otherwise final.
 
 ## Rebase tactics
 

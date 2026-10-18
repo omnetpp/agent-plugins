@@ -85,8 +85,9 @@ Record base and tip (hash + subject) and the commit count in the header.
   commit-group prefix. One sentence in the brief header. Later sections
   compare what the branch DOES with this stated goal; a difference goes into
   section E.
-- If the project uses change-type markers in commit subjects (`fix:`,
-  `refactor:`, ...), note them. They are claims you check in section E.
+- Change-type markers in commit subjects (dev-commit-messages: `fix:`,
+  `refactor:`, ...) are claims; note them and check them in section E.
+  Older history may lack them.
 
 ## Step 2 -- section A: external interface (NED)
 

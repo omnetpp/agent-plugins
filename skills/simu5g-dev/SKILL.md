@@ -2,7 +2,7 @@
 name: simu5g-dev
 description: >
   Entry point for developing Simu5G: which INET/OMNeT++ skills apply and how Simu5G
-  overrides them, the commit-subject format (group prefix, change-type markers),
+  overrides them, Simu5G specifics of the commit-subject format (on top of dev-commit-messages),
   architecture red lines and rules, code/NED style, build/run and testing rules, and
   working rules. Use at the start of any Simu5G development task (coding, testing,
   refactoring, rebasing, committing) before reaching for individual skills.
@@ -50,7 +50,7 @@ When the work changes INET itself (an INET fix proposed for a Simu5G need), the
 Key pairs: design -> `dev-design`; fingerprints ->
 `omnetpp-model-fingerprint-testing` + `simu5g-fingerprint-testing`;
 refactoring -> `omnetpp-model-refactoring` (+ per-step fingerprint gate);
-git -> `dev-git-workflow` + `omnetpp-model-git-workflow`; review briefs ->
+git -> `dev-git-workflow` + `dev-commit-messages` + `omnetpp-model-git-workflow`; review briefs ->
 `omnetpp-model-review-brief`.
 
 Review briefs (`omnetpp-model-review-brief`) in Simu5G:
@@ -63,8 +63,8 @@ Review briefs (`omnetpp-model-review-brief`) in Simu5G:
   "Architecture rules" sections below.
 - The commit markers are claims for section E: an unmarked commit is
   where intended behavior changes are expected; `refactor:`/`cosmetics:`/
-  `cleanup:`/`docs:`/`test:` commits must not change the NED interface,
-  defaults or baselines.
+  `cleanup:`/`docs:`/`test:`/`chore:`/`build:`/`ci:` commits must not change
+  the NED interface, defaults or baselines.
 - A range that touches `emulation/` lists it as an unchecked area: the
   fingerprint suite does not cover it.
 
@@ -84,85 +84,23 @@ Review briefs (`omnetpp-model-review-brief`) in Simu5G:
 
 # Commit subject format
 
-Commit subjects carry a change-type marker after the module/subsystem prefix:
+Follow dev-commit-messages (format, markers and what they claim, group
+prefix). Simu5G specifics:
 
-```
-<module/subsystem>: <type>: <topic>
-```
-
-e.g. `binder: fix: out-of-bounds read in getServingNode()`. Multi-subsystem
-commits list the modules comma-separated (`mac,phy: ...`). A change that
-touches one KIND of thing across the whole tree names that kind instead of
-listing directories: `NED cosmetics: <topic>`, not
-`src,simulations,emulation: cosmetics: <topic>`.
-
-Related commits are grouped VISUALLY in the log by a GROUP PREFIX in front of
-the module list:
-
-```
-<group>: <module/subsystem>: <type>: <topic>
-```
-
-A group is a series of commits that serve ONE goal that can be stated in one
-sentence: a plan, a feature, a refactoring, a tree-wide sweep. The group name
-names that goal, so in `git log --oneline` the series reads as one block. For
-a plan executed on a topic branch, the name is the branch name without
-`topic/` (`teid:`, `cplane:`, `ipv6-sessions:`); otherwise a short name for
-the goal (`layout:`, `watches:`).
-
-The goal decides membership, not when or where a commit was made. A commit
-belongs to the group if it is a step toward the goal. That includes the tests
-written for the goal and the `fix:` commits that the work exposed or depends
-on. A commit made alongside the work for an unrelated reason does not belong
-to it: it gets no group prefix, or its own group.
-
-e.g. `teid: gtp,ip2nic: refactor: ...`, `layout: statsCollector: cosmetics: ...`,
-`watches: apps: state members are WATCHed`.
-
-The subsystem prefix for the Sphinx website under `doc/src/` is `website:`,
-not `doc:` -- e.g. `website: added Releases item to the main menu` or
-`website: docs: README describes how the website is deployed`. Older `doc:`
-subjects on `doc/src/` predate this and are not a counter-example.
-
-Markers: `fix:`, `refactor:`, `cosmetics:`, `cleanup:`, `docs:`, `test:`
-(`test:` = the commit only adds or changes tests or fingerprint baselines).
-Pick the marker by what the commit actually does, not by which files it
-touches. Variants seen in older history -- `rename:`, `refactoring:`,
-`fixes:`, `bugfix:`, `feature:` -- are drift; do not use them or copy them
-as precedent.
-
-Every marker is a claim a reviewer can check: `refactor:`, `cosmetics:`,
-`cleanup:`, `docs:` and `test:` claim that the model's behavior does not
-change; `fix:` claims a correction. NO marker means an INTENDED change of
-behavior or interface: a feature, a deliberate behavior change, a
-restructuring, a removal, a dependency upgrade. These are the commits to read
-carefully, and the candidates for WHATSNEW. There is deliberately no
-`feature:` marker: the markers are useful because they are exhaustive, and an
-optional one would make both `grep` and the absence of a marker meaningless.
-To flag an unmarked commit whose effect matters, end the subject with
-`(behavior change)` or `(fingerprint change: <what moved>)`.
-
-A fix of a LATENT bug -- one that no current configuration reaches -- is still
-`fix:`, never `refactor:`. `refactor:` is reserved for changes whose behavior
-is identical in EVERY state, reachable or not; "no config reaches the
-difference" does not make a change a refactoring. A preparatory change that
-removes a trap for the next commit is a fix, too. Write "latent" and
-"fingerprint-inert" in the body, in the "Fault: ... Fix: ..." form below.
-
-So the markers separate the risk classes: `fix:` and unmarked commits are
-where behavior (and thus fingerprints) may legitimately change; `refactor:`,
-`cosmetics:`, `cleanup:`, `docs:` and `test:` commits are expected to be
-fingerprint-inert. They also make each class of change mechanically greppable
-when assembling release notes or auditing what moved between releases.
-
-A fix is normally its OWN commit. When a fix exceptionally rides inside a
-larger feature commit, the message body must explicitly call out the fault
-and the fix, including the literal word "Fix:" -- the established pattern is
-"Fault, exposed by ...: <what was wrong and how it failed>" followed by
-"Fix: <what changed>". Deliberate exclusions from a change's scope (e.g.
-"the DC networks DELIBERATELY stay SDAP-less") also belong in the message of
-the commit that defines the change, so a log reader cannot mistake them for
-omissions.
+- "Behavior does not change" is checked by the fingerprints:
+  `refactor:`/`cosmetics:`/`cleanup:`/`docs:`/`test:`/`chore:`/`build:`/`ci:`
+  commits are fingerprint-inert. Mark an unmarked commit whose effect matters with
+  `(fingerprint change: <what moved>)`.
+- Examples: `binder: fix: out-of-bounds read in getServingNode()`,
+  `teid: gtp,ip2nic: refactor: ...`, `layout: statsCollector: cosmetics: ...`,
+  `watches: apps: state members are WATCHed`. A deliberate exclusion stated
+  in the message: "the DC networks DELIBERATELY stay SDAP-less".
+- The subsystem prefix for the Sphinx website under `doc/src/` is `website:`,
+  not `doc:` -- e.g. `website: added Releases item to the main menu` or
+  `website: docs: README describes how the website is deployed`. Older `doc:`
+  subjects on `doc/src/` predate this and are not a counter-example.
+- Variants seen in older Simu5G history (`rename:`, `refactoring:`, `fixes:`,
+  `bugfix:`, `feature:`) are drift; do not copy them as precedent.
 
 # Tests that found bugs go first
 
