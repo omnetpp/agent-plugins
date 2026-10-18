@@ -92,6 +92,6 @@ simu5g-fingerprint-testing/    Simu5G fingerprint runner specifics
 # Other
 oppenv-dev/                    opp_env database maintenance
 rst-editing/                   RST formatting rules
-project-stubs/                 masters for the per-repo entry-point skills (inet, simu5g)
+project-stubs/                 masters for the per-repo entry-point skills (omnetpp, inet, simu5g)
 install.sh                     symlink skills into ~/.claude/skills
 ```

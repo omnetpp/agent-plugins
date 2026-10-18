@@ -5,7 +5,8 @@ description: >
   template for production code, non-obvious design decisions are named and
   justified before code is written, and structures are changed rather than
   worked around. Use when designing a feature, writing an implementation plan,
-  or starting production code after a prototype, spike or experiment.
+  or implementing one, and always when prototype, spike or experiment code
+  exists for the feature being implemented.
 ---
 
 # Design before code
