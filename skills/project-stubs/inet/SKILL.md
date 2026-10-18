@@ -16,26 +16,29 @@ description: >
 
 The detailed skills live in the shared skills repo (**TODO: final URL**, e.g.
 `github.com/omnetpp/ai-skills`). If
-`~/.claude/skills/omnetpp-fingerprint-testing` does not exist, they are not
+`~/.claude/skills/omnetpp-model-fingerprint-testing` does not exist, they are not
 installed — clone the repo and run its `./install.sh`, then continue.
 
 ## Which skills apply here
 
-`omnetpp-*` (platform + shared workflows) and `inet-*` (INET specifics —
-these AUGMENT the corresponding `omnetpp-*` skill and WIN on conflict).
-`simu5g-*` does not apply. By task:
+`dev-*` (universal rules), `omnetpp-model-*` (simulation-model mechanics and
+shared workflows) and `inet-*` (INET specifics — these AUGMENT the
+corresponding `omnetpp-model-*` skill and WIN on conflict). The other
+`omnetpp-*` skills (developing OMNeT++ itself) and `simu5g-*` do not apply.
+By task:
 
 | Task | Skills |
 |---|---|
 | Environment, building, worktrees | inet-dev-environment |
-| Fingerprint tests | omnetpp-fingerprint-testing + inet-fingerprint-testing |
+| Fingerprint tests | omnetpp-model-fingerprint-testing + inet-fingerprint-testing |
 | Module / unit / protocol tests | inet-test-suites |
 | Statistical baselines | inet-statistical-tests |
-| Writing/porting module code | omnetpp-coding-conventions + inet-module-development |
+| Writing/porting module code | omnetpp-model-coding-conventions + inet-module-development |
 | Refactoring | omnetpp-model-refactoring |
-| Git, commits, rebases, PRs | omnetpp-git-workflow |
-| Branch cleanup / big rebase | inet-branch-cleanup (CLI) or omnetpp-branch-cleanup / omnetpp-branch-rebase (opp_repl) |
-| Debugging a sim | omnetpp-sim-debugging (+ omnetpp-model-development for flags) |
+| Designing a feature, writing a plan | dev-design |
+| Git, commits, rebases, PRs | dev-git-workflow + omnetpp-model-git-workflow |
+| Branch cleanup / big rebase | inet-branch-cleanup (CLI) or omnetpp-model-branch-cleanup / omnetpp-model-branch-rebase (opp_repl) |
+| Debugging a sim | omnetpp-model-debugging (+ omnetpp-model-development for flags) |
 | Cosmetic code cleanup | inet-cosmetic-cleanup |
 | Release notes / showcases / RST | inet-release-notes, inet-showcase-creator, rst-editing |
 

@@ -1,5 +1,5 @@
 ---
-name: omnetpp-coding-conventions
+name: omnetpp-model-coding-conventions
 description: >
   C++ and MSG/NED coding conventions for OMNeT++-based simulation models: explicit error
   handling (assert/throw over silent guards), cRuntimeError/ASSERT/check_and_cast usage,

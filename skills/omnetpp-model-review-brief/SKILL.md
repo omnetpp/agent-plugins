@@ -1,5 +1,5 @@
 ---
-name: omnetpp-review-brief
+name: omnetpp-model-review-brief
 description: >
   Write a reviewer's brief for a pull request, topic branch or commit range of an
   OMNeT++-based model library (INET, Simu5G, ...): a fact sheet, with evidence, of
@@ -320,7 +320,7 @@ For the modules touched by the range, build the interaction edge list
 - new coupling to infrastructure modules.
 
 Then check every new or changed edge against the rules: the generic ones in
-`omnetpp-coding-conventions`, and the project's red lines from its
+`omnetpp-model-coding-conventions`, and the project's red lines from its
 entry-point skill (e.g. `simu5g-dev`). Typical generic conflicts:
 
 - a signal used as a request: the emitting side reads, after `emit()`

@@ -59,4 +59,4 @@ cd tests/module && rm -rf work && timeout 600 inet_run_module_tests -f '<regex>'
   error is in test.err (the orphaned object is usually a casualty of the
   aborted event).
 - Reproduce interactively: `cd tests/module/work/<Test> && inet_dbg -u Qtenv
-  omnetpp.ini` (see omnetpp-sim-debugging for gdb/eventlog techniques).
+  omnetpp.ini` (see omnetpp-model-debugging for gdb/eventlog techniques).

@@ -1,5 +1,5 @@
 ---
-name: omnetpp-fingerprint-testing
+name: omnetpp-model-fingerprint-testing
 description: >
   Run, triage, and re-record OMNeT++ simulation fingerprint tests: what fingerprints are,
   ingredient semantics (tplx, tilx, ~tNl, ~tND, ~tNlb, sz, tyf), how to interpret which

@@ -66,7 +66,7 @@ a dialog that blocks the run; assign them in the ini.
   (`off`..`trace`) controls volume; `--record-eventlog=true` records the
   eventlog for post-mortem analysis.
 - Deeper techniques (vanishing packets, gdb, pcap diffing): see the
-  omnetpp-sim-debugging skill.
+  omnetpp-model-debugging skill.
 
 ## Configuration options
 

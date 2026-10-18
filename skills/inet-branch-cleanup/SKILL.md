@@ -15,7 +15,7 @@ under-documented fingerprint drift) into a clean linear history where **every co
 relevant test suites**, **every fingerprint change is explained per-ingredient**, and **each
 logical change lands once, in final form** (minimal churn/zigzags). This is the CLI-based
 INET playbook; for the opp_repl-driven variant (dependency-scoped tests, coverage ledger)
-see omnetpp-branch-cleanup.
+see omnetpp-model-branch-cleanup.
 
 ## Confirm with the user before starting
 
@@ -116,7 +116,7 @@ identical before/after (`git diff <pre> <post>` empty).
 ## Fingerprint discipline
 
 - Ingredient semantics and the cause→ingredient map for writing per-commit justifications live
-  in omnetpp-fingerprint-testing (`ingredients.md`, `interpreting-drift.md`); INET runner flags
+  in omnetpp-model-fingerprint-testing (`ingredients.md`, `interpreting-drift.md`); INET runner flags
   and gotchas in inet-fingerprint-testing. The rule that matters here: a change point's
   justification ties **each moved ingredient to a cause** — if you can't explain an ingredient
   move, it's a red flag: investigate, don't just re-record.

@@ -5,13 +5,13 @@ description: >
   runner and its flags, baseline CSV layout, the re-recording workflow, and INET-specific
   gotchas (INET_ROOT/setenv trap, protocol-registry insertions, signal-check asymmetry).
   Use when running, triaging, or re-recording fingerprint tests in the INET repo. Builds on
-  the generic omnetpp-fingerprint-testing skill — read that first for concepts, ingredient
+  the generic omnetpp-model-fingerprint-testing skill — read that first for concepts, ingredient
   semantics, drift interpretation, and the acceptance discipline.
 ---
 
 # INET fingerprint testing
 
-First read [../omnetpp-fingerprint-testing/SKILL.md](../omnetpp-fingerprint-testing/SKILL.md)
+First read [../omnetpp-model-fingerprint-testing/SKILL.md](../omnetpp-model-fingerprint-testing/SKILL.md)
 (concepts, workflow, discipline). Everything below is INET-specific.
 
 ## Runner

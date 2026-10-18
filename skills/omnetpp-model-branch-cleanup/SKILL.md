@@ -1,12 +1,12 @@
 ---
-name: omnetpp-branch-cleanup
+name: omnetpp-model-branch-cleanup
 description: >
   Clean up a topic branch of an OMNeT++-based simulation project into a reviewable history
   using opp_repl-driven regression testing (fingerprint + statistical tests, dependency-scoped):
   recompose the total diff into typed commits (refactor/fix/feature), validate each against the
   test oracle, and prove nothing was lost via a coverage ledger. Use when asked to clean up,
   reorganize, or validate a feature/topic branch and opp_repl is available. For rebasing onto a
-  moved main branch use omnetpp-branch-rebase; for the INET CLI-based playbook see
+  moved main branch use omnetpp-model-branch-rebase; for the INET CLI-based playbook see
   inet-branch-cleanup.
 ---
 

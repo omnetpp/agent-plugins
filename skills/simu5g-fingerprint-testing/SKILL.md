@@ -5,13 +5,13 @@ description: >
   -m is a regex line filter; a filter matching nothing exits 0), the fp_stdout.log-only triage
   protocol, re-recording rules (when no consent is needed), and when the suite can be skipped.
   Use when running, triaging, or re-recording fingerprint tests in
-  the Simu5G repo. Builds on the generic omnetpp-fingerprint-testing skill — read that first
+  the Simu5G repo. Builds on the generic omnetpp-model-fingerprint-testing skill — read that first
   for concepts, ingredient semantics, drift interpretation, and the acceptance discipline.
 ---
 
 # Simu5G fingerprint testing
 
-First read [../omnetpp-fingerprint-testing/SKILL.md](../omnetpp-fingerprint-testing/SKILL.md).
+First read [../omnetpp-model-fingerprint-testing/SKILL.md](../omnetpp-model-fingerprint-testing/SKILL.md).
 Everything below is Simu5G-specific.
 
 ## Runner

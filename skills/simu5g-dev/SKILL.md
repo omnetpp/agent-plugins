@@ -17,8 +17,11 @@ apply in this order of precedence:
 2. `inet-*` skills -- the baseline for everything Simu5G does not regulate
    itself: coding and documentation conventions, NED/C++ idioms, module design,
    test authoring, cosmetic cleanup, branch cleanup.
-3. `omnetpp-*` skills -- platform mechanics and generic workflows. Skip the ones
-   about developing OMNeT++ itself (e.g. `omnetpp-release-engineering`).
+3. `omnetpp-model-*` skills -- simulation-model mechanics and shared workflows.
+4. `dev-*` skills -- universal rules (design, git).
+
+The other `omnetpp-*` skills (e.g. `omnetpp-release-engineering`) are about
+developing OMNeT++ itself and do not apply.
 
 An INET rule stays in force here unless a Simu5G rule overrides it. Silence in
 the Simu5G skills means "INET's rule applies", not "no rule".
@@ -39,17 +42,18 @@ foreign `SIMU5G_ROOT` silently tests another worktree):
 | inet-test-suites          | authoring idioms apply to Simu5G's tests/module   |
 | inet-release-notes        | does not apply (WHATSNEW only on request)         |
 | inet-showcase-creator     | workflow applies; same `showcases/<category>/<name>/doc` layout; links point to Simu5G's repo, pages wired into `doc/src/showcases` |
-| inet-branch-cleanup       | method applies; use simu5g-fingerprint-testing's runner, or omnetpp-branch-cleanup when opp_repl is up |
+| inet-branch-cleanup       | method applies; use simu5g-fingerprint-testing's runner, or omnetpp-model-branch-cleanup when opp_repl is up |
 
 When the work changes INET itself (an INET fix proposed for a Simu5G need), the
 `inet-*` skills apply in full, without Simu5G overrides.
 
-Key pairs: fingerprints -> `omnetpp-fingerprint-testing` +
-`simu5g-fingerprint-testing`; refactoring -> `omnetpp-model-refactoring`
-(+ per-step fingerprint gate); git -> `omnetpp-git-workflow`; review
-briefs -> `omnetpp-review-brief`.
+Key pairs: design -> `dev-design`; fingerprints ->
+`omnetpp-model-fingerprint-testing` + `simu5g-fingerprint-testing`;
+refactoring -> `omnetpp-model-refactoring` (+ per-step fingerprint gate);
+git -> `dev-git-workflow` + `omnetpp-model-git-workflow`; review briefs ->
+`omnetpp-model-review-brief`.
 
-Review briefs (`omnetpp-review-brief`) in Simu5G:
+Review briefs (`omnetpp-model-review-brief`) in Simu5G:
 
 - Write the brief to
   `~/projects/ai-plans/reports/review-<branch-or-pr>-<YYYY-MM-DD>.md`.
@@ -259,7 +263,7 @@ reader is not ambushed.
   `Class::[A-Za-z_]*(` misses `Class::~Class`, and the destructor moves out
   with its neighbors. Include `~` in such regexes.
 - **Error handling in emulation.** The base rule -- abort on an invalid state
-  or input, never recover and continue -- is in `omnetpp-coding-conventions`.
+  or input, never recover and continue -- is in `omnetpp-model-coding-conventions`.
   It rests on a closed world: every input comes from the experiment
   definition, so an invalid one is a bug. Real packets entering through an
   ext interface (LLDP, IPv6 ND, mDNS from the host) break that premise.
@@ -300,7 +304,7 @@ reader is not ambushed.
   `// changed to X because ...`, `// was Y`, `// fix for Z`, `// NEW:`. The
   change and its rationale go into the commit message.
 - **ASCII-only punctuation** in all source comments (`--`, `->`, `<-`), as
-  in `omnetpp-coding-conventions`.
+  in `omnetpp-model-coding-conventions`.
 - **`WATCH` runtime state only**: counters, windows, tables, current ids,
   identity learned from the network. Members that merely cache a NED
   parameter (`x_ = par("x")`, never changed) get no WATCH -- the parameter is

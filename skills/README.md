@@ -25,8 +25,10 @@ where a skill is valid — not necessarily a repository name:
 
 | Prefix | Applies to |
 |---|---|
-| `omnetpp-*` | OMNeT++ platform mechanics: NED/MSG, kernel, build system, fingerprints |
-| `inet-*` | The INET Framework repo only |
+| `dev-*` | Any software project (universal rules) |
+| `omnetpp-model-*` | OMNeT++-based simulation models: INET, Simu5G, user models |
+| `omnetpp-*` (all others) | Developing OMNeT++ itself (the omnetpp repository) |
+| `inet-*` | INET and INET-based libraries (a derivative's entry skill lists its exceptions) |
 | `simu5g-*` | Simu5G only |
 | `netsim-*` | Network-simulation methodology in general, not tied to OMNeT++ |
 
@@ -35,7 +37,7 @@ where a skill is valid — not necessarily a repository name:
 Shared knowledge lives in a generic skill; each project adds a thin skill with
 only its deltas (exact commands, file locations, local exceptions). The project
 skill starts by directing the reader to the generic skill, then augments it.
-Exemplar: `omnetpp-fingerprint-testing` (concepts, ingredient semantics, drift
+Exemplar: `omnetpp-model-fingerprint-testing` (concepts, ingredient semantics, drift
 interpretation, discipline) + `inet-fingerprint-testing` (the INET runner, its
 flags, INET-specific gotchas).
 
@@ -53,17 +55,23 @@ Rules that keep the layering honest:
 ## Layout
 
 ```
-# Generic (omnetpp-*)
-omnetpp-fingerprint-testing/   fingerprint concepts, ingredients, drift interpretation
-omnetpp-model-development/     NED/MSG/INI, running sims, config discovery, result analysis
-omnetpp-coding-conventions/    C++/MSG/NED conventions for model code
-omnetpp-model-refactoring/     behavior-preserving refactoring recipes (move code, flatten)
-omnetpp-git-workflow/          staging/commit/rebase discipline, PR integration
-omnetpp-sim-debugging/         vanishing packets, gdb, pcap diffing, log attribution
-omnetpp-branch-cleanup/        opp_repl-driven branch cleanup (framework + walkthrough)
-omnetpp-branch-rebase/         opp_repl-driven staged rebase framework
-omnetpp-review-brief/          reviewer's brief for a PR/branch: NED interface, duties, data, communication
-omnetpp-release-engineering/   OMNeT++ core ChangeLogs, API-changes.txt, WHATSNEW
+# Universal (dev-*)
+dev-design/                         prototypes are not templates, named design decisions, fix structures
+dev-git-workflow/                   staging/commit/rebase discipline, the why in commit messages, PR integration
+
+# OMNeT++ core (omnetpp-*, other than omnetpp-model-*)
+omnetpp-release-engineering/        OMNeT++ core ChangeLogs, API-changes.txt, WHATSNEW
+
+# Simulation models (omnetpp-model-*)
+omnetpp-model-fingerprint-testing/  fingerprint concepts, ingredients, drift interpretation
+omnetpp-model-development/          NED/MSG/INI, running sims, config discovery, result analysis
+omnetpp-model-coding-conventions/   C++/MSG/NED conventions for model code
+omnetpp-model-refactoring/          behavior-preserving refactoring recipes (move code, flatten)
+omnetpp-model-git-workflow/         model additions to dev-git-workflow: fingerprints, protocol PR review
+omnetpp-model-debugging/            vanishing packets, gdb, pcap diffing, log attribution
+omnetpp-model-branch-cleanup/       opp_repl-driven branch cleanup (framework + walkthrough)
+omnetpp-model-branch-rebase/        opp_repl-driven staged rebase framework
+omnetpp-model-review-brief/         reviewer's brief for a PR/branch: NED interface, duties, data, communication
 
 # INET (inet-*)
 inet-dev-environment/          toplevel build, dual-mode, setenv/INET_ROOT trap, worktrees

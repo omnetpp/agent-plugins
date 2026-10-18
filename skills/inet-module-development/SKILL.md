@@ -6,12 +6,12 @@ description: >
   facilities), integration patterns (fingerprint-inert node integration, dual-stack design,
   porting protocols from older codebases), and cross-cutting INET gotchas. Use when writing,
   extending, porting, or reviewing INET C++/NED/MSG module code. Generic model-code rules:
-  see omnetpp-coding-conventions.
+  see omnetpp-model-coding-conventions.
 ---
 
 # INET module development
 
-Applies on top of omnetpp-coding-conventions. Reference files:
+Applies on top of omnetpp-model-coding-conventions. Reference files:
 
 - [conventions.md](conventions.md) — display strings (`displayStringTextFormat`),
   Doxygen documentation rules.
@@ -43,5 +43,5 @@ Applies on top of omnetpp-coding-conventions. Reference files:
 - **Fix latent upstream bugs as you encounter them** (uninitialized fields,
   dangling pointers) and note them — porting and refactoring regularly
   surface real pre-existing bugs.
-- **Green at every commit** with the relevant suites (see omnetpp-git-workflow
+- **Green at every commit** with the relevant suites (see omnetpp-model-git-workflow
   and the testing skills); unrelated fingerprints stay byte-identical.
