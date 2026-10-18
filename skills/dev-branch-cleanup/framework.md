@@ -13,10 +13,13 @@ commits can be split, merged, reordered, and newly authored at will. The price o
 a central invariant, the **coverage ledger**, which proves the recomposition lost and invented
 nothing.
 
-The framework is domain-agnostic at the workflow level but assumes **opp_repl** as the test
-infrastructure (fingerprint, statistical, chart tests; baselines in `fingerprint.json` /
-`.sca` files; dependency store in `dependency.json`). State is kept in a separate markdown
-file so the procedure can be resumed from disk alone if the AI conversation is lost.
+The framework is domain-agnostic. It assumes a **regression-test infrastructure** whose results
+are compared against **recorded baselines** (files committed in the repository), and preferably a
+**test-impact map** that tells which tests a change can affect, so that per-commit tests can be
+scoped. A project layer (e.g. omnetpp-model-branch-cleanup for simulation models) names the
+concrete test tools, the baseline files, the default test selection, and how baselines are
+re-recorded. State is kept in a separate markdown file so the procedure can be resumed from disk
+alone if the AI conversation is lost.
 
 ## How it operates (at a glance)
 
@@ -26,16 +29,16 @@ file so the procedure can be resumed from disk alone if the AI conversation is l
    the diff, each with a single type and intent (human-approved). Groups may be merged or
    subdivided later as understanding improves.
 3. Decide the **output-commit plan**: the linear sequence of clean commits the new branch will
-   contain, their types, messages, order, and each one's **expected test effect** (fingerprint
-   identical for refactors; fingerprint changed + baseline updated for fixes/features).
+   contain, their types, messages, order, and each one's **expected test effect** (regression
+   results identical for refactors; results changed + baseline updated for fixes/features).
 4. Build the clean branch **forward**, one commit at a time, off `base`. After each commit,
-   build + run the **scoped opp_repl test** and update the **coverage ledger**
+   build + run the **scoped regression test** and update the **coverage ledger**
    (`remaining = git diff cleanHEAD topic`). The ledger drives to empty — monotonically, save for
    tracked **temporary detours** (scaffolding added now and removed later, net zero).
 5. The test is the **oracle for the commit's claimed type**:
-   - a commit labelled *refactor* MUST leave the fingerprint **IDENTICAL** to the previous
+   - a commit labelled *refactor* MUST leave the regression results **IDENTICAL** to the previous
      commit — if it doesn't, the label is wrong or behavior leaked in; STOP and investigate;
-   - a commit labelled *fix*/*feature* MAY change the fingerprint, but only in an **explained**
+   - a commit labelled *fix*/*feature* MAY change the results, but only in an **explained**
      way, with the **baseline updated inside that same commit** so it stays green.
 6. Every validated commit is a **safe point**. Progress (plan, ledger, per-commit log with
    `what changed / why the result changed / why it's acceptable / baseline update` entries for
@@ -51,10 +54,9 @@ The instance must supply, before any cleanup work starts:
 - **`topic`** — branch to clean up (its final tree is the pinned target / oracle).
 - **`base`** — branch or commit identifying the starting point (`base..topic` = the material to
   recompose). The clean branch is built starting from this exact commit; it never moves.
-- **tests** — which opp_repl test types to run as the per-commit regression test, in priority
-  order, plus any scope hints. **Defaults**: `[fingerprint, statistical]`, **run number 0 only**
-  (other runs ignored unless the instance opts in). The same suite, run **unscoped**, is the
-  Phase 6 acceptance test.
+- **tests** — which regression tests to run as the per-commit regression test, in priority
+  order, plus any scope hints. The project layer supplies the defaults. The same suite, run
+  **unscoped**, is the Phase 6 acceptance test.
 
 These inputs are recorded verbatim in the state file header.
 
@@ -91,18 +93,18 @@ Cleanup is **correct** iff, at the end:
 1. **Source tree identical** — `git diff topic clean` is empty over all non-baseline files. This
    is the hard, mechanical guarantee that the recomposition neither lost nor invented any code.
    It is *checkable at every step* as the coverage ledger's `remaining` diff.
-2. **Baselines correct & explained** — baseline/test-artifact files (`fingerprint.json`,
-   `*.sca`, `dependency.json`) on `clean` either match `topic` exactly **or** differ only by
-   being *correctly updated to reflect the branch's actual behavior*, with every such difference
-   explained in the state file. In the ideal case where `topic` already maintained its
-   baselines, there is **no difference at all** and criterion 1 covers everything.
+2. **Baselines correct & explained** — baseline/test-artifact files (the recorded baselines and
+   any test-impact data; the project layer names them) on `clean` either match `topic` exactly
+   **or** differ only by being *correctly updated to reflect the branch's actual behavior*, with
+   every such difference explained in the state file. In the ideal case where `topic` already
+   maintained its baselines, there is **no difference at all** and criterion 1 covers everything.
 3. **Every commit green (relaxed)** — every output commit **builds** and **passes** the scoped
    test. Relaxation is permitted for individual commits that are genuinely too difficult to make
    green in isolation (e.g. a mid-series refactor that only type-checks once the next commit
    lands), but only with an explicit, logged justification. Prefer to **never break the build**;
    a red *test* with a logged reason is tolerable, a red *build* almost never is.
 
-Why the baseline carve-out is honest: the source tree fully determines simulation behavior, so
+Why the baseline carve-out is honest: the source tree fully determines the tested behavior, so
 identical source ⇒ identical behavior. Baseline files are *test artifacts describing* that
 behavior. If `topic` left them stale (tests red on `topic`), `clean` will additionally correct
 them — a legitimate, explained divergence in the test-artifact files only, never in source.
@@ -118,13 +120,13 @@ Before partitioning, understand the whole change:
   cleanup untangles, so categorize at the **hunk** level.
 - Map each category to files/areas and approximate hunk locations. Note **dependencies** between
   changes (a feature that builds on a refactor; a fix to code a refactor moves).
-- opp_repl dependency-store queries (`dependency.json`): changed files → NED packages → features
-  → simulation configs, to scope per-commit tests and predict which configs each group affects.
+- Test-impact queries (where the project has a test-impact map): changed files → affected
+  tests, to scope per-commit tests and predict which tests each group affects.
 - Record the **base/topic HEAD SHAs** and the **total-diff size** (files, +/- lines) as the
   ledger's starting magnitude.
 
 Output: a **separate analysis file** at `ai-logs/executions/<date>_<cleanup-name>.analysis.md`
-containing the SHAs, the hunk-level categorization, the dependency map, the dep-store findings,
+containing the SHAs, the hunk-level categorization, the dependency map, the test-impact findings,
 and a first-cut grouping proposal. The analysis file is the durable Phase 0 artefact; the state
 file references it rather than duplicating it.
 
@@ -163,50 +165,47 @@ AI's proposal, human-approved.
 **Default ordering** (override per instance with logged rationale):
 
 1. **Behavior-preserving first** — refactors, renames, moves, extractions, formatting, comment
-   changes. These keep the fingerprint **identical** and form a stable base the rest builds on.
-   Putting them first lets a reviewer clear them quickly (the test *proves* they're inert) and
-   concentrate attention on the smaller, meaningful commits.
+   changes. These keep the regression results **identical** and form a stable base the rest
+   builds on. Putting them first lets a reviewer clear them quickly (the test *proves* they're
+   inert) and concentrate attention on the smaller, meaningful commits.
 2. **Bug fixes next** — each isolated, each with a description of the bug and its symptom.
-   Fingerprint changes here are the fix's intended effect: explained and baselined in-commit.
+   Result changes here are the fix's intended effect: explained and baselined in-commit.
 3. **New features last** — each feature a cohesive commit or short series, built on
-   already-refactored code. Fingerprint additions explained and baselined in-commit.
+   already-refactored code. Result changes explained and baselined in-commit.
 4. **Baseline-only commits** — avoid them; prefer folding each baseline update into the commit
-   that causes the behavior change (so every commit is independently green and the
-   `fingerprint.json`/`.sca` delta is part of that change's reviewable story). A standalone
-   baseline commit is a last resort, logged.
+   that causes the behavior change (so every commit is independently green and the baseline
+   delta is part of that change's reviewable story). A standalone baseline commit is a last
+   resort, logged.
 
 When changes are genuinely independent across subsystems, a **per-subsystem cluster**
 (refactor→fix→feature within one subsystem, then the next) can read more clearly than a global
 refactor-then-fix-then-feature sweep. Use judgment; when the clearer ordering is ambiguous, ASK.
 
 Record the plan in the state file: the ordered commit list, each with type, message subject,
-feeding group(s), and **expected test effect** (`fingerprint IDENTICAL` vs `fingerprint CHANGES
-— baseline update expected on configs X, Y`).
+feeding group(s), and **expected test effect** (`results IDENTICAL` vs `results CHANGE —
+baseline update expected on tests X, Y`).
 
 ## Phase 3 — Test contract
 
-One test invocation per output commit, via opp_repl, with build folded in.
+One test invocation per output commit, with build folded in.
 
 - **Build folded into the test step**: a build failure surfaces as a test ERROR (distinct from a
   FAIL, same loop).
-- **Scope**: run only the configs the dep store (`dependency.json`) flags as affected by the
-  commit's changes; within each config, **run number 0** only (unless the instance opted in).
+- **Scope**: run only the tests the test-impact map flags as affected by the commit's changes,
+  restricted further as the project layer specifies (unless the instance opted out).
 - **The test is the type oracle** — this is the cleanup-specific use of testing:
-  - **refactor / chore commit** → fingerprint **must be IDENTICAL** to the previous commit on
-    every affected config. A mismatch means the change is not actually behavior-preserving:
-    either a real behavior change leaked in (mislabelled — re-classify and re-plan) or there's
-    an accidental bug (fix it). **STOP and investigate; do not paper over with a baseline update.**
-  - **fix / feature commit** → fingerprint **may change**. The change must be (a) intended and
-    explained, (b) confined to the configs the dep store predicted, and (c) reconciled by
-    **updating the baseline inside the same commit**.
-- **Baseline updates** (opp_repl mechanics):
-  - Fingerprint: re-record via `update_fingerprint_test_results(...)` (→
-    `FingerprintStore.update_fingerprint`, writing `fingerprint.json`; result codes
-    `INSERT`/`UPDATE`/`KEEP`). Stage the resulting `fingerprint.json` delta into the commit.
-  - Statistical: re-record via `update_statistical_test_results(...)` (copies the current `.sca`
-    into the baseline dir). Stage the `.sca` delta into the commit.
-  - The baseline delta becoming part of the commit is a feature, not a nuisance: it makes the
-    behavior change auditable and keeps every commit green.
+  - **refactor / chore commit** → regression results **must be IDENTICAL** to the previous
+    commit on every affected test. A mismatch means the change is not actually
+    behavior-preserving: either a real behavior change leaked in (mislabelled — re-classify and
+    re-plan) or there's an accidental bug (fix it). **STOP and investigate; do not paper over
+    with a baseline update.**
+  - **fix / feature commit** → regression results **may change**. The change must be (a)
+    intended and explained, (b) confined to the tests the test-impact map predicted, and (c)
+    reconciled by **updating the baseline inside the same commit**.
+- **Baseline updates**: re-record the affected baselines with the project's tool (the project
+  layer gives the mechanics), and stage the resulting baseline delta into the commit. The
+  baseline delta becoming part of the commit is a feature, not a nuisance: it makes the behavior
+  change auditable and keeps every commit green.
 - **Result handling**: results are **ephemeral** — consumed to write the state file's prose, then
   discarded. The state file is the durable record of what happened.
 
@@ -230,9 +229,9 @@ Build `clean` forward from `base`, one output commit at a time. For each planned
    - *can't stay green by ordering alone* → open a **temporary detour**: add a scaffold (record it
      as an open detour), commit, and schedule the matching removal commit later in the plan.
 2. **Build + run the scoped test** (Phase 3).
-3. **Check the type oracle**: refactor ⇒ expect fingerprint IDENTICAL; fix/feature ⇒ expect the
+3. **Check the type oracle**: refactor ⇒ expect results IDENTICAL; fix/feature ⇒ expect the
    predicted change. On a surprise, STOP (do not advance the ledger).
-4. **Reconcile baselines** for fix/feature commits (update `fingerprint.json` / `.sca`, `git add`
+4. **Reconcile baselines** for fix/feature commits (re-record the affected baselines, `git add`
    them, `--amend` into `Ck` so the commit is self-consistently green).
 5. **Update the coverage ledger**: recompute `remaining = git diff cleanHEAD topic`. Confirm it
    moved by exactly this commit's intended effect — *shrank* by the group's slice for an ordinary
@@ -247,7 +246,7 @@ Build `clean` forward from `base`, one output commit at a time. For each planned
      introduces) → reorder the plan, merge the two groups, or — when neither is clean — open a
      **temporary detour** (a bridging scaffold removed by a later commit, net zero). Log the
      regrouping or the detour (IDs only grow; detours stay tracked until closed).
-   - **Refactor changed the fingerprint** → re-classify (it was secretly a fix/feature) or fix the
+   - **Refactor changed the results** → re-classify (it was secretly a fix/feature) or fix the
      accidental bug. Re-plan the affected commits. **ASK** the human with the finding.
    - **Genuinely too hard to make this single commit green** → first try reordering or a temporary
      detour to keep it green; only if both are worse than the disease, fall back to the relaxed
@@ -265,8 +264,8 @@ re-partitioning forces rewriting an already-built commit, snapshot the current t
 Runs autonomously on the happy path; pauses for human input at:
 
 - Initial grouping proposal (Phase 1) and initial output-commit plan / ordering (Phase 2).
-- Any commit where a *refactor* changed the fingerprint (mislabel vs. accidental bug).
-- Any behavior change whose acceptability is not obvious (is this fingerprint delta *intended*?).
+- Any commit where a *refactor* changed the regression results (mislabel vs. accidental bug).
+- Any behavior change whose acceptability is not obvious (is this result delta *intended*?).
 - Group split/merge or output-commit reordering that changes the approved plan.
 - A commit that must be left test-red under the relaxed rule.
 - Any decision that is difficult or ambiguous to make.
@@ -282,10 +281,10 @@ When the coverage ledger reaches **empty**:
    open-detours list is empty**. Any residual delta is a partition bug or an unclosed detour (its
    scaffold lives on `clean` but not `topic`) — resolve it before declaring done. List any
    baseline-file differences from `topic` with their per-commit explanations (ideally none).
-2. **Full (unscoped) test**: run the full opp_repl suite (all flagged configs; run 0, or wider if
-   the instance opted in) on `clean`. Confirm green end to end. Spot-check a few commits in the
-   middle of the history to confirm they too build and pass (the per-commit safe points should
-   already guarantee this; verify a sample).
+2. **Full (unscoped) test**: run the full regression suite (as the project layer defines it) on
+   `clean`. Confirm green end to end. Spot-check a few commits in the middle of the history to
+   confirm they too build and pass (the per-commit safe points should already guarantee this;
+   verify a sample).
 3. **Confirm the story reads**: the commit list, top to bottom, separates refactors from fixes
    from features, each message states intent, and each behavior change carries its baseline delta.
 4. Write the **Finalization** section: the final ordered commit list with types, the
@@ -314,17 +313,17 @@ When the coverage ledger reaches **empty**:
 
 Required sections:
 
-1. **Header** — SHAs of `base` and `topic`; instance/project info; opp_repl test invocation
-   (types, run 0, scope rule); baseline-store paths (`fingerprint.json`, `.sca` dir,
-   `dependency.json`); the `clean` branch name; link to the Phase 0 analysis file.
+1. **Header** — SHAs of `base` and `topic`; instance/project info; the test invocation (tests,
+   scope rule); baseline-store paths (the recorded baselines and the test-impact data); the
+   `clean` branch name; link to the Phase 0 analysis file.
 2. **Total-diff analysis** — the Phase 0 hunk-level categorization (features / refactors / fixes /
-   chores) mapped to files/areas, with the dependency map between changes and the dep-store
-   config impact. Summarized here; full detail in the analysis file.
+   chores) mapped to files/areas, with the dependency map between changes and the test-impact
+   findings. Summarized here; full detail in the analysis file.
 3. **Change groups** (Phase 1) — table: id, type, intent, source material (files + hunk refs),
    independence/dependency notes, target output commit(s). Superseded groups remain with
    `superseded-by` annotation.
 4. **Output-commit plan** (Phase 2) — the ordered commit list: position, type, message subject,
-   feeding group(s), and **expected test effect** (`fingerprint IDENTICAL` vs `CHANGES on X,Y +
+   feeding group(s), and **expected test effect** (`results IDENTICAL` vs `CHANGES on X,Y +
    baseline update`). Edited in place as the plan evolves.
 5. **Coverage ledger** — the live "what's left" view: total-diff magnitude (files, +/- lines);
    applied-so-far; `remaining = git diff cleanHEAD topic` magnitude; a per-file checklist marking
@@ -337,23 +336,21 @@ Required sections:
 7. **Progress log** (append-only) — one entry per output commit built (or per rework attempt):
    - timestamp (full ISO 8601), output commit position + planned type, the commit SHA + subject.
    - diff material absorbed (which groups/hunks), and the post-commit ledger delta.
-   - build result; scoped test result (PASS / FAIL / ERROR); affected configs.
+   - build result; scoped test result (PASS / FAIL / ERROR); affected tests.
    - **for a refactor/chore commit**: one line confirming the oracle —
-     `fingerprint IDENTICAL vs prev on configs {…} — behavior-preserving confirmed`.
+     `results IDENTICAL vs prev on {…} — behavior-preserving confirmed`.
    - **for a fix/feature commit (behavior change)**: a sub-entry with these four labelled fields,
      in this order:
-     - **What changed**: the code change and the test delta it produced — exact configs and the
-       nature of the fingerprint/statistical change (e.g. `fingerprint hash changed on config X
-       run 0`; `+954 statistical rows, additive only, 0 conflicting values`). Avoid vague phrasing.
-     - **Why the result changed**: the causal mechanism — what in the code makes the simulation
-       behave differently, tied to the specific lines this commit introduces.
+     - **What changed**: the code change and the test delta it produced — exact tests and the
+       nature of the result change (the project layer gives examples of precise phrasing).
+       Avoid vague phrasing.
+     - **Why the result changed**: the causal mechanism — what in the code makes the tested
+       behavior different, tied to the specific lines this commit introduces.
      - **Why it's acceptable**: why this new behavior is correct/intended (it's the bug fix's
        point; it's the new feature's output), and why nothing *else* should have moved (the change
-       is confined to the dep-store-predicted configs; unrelated configs stayed IDENTICAL).
-     - **Baseline update**: which baseline entries were re-recorded and how
-       (`update_fingerprint_test_results` → `fingerprint.json` entries for X,Y, codes UPDATE/INSERT;
-       or `update_statistical_test_results` → `.sca` files copied), and confirmation they are
-       staged into this same commit.
+       is confined to the predicted tests; unrelated tests stayed IDENTICAL).
+     - **Baseline update**: which baseline entries were re-recorded and how, and confirmation
+       they are staged into this same commit.
    - **for a detour-opening / detour-closing commit**: the detour id, the scaffold added or
      removed, why ordering couldn't avoid it, and the ledger's expected transient growth/shrink.
      An open detour stays listed in §5 until its closing commit lands.

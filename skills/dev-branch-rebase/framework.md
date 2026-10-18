@@ -2,13 +2,13 @@
 
 Abstract framework for rebasing a `topic` branch onto a `main` branch (common ancestor `base`), producing a regression-free history. State is kept in a separate markdown file so the procedure can be resumed from disk alone if the AI conversation is lost.
 
-The framework is domain-agnostic at the workflow level but assumes **opp_repl** as the test infrastructure (fingerprint, statistical, chart tests). Project-specific procedures (e.g. INET infrastructure cleanup, Simu5G upstream rebase) are instances that fill in hooks: grouping heuristics, stage selection, integration mode, scope.
+The framework is domain-agnostic. It assumes a **regression-test infrastructure** whose results are compared against **recorded baselines**, and preferably a **test-impact map** that tells which tests a change can affect. A project layer (e.g. omnetpp-model-branch-rebase for simulation models) names the concrete test tools, the default test selection and the impact queries. Project-specific procedures are instances that fill in hooks: grouping heuristics, stage selection, integration mode, scope.
 
 ## How it operates (at a glance)
 
 1. Partition `base..topic` into ordered **groups** of whole commits (human-approved).
 2. For each group, pick an ordered list of **stages** — checkpoints on `main` between `base` and `main`'s HEAD — where the group will be incrementally rebased.
-3. Walk every (group, stage) pair: branch off the previous safe point, apply the group's commits, build + run a **scoped regression test** (opp_repl, fingerprint/statistical by default, run 0 only).
+3. Walk every (group, stage) pair: branch off the previous safe point, apply the group's commits, build + run a **scoped regression test** (default test selection from the project layer).
 4. **PASS** → promote the attempt to a canonical safe-point branch and continue silently. **FAIL/ERROR** → diagnose against four baselines (topic / base / main@Sj / previous safe point), author a new **fix commit** on a fresh attempt branch (never amend, never rewrite), re-run, ASK the human on success.
 5. Every attempt — passing or failing — is preserved as a forensic git branch; no history is ever rewritten.
 6. State (groups, stages, safe points, append-only progress log with per-fix `what failed / how it improved / why it's correct` entries) lives in a single markdown logbook so the rebase is resumable from disk alone if the AI conversation is lost.
@@ -21,7 +21,7 @@ The instance must supply, before any rebase work starts:
 - **`topic`** — branch name to rebase
 - **`main`** — target branch name to rebase onto
 - **`base`** — branch (or commit) name identifying the common ancestor of `topic` and `main`
-- **tests** — which opp_repl test types to run as the regression test, in priority order; together with any scope hints the instance wants the framework to honour. **Defaults**: `[fingerprint, statistical]`, with **run number 0 only** (other runs are ignored unless the instance explicitly opts in).
+- **tests** — which regression tests to run, in priority order; together with any scope hints the instance wants the framework to honour. The project layer supplies the defaults.
 
 These inputs are recorded verbatim in the state file header.
 
@@ -37,11 +37,11 @@ These inputs are recorded verbatim in the state file header.
 Before grouping, run a full upstream-gap and topic analysis:
 
 - `git log` + `git diff --stat` for `base..main` and `base..topic`
-- categorize topic commits (additive vs. modifying vs. fingerprint-update vs. fixup)
+- categorize topic commits (additive vs. modifying vs. baseline-update vs. fixup)
 - file overlap between gap and topic
-- opp_repl dependency-store queries: commits → NED packages → features → simulation configs
+- test-impact queries (where the project has a test-impact map): commits → affected tests
 
-Output: a **separate analysis file** at `ai-logs/executions/<date>_<rebase-name>.analysis.md`, containing SHAs of base/topic/main HEAD, upstream-gap summary, topic commit categorization, file overlap map, dep-store findings, and conflict prediction. The analysis file is the durable Phase 0 artefact; the state file references it but doesn't duplicate its contents.
+Output: a **separate analysis file** at `ai-logs/executions/<date>_<rebase-name>.analysis.md`, containing SHAs of base/topic/main HEAD, upstream-gap summary, topic commit categorization, file overlap map, test-impact findings, and conflict prediction. The analysis file is the durable Phase 0 artefact; the state file references it but doesn't duplicate its contents.
 
 ## Phase 1 — Grouping
 
@@ -64,16 +64,16 @@ Output: the approved grouping is written into the state file's **Groups** sectio
 
 For each `Gi`, choose an ordered list of stages `[S0=base, S1, …, Sk=main HEAD]` — commits on `main` where `Gi` will be incrementally rebased.
 
-- **Adaptive selection**: pick stages so each per-stage rebase introduces no or minor regressions. Use opp_repl dep-store hints (which main commits touch files `Gi` touches) plus AI judgement.
+- **Adaptive selection**: pick stages so each per-stage rebase introduces no or minor regressions. Use test-impact hints (which main commits touch files `Gi` touches) plus AI judgement.
 - **Subdivision**: if a chosen stage proves too coarse (intractable regressions), it can be split into smaller stages mid-flight. Tracked in the state file.
 - **Bad main stages**: if `regression_test` fails on plain `main@Sj`, the AI may skip `Sj`, replace it with a nearby commit, or escalate to the human. Logged either way.
 
 ## Phase 3 — Test contract
 
-A single test invocation per attempt, run via opp_repl. The test type (fingerprint / statistical / chart / combination) is set by the instance and by the affected scope.
+A single test invocation per attempt. The test type is set by the instance and by the affected scope.
 
 - **Build is folded into the test step**: build failure surfaces as a test ERROR (distinct from a FAIL but handled by the same loop).
-- **Scope**: tests are run only on configs flagged by the dep store as affected by the group's commits (no full-suite runs per stage). Within each config, only **run number 0** is executed; other runs are skipped unless the instance has explicitly opted in.
+- **Scope**: tests are run only where the test-impact map flags them as affected by the group's commits (no full-suite runs per stage), restricted further as the project layer specifies, unless the instance has explicitly opted out.
 - **Result handling**: results are **ephemeral** — consumed during diagnosis to produce prose summaries in the state file, then discarded. The state file is the durable record of "what happened".
 
 Diagnosis baselines available on FAIL:
@@ -101,7 +101,7 @@ For each group `Gi` (in order), and each stage `Sj` (in order):
 3. Run `regression_test` (build folded in).
 4. **PASS** → promote that SHA to the canonical safe-point name `rebase/group-<i>/stage-<j>`, update state file, continue silently to the next stage.
 5. **FAIL or ERROR**:
-   - AI runs opp_repl queries comparing `results_current` against the four baselines.
+   - AI compares `results_current` against the four baselines.
    - AI writes a narrative diagnosis (root cause, why it diverges).
    - AI authors a **fix commit** — a new commit on the attempt branch (never amend an existing commit; never rewrite history).
    - Re-run on a fresh attempt branch (`attempt-<k+1>`).
@@ -151,7 +151,7 @@ When `Gn` reaches `Sk`:
 
 Required sections:
 
-1. **Header** — SHAs of `base`, `topic`, `main` HEAD; instance / project info; integration mode; opp_repl test invocation; relevant project paths; link to the Phase 0 analysis file.
+1. **Header** — SHAs of `base`, `topic`, `main` HEAD; instance / project info; integration mode; test invocation; relevant project paths; link to the Phase 0 analysis file.
 2. **Groups** (Phase 1 output) — current group table: id, ordered commits, affected areas, intent, current stage, current branch. Superseded groups remain with `superseded-by` annotation.
 3. **Stages per group** — ordered `Sj` list per `Gi` with one-line justification; subdivisions and skips logged inline.
 4. **Progress report** — per current group and total: estimated completion percentage (e.g. stages-passed / total-stages, weighted by patch volume if useful), plus the most recent test invocation for that group (which tests were run, scope, PASS/FAIL/ERROR result, any explanatory note). Refreshed whenever a stage transitions or a group is regrouped.
@@ -163,9 +163,9 @@ Required sections:
    - on PASS without fixes: a single line is enough (branch SHA + scoped test summary).
    - on FAIL / ERROR: the failing tests/build errors and the diagnosis prose, followed by a **Fixes** sub-section. Record every fix commit applied during this attempt as its own sub-entry. Each sub-entry must contain — explicitly, in this order, with these labels — four fields:
      - **Fix commit**: SHA + one-line subject + the topic commit(s) it adapts (or "infrastructure / cross-cutting" if it doesn't pair to one).
-     - **What failed before**: the precise symptom before the fix — exact compiler error / linker error / failing test names / fingerprint or statistical delta (with magnitude where applicable: "N rows DIFFERENT", "fingerprint hash mismatch on config X run 0", etc.). Quote the relevant snippet of the build/test output when it pins down the failure. Avoid vague phrasing like "build broke" or "tests failed".
-     - **How it got better after**: the post-fix observation that proves the fix landed correctly — what the same build/test now reports (e.g. "release + debug build OK", "fingerprint IDENTICAL on the 7 affected configs vs main@Sj", "the 954 new statistical rows are additive only, 0 conflicting values"). If something is still off but is now an *expected* divergence, say so and link to the explanation.
-     - **Why the fix is correct**: the causal reasoning. Identify the upstream change on `main` (or in `topic`) that caused the regression, the API/data-flow contract the fix re-establishes, and why no other call site or behavioural path is broken by the fix. If the fix is a port to a renamed/relocated API, name both the old and new symbol; if it's a value/init-stage relocation, name the constraint that pins the new location. If correctness rests on a non-obvious invariant (e.g. "the inherited fields aren't used by NR RLC code"), state that invariant explicitly so a future reader can re-verify it.
+     - **What failed before**: the precise symptom before the fix — exact compiler error / linker error / failing test names / baseline delta (with magnitude where applicable, e.g. "N rows DIFFERENT"). Quote the relevant snippet of the build/test output when it pins down the failure. Avoid vague phrasing like "build broke" or "tests failed". The project layer gives further examples.
+     - **How it got better after**: the post-fix observation that proves the fix landed correctly — what the same build/test now reports (e.g. "release + debug build OK", "results IDENTICAL on the 7 affected tests vs main@Sj"). If something is still off but is now an *expected* divergence, say so and link to the explanation.
+     - **Why the fix is correct**: the causal reasoning. Identify the upstream change on `main` (or in `topic`) that caused the regression, the API/data-flow contract the fix re-establishes, and why no other call site or behavioural path is broken by the fix. If the fix is a port to a renamed/relocated API, name both the old and new symbol; if it's a value/init-stage relocation, name the constraint that pins the new location. If correctness rests on a non-obvious invariant, state that invariant explicitly so a future reader can re-verify it.
    - A single attempt can carry multiple fix sub-entries; list them in the order they were applied. If a fix was folded into the cherry-pick (no separate commit), still write the sub-entry but record `Fix commit: folded into cherry-pick of <SHA>` and keep all four labelled fields.
    - These four fields are the durable record consumed at Phase 7 finalization (fix-to-topic-commit mapping); writing them at attempt time avoids a reconstruction pass at the end.
 8. **Open issues / next step** — pending regressions, pending decisions, planned next move.

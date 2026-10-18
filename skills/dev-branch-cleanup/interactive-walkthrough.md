@@ -1,30 +1,27 @@
-# Simulation Project Branch Cleanup Guide
+# Interactive Branch Cleanup Guide
 
-Step-by-step procedure for cleaning up a feature branch in a simulation project (e.g. INET), producing a validated, rebased branch with clear commit history.
+Step-by-step procedure for cleaning up a feature branch, producing a validated, rebased branch
+with a clear commit history. The project layer (e.g. omnetpp-model-branch-cleanup for simulation
+models) supplies the concrete commands for each step that involves the tests.
 
 ## Inputs
 
-- A **`.opp` file** defining the simulation project
+- The **project** and its regression-test setup
 - A **baseline branch** name (e.g. `master`)
-- A **feature branch** name (e.g. `topic/infrastructure`) with N commits to clean up
+- A **feature branch** name with N commits to clean up
 
 ## Prerequisites
 
-- **opp_repl**
-- An **omnetpp version** compatible with both baseline and feature branch
+- A regression-test infrastructure with recorded baselines, preferably with a test-impact map
+  that can scope a test run to the parts a commit changes
+- A toolchain that can build both the baseline and the feature branch
 
 ## Phase 1: Preparation
 
-### 1.1 Create a separate `.opp` file for the clean branch
+### 1.1 Use separate baseline stores for the clean branch
 
-Copy the original `.opp` file and modify the test store paths to avoid merge conflicts when rebasing later:
-
-- `fingerprint_store="tests/fingerprint/<feature>-clean.json"`
-- `statistics_folder="tests/statistical/<feature>-clean"`
-
-```python
-clean_project = SimulationProject(...)  # load from the modified .opp file
-```
+Point the clean branch's tests at a separate copy of the baseline stores, to avoid merge
+conflicts with the regular stores when rebasing later.
 
 ### 1.2 Check out and build the baseline branch
 
@@ -32,28 +29,17 @@ clean_project = SimulationProject(...)  # load from the modified .opp file
 git checkout <baseline>
 ```
 
-Build the simulation project (release mode).
+Build the project.
 
-### 1.3 Build the dependency store
+### 1.3 Build the test-impact map
 
-Run all simulations on the baseline to build the dependency database:
+If the test infrastructure supports it, run the tests on the baseline once to build the map
+from changed files to affected tests.
 
-```python
-update_simulation_task_dependencies(simulation_project=clean_project)
-```
+### 1.4 Record the baseline test results
 
-This maps modified files → NED packages → features → simulation configs.
-
-### 1.4 Create baseline fingerprint and statistical stores
-
-Run all simulations on the baseline to populate the separate test result stores:
-
-```python
-update_fingerprint_test_results(simulation_project=clean_project)
-update_statistical_test_results(simulation_project=clean_project)
-```
-
-These serve as the reference for validating each patch.
+Run the tests on the baseline to populate the separate baseline stores. These serve as the
+reference for validating each patch.
 
 ### 1.5 Create a clean branch
 
@@ -103,7 +89,7 @@ Or apply manually if splitting/merging.
 
 Make it accurate, detailed, and self-contained:
 - Describe *what* the patch does and *why*
-- Name affected modules/protocols
+- Name affected components
 - Note expected behavioral changes (if any)
 
 ### 3.4 Build
@@ -114,24 +100,16 @@ Ensure compilation succeeds. If the build fails:
 2. **⏸️ ASK USER**: explain the build error, identify the fix (with the source commit if found), and ask for explicit permission before making any new code changes
 3. If approved, apply the minimal fix and note it in the commit message
 
-### 3.5 Run tests (scoped to affected configs)
+### 3.5 Run tests (scoped to the affected parts)
 
-```python
-run_fingerprint_tests(simulation_project=clean_project, affected_by_modification_filter="<commit>")
-run_statistical_tests(simulation_project=clean_project, affected_by_modification_filter="<commit>")
-```
-
-The `affected_by_modification_filter` uses the dependency store to test only simulation configs affected by the modified files.
+Run the regression tests, scoped with the test-impact map to the tests the commit's changes
+can affect.
 
 ### 3.6 Evaluate results
 
 - **PASS**: proceed to commit
-- **FAIL but explainable**: roll test results forward and include updated stores in the commit:
-  ```python
-  update_fingerprint_test_results(simulation_project=clean_project, affected_by_modification_filter="<commit>")
-  update_statistical_test_results(simulation_project=clean_project, affected_by_modification_filter="<commit>")
-  ```
-  Document the explanation in the commit message.
+- **FAIL but explainable**: roll the baselines forward (re-record the affected tests) and
+  include the updated stores in the commit. Document the explanation in the commit message.
 - **RUNTIME ERROR**: search other commits on the feature branch for fixes (e.g. missing initializations, wrong parameters). **⏸️ ASK USER**: explain the error, identify the fix (with the source commit if found), and ask for explicit permission before making any new code changes
 - **FAIL and unexplainable**: STOP — investigate before proceeding
 
@@ -147,8 +125,7 @@ Include validation result in the commit message. If test results were rolled for
 <detailed description>
 
 Validation:
-  <repr() of fingerprint test results>
-  <repr() of statistical test results>
+  <summary of the test results>
 ```
 
 #### Commit message format (explained FAIL)
@@ -159,11 +136,9 @@ Validation:
 <detailed description>
 
 Validation:
-  <repr() of fingerprint test results>
-  <repr() of statistical test results>
+  <summary of the test results>
 
-  Explanation: <why the differences are expected, e.g. event reordering
-  due to synchronous send replacing async at same simulation time>
+  Explanation: <why the differences are expected>
 ```
 
 ### 3.8 Present the result ⏸️ ASK USER
@@ -181,12 +156,11 @@ After the commit is created, present to the user:
 
 After all patches are applied:
 
-1. **Full fingerprint test run**: `run_fingerprint_tests(simulation_project=clean_project)` over all configs
-2. **Full statistical test run**: `run_statistical_tests(simulation_project=clean_project)` over all configs
-3. **Summary report**: list of all patches with their verification status (pass / explained-fail)
+1. **Full test run**: run all regression tests, unscoped
+2. **Summary report**: list of all patches with their verification status (pass / explained-fail)
 
 ## Notes
 
-- Use opp_repl through the MCP server when possible for running simulations, querying the dependency store, and running tests
-- Patches touching core/common code (directories not belonging to any feature) will conservatively trigger testing of all configs
+- Patches touching shared code that the test-impact map cannot attribute to a narrower part
+  conservatively trigger all tests
 - The separate store files can be merged back into the standard stores after the branch is finalized

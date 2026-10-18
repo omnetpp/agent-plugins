@@ -58,6 +58,8 @@ Rules that keep the layering honest:
 # Universal (dev-*)
 dev-design/                         prototypes are not templates, named design decisions, fix structures
 dev-git-workflow/                   staging/commit/rebase discipline, the why in commit messages, PR integration
+dev-branch-cleanup/                 test-oracle-driven branch cleanup (framework + interactive walkthrough)
+dev-branch-rebase/                  test-oracle-driven staged rebase framework
 
 # OMNeT++ core (omnetpp-*, other than omnetpp-model-*)
 omnetpp-release-engineering/        OMNeT++ core ChangeLogs, API-changes.txt, WHATSNEW
@@ -69,8 +71,8 @@ omnetpp-model-coding-conventions/   C++/MSG/NED conventions for model code
 omnetpp-model-refactoring/          behavior-preserving refactoring recipes (move code, flatten)
 omnetpp-model-git-workflow/         model additions to dev-git-workflow: fingerprints, protocol PR review
 omnetpp-model-debugging/            vanishing packets, gdb, pcap diffing, log attribution
-omnetpp-model-branch-cleanup/       opp_repl-driven branch cleanup (framework + walkthrough)
-omnetpp-model-branch-rebase/        opp_repl-driven staged rebase framework
+omnetpp-model-branch-cleanup/       opp_repl bindings for dev-branch-cleanup
+omnetpp-model-branch-rebase/        opp_repl bindings for dev-branch-rebase
 omnetpp-model-review-brief/         reviewer's brief for a PR/branch: NED interface, duties, data, communication
 
 # INET (inet-*)

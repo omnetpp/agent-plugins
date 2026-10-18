@@ -67,6 +67,9 @@ final, so intermediate rebases don't invalidate the wording.
 - Conflict-resolution mindset: understand the INTENT of the original commit
   and re-apply that intent on the current code — preserve what the commit
   meant, not its exact text.
+- For heavyweight jobs there are dedicated skills: dev-branch-cleanup
+  (reshape a branch's history in place) and dev-branch-rebase
+  (cross a large upstream gap in validated stages).
 
 ## Integrating third-party PRs
 
