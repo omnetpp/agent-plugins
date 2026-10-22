@@ -1,5 +1,16 @@
 # Per-component ChangeLog conventions
 
+## All ChangeLogs:
+
+- An entry for a change that fixes an existing problem must be clearly marked as a fix,
+  either with a "Fix:" prefix (after the component prefix, if any, e.g. "NED Editor: Fix: ..."),
+  or in the sentence itself ("Fixed the bug that ...", "Fixed ... not ...").
+- This also applies to fixing a gap in the implementation, e.g. adding support for a
+  previously unsupported figure type or ini config option that should have been supported
+  (e.g. "Fix: panel figures were not supported in the graphical editor").
+- The fix nature is often visible only in the commit message (e.g. "fix #1234", "Fault: ...",
+  a "fix:" marker), not in the wording of the raw entry. Keep it when rewording.
+
 ## IDE (ui/ChangeLog):
 
 - Only user-facing changes should remain: bugfixes, and improvements or changes noticeable for the user.
