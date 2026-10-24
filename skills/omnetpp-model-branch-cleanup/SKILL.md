@@ -76,7 +76,9 @@ baseline branch, the feature branch (e.g. `topic/infrastructure`); **opp_repl**;
   ```python
   clean_project = SimulationProject(...)  # load from the modified .opp file
   ```
-- **1.2 Build**: build the simulation project in release mode.
+- **1.2 Build**: build the simulation project in debug mode (opp_repl's run and update
+  functions default to debug, and testing is debug-only: see "Build and test in debug
+  mode only" in omnetpp-model-development).
 - **1.3 Test-impact map**: run all simulations on the baseline to build the dependency
   database:
   ```python

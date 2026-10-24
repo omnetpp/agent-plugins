@@ -83,7 +83,7 @@ Renaming is the risky smell because identifiers can be bound outside C++. Triage
 1. `scripts/find-smells.sh <file>` to list candidates (heuristic — review each, don't apply blindly).
 2. Triage: classify every naming candidate by scope tier; separate live vs. commented-out logs.
 3. Apply Tier-1/2 renames; strip/delete noisy logs; delete commented-out code. Collect Tier-3 proposals.
-4. Build from the **toplevel** project dir (regenerates makefiles): `make MODE=debug -j` (and release).
+4. Build from the **toplevel** project dir (regenerates makefiles): `make MODE=debug -j` (debug only).
    See inet-dev-environment for the build rules and the setenv/INET_ROOT check.
 5. Run the relevant fingerprint suite and confirm **zero** changes, e.g.
    `cd tests/fingerprint && ./fingerprinttest -d -m <area>` (drop graphical noise with `-F tyf`;

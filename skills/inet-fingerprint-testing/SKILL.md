@@ -19,13 +19,18 @@ First read [../omnetpp-model-fingerprint-testing/SKILL.md](../omnetpp-model-fing
 ```
 cd <inet-root> && source ./setenv -q
 cd tests/fingerprint && rm -f *.UPDATED *.ERROR *.FAILED
-./fingerprinttest -s -F tyf -m <regex> 2>&1 | tee /tmp/fp.log
+./fingerprinttest -d -F tyf -m <regex> 2>&1 | tee /tmp/fp.log
 ```
 
 Flags (NOTE: `-m` and `-f` do not mean what they mean in other INET test runners):
 
-- `-s` — run the **release** binary; default (`-d`) is debug. Debug is much
-  slower but is the only mode where the signal validator runs (see gotchas).
+- `-d` — run the **debug** binary (also the default). Always test in debug:
+  it is the only mode with ASSERTs, the signal validator and the
+  chunk-length check (see gotchas). Never use `-s` (release) except to
+  reproduce a failure that CI reports in release mode only (see "Build and
+  test in debug mode only" in omnetpp-model-development). Debug runs are
+  slower: while iterating, run the affected rows (`-m`); run the full suite
+  once before declaring a commit verified.
 - `-m <regex>` — **line filter**: regex matched against the whole CSV line
   (directory, ini file, config name all match). This is NOT a build-mode flag.
 - `-f <ingredient>` — run only rows with that ingredient (e.g. `-f tplx`).
@@ -88,5 +93,5 @@ affected; builds are cwd-relative.
   a missing serializer aborts the run. `~tNl` rows never serialize — passing
   `~tNl` proves nothing about serializers.
 - The chunk-length-vs-serializer consistency check is **debug-only**: release
-  runs silently emit malformed packets where debug would throw. Suspicious
-  `~tND` behavior? Re-run in debug (drop `-s`).
+  runs silently emit malformed packets where debug would throw -- one more
+  reason never to test in release.

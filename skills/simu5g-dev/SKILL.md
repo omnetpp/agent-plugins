@@ -287,10 +287,9 @@ reader is not ambushed.
 # Testing
 
 - **Test with debug builds only** (`make MODE=debug`, `bin/simu5g_dbg`,
-  fingerprint runner `-d`). Release builds compile every `ASSERT` out, so a
-  scenario can run green in release while violating assertions; they bring
-  almost no extra benefit at double the runtime, and CI runs the fingerprint
-  suite in both modes anyway. Rebuild debug after every source change and,
+  fingerprint runner `-d`), as for every OMNeT++ project: see "Build and
+  test in debug mode only" in omnetpp-model-development (the reasons, and the
+  two exceptions). Rebuild debug after every source change and,
   when a run exists to exercise an assertion, check the library is fresh:
   `[ out/clang-debug/src/libsimu5g_dbg.so -nt src/<edited file> ]`.
 - **Example simulations must all run to completion.** A configuration that

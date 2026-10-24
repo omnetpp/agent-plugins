@@ -40,8 +40,10 @@ cd tests/module && rm -rf work && timeout 600 inet_run_module_tests -f '<regex>'
   loop that hangs forever. The full suite is on the order of a minute; a few
   minutes of timeout is safe. A multi-GB `work/<Test>/test.out` means a loop —
   delete it (disk!).
-- Module tests run the **DEBUG** library. Build both modes first (see
-  inet-dev-environment) or you test stale code.
+- Module tests run the **DEBUG** library. Build debug first
+  (`make MODE=debug`, see inet-dev-environment) or you test stale code. All
+  suites are run in debug mode only (see "Build and test in debug mode only"
+  in omnetpp-model-development).
 - Module tests run with `--check-signals=false` — they CANNOT catch missing
   `@signal` declarations; only the debug fingerprint suite validates those.
 

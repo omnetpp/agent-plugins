@@ -28,6 +28,28 @@ description: >
   the config; the ini file is a positional argument (no `-f` flag).
 - Wrap ad-hoc runs in the `timeout` command — a buggy model can loop forever.
 
+## Build and test in debug mode only
+
+- **Build, run and test debug only** (`make MODE=debug`, the `*_dbg`
+  wrappers, the debug mode of every test runner). Release builds compile
+  every `ASSERT` out, so a release run can pass while violating invariants,
+  and further checks are debug-only too (INET's signal validator, the
+  chunk-length-vs-serializer check). A debug run can also be debugged
+  directly (gdb, Qtenv).
+- **Do not build or test release locally.** CI runs the suites in both
+  modes against the same baselines, so a debug/release divergence (side
+  effects inside `ASSERT(...)`, uninitialized variables, `NDEBUG` paths) still
+  fails there; running both modes locally doubles build and test time for
+  little gain.
+- **Never run a release wrapper or runner mode** (`inet`, `simu5g`,
+  `fingerprinttest -s`, a release lib in `LD_LIBRARY_PATH`): with release
+  no longer built, the release library on disk is stale, and a run against it
+  silently tests old code.
+- **Exceptions**, both explicit and temporary: reproducing a failure that CI
+  reports in release mode only, and performance measurement or profiling.
+  Build release for that purpose, and do not count a release run as testing
+  otherwise.
+
 ## Checking layouts visually (headless Qtenv)
 
 To check a network or compound-module layout without a display, render Qtenv

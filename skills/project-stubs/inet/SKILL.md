@@ -44,9 +44,9 @@ By task:
 
 ## Always-on basics
 
-- Build from the **toplevel** project directory, never `src/`; build BOTH
-  `make -j$(nproc)` (release) and `make MODE=debug -j$(nproc)` after C++
-  changes (see inet-dev-environment for why).
+- Build from the **toplevel** project directory, never `src/`; build debug
+  only, `make MODE=debug -j$(nproc)`, after C++ changes, and test in debug
+  mode only (see inet-dev-environment; CI tests release).
 - Start every shell command block with `source ./setenv -q` from the project
   root and verify `$INET_ROOT` points at THIS checkout.
 - Develop on a topic branch in the main checkout, not in tool-managed

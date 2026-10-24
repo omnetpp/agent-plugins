@@ -45,10 +45,10 @@ cd tests/protocol/<suite> && ../lib/build.sh && ./run-tests.sh
 - Standalone opp_test harness recipe (for a one-off unit test):
   ```
   mkdir tests/unit/work; opp_test gen -v X.test; cd work
-  opp_makemake -f --deep -I$ROOT/src -L$ROOT/src -lINET -o work; make; cd ..
-  LD_LIBRARY_PATH=$ROOT/out/clang-release/src opp_test run -v X.test
+  opp_makemake -f --deep -I$ROOT/src -L$ROOT/src -lINET_dbg -o work; make MODE=debug; cd ..
+  LD_LIBRARY_PATH=$ROOT/out/clang-debug/src opp_test run -v X.test
   ```
-  (release lib suffices; `rm -rf work` afterwards — it is generated).
+  (debug lib, as for every test run; `rm -rf work` afterwards — it is generated).
 - **Every new serializer gets a round-trip (serialize→deserialize) unit
   test.** It is the ONLY thing exercising the deserialize path: simulation
   receivers keep the C++ chunk object, so even `~tND` fingerprints exercise
