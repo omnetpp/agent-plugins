@@ -44,14 +44,29 @@ description: >
 ## Green at every commit
 
 For multi-step work (refactorings, ports, feature branches meant for review),
-each commit must build cleanly (all relevant build modes) and pass the
-relevant test suites; behavior-preserving steps must leave the recorded
-regression baselines unchanged. Commit after each completed step; don't batch.
-Any commit that legitimately changes recorded test baselines updates them *in
-the same commit* and explains the change in the message. Write subjects in
-the dev-commit-messages format from the start. While a branch is still being
-reshaped, recheck them in a final message-only pass when the history is
-otherwise final.
+every commit must build cleanly, and the branch tip must pass the full test
+suites. Commit after each completed step; don't batch. Any commit that
+legitimately changes recorded test baselines updates them *in the same
+commit* and explains the change in the message.
+
+What to run where:
+- **Every commit:** a build in the project's test build mode, and the tests
+  the commit is about: a test commit's new tests fail without the fix they
+  target, and the fix commit makes them pass.
+- **The branch tip:** the full suites, locally or on CI. Intermediate
+  commits do not get the full suites, except in projects whose suites take
+  only minutes (below).
+- **A commit whose point is a no-change claim** (`refactor:`, `cosmetics:`,
+  `cleanup:` steps of a refactoring series): also run the regression tests
+  that can see a difference, scoped to what the commit touches.
+- **Projects whose full suites take only minutes** (Simu5G): run them at
+  every commit; it is cheap and finds the first bad commit directly.
+- **History rewrites** (cleanup, rebase) follow their own scoped per-commit
+  procedures: dev-branch-cleanup, dev-branch-rebase.
+
+Write subjects in the dev-commit-messages format from the start. While a
+branch is still being reshaped, recheck them in a final message-only pass
+when the history is otherwise final.
 
 ## Rebase tactics
 

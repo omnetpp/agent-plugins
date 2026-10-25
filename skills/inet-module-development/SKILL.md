@@ -43,5 +43,7 @@ Applies on top of omnetpp-model-coding-conventions. Reference files:
 - **Fix latent upstream bugs as you encounter them** (uninitialized fields,
   dangling pointers) and note them — porting and refactoring regularly
   surface real pre-existing bugs.
-- **Green at every commit** with the relevant suites (see omnetpp-model-git-workflow
-  and the testing skills); unrelated fingerprints stay byte-identical.
+- **Green at every commit**: every commit builds (debug) and its own tests
+  pass; module tests and the full fingerprint suite run at the branch tip
+  (see omnetpp-model-git-workflow). Unrelated fingerprints stay
+  byte-identical.
