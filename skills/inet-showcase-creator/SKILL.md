@@ -299,6 +299,8 @@ Raise all doubts, discuss every important aspect with the user. Infer defaults f
     which visualizer), and the sentence that will stand under it. One artifact can cover
     several steps. One hero artifact per claim. Every further artifact names the step or
     takeaway it serves, or it is cut
+  - the **layout**, split or interleaved (see "Layout: split or interleaved" in 2.3), with
+    its answer to the layout question in one line
   - the **Results parts**: the walkthrough steps mapped onto one part per configuration, in
     The Model's order, each part with its figures, its one closing headline line and the
     steps it tells; a step shared by several configurations is told in the first part
@@ -377,6 +379,22 @@ capture.
   §"Showcase Previewer"; the `preview-artifact` skill publishes it as a shareable link). Ask for one
   review of structure, narrative and evidence plan. Apply the answers before 2.6.
 
+**Layout: split or interleaved.** A multi-configuration page has two legitimate layouts, and the
+storyboard picks one. **Split**: The Model presents every configuration, then Results walks
+through them again (txop, aggregation, fragmentation, coexistence, framepreemption,
+pcaprecording). **Interleaved**: one `The Model and Results` section, the shared setup first, then
+one `~` part per configuration with its excerpt directly above its results (blockack,
+directionalantennas, clockdrift; spectrum, radiomediumactivity and analogmodel do the same with
+one `-` section per feature). The layout question: *does a result figure need more than one
+configuration to make its point?* If most do (one chart with a line per configuration, a
+before-and-after pair, a sweep that differs in one number), split: the reader needs every
+configuration in mind before the comparison. If none do (each configuration shows its own
+variant or feature, and a reader may read one part and stop), interleave: in the split layout
+that reader meets each configuration under two headings, sixty lines apart, and must scroll back
+to its excerpt. If it is mixed, interleave and close with a short comparison part. A
+single-configuration page has no choice to make. The skeleton below is the split layout; the
+interleaved one follows it.
+
 Create `doc/index.rst` following this structure:
 
 ```rst
@@ -440,6 +458,23 @@ Discussion
 Use `this page <GitHub issue URL>`__ in the GitHub issue tracker for commenting on this showcase.
 ```
 
+The interleaved layout replaces `The Model`, the `[Config Name] Configuration` subsections and
+`Results` with one section; everything before and after it is the same:
+
+```rst
+The Model and Results
+---------------------
+[The network figure and description, the traffic, what every run has in common
+ (the one or two sentences that would open a split Results section), and the
+ list of configurations, one line each.]
+
+[Config Name]
+~~~~~~~~~~~~~
+[One or two sentences on what this configuration changes, its literalinclude,
+ then its results exactly as in a split Results part: prose first, the figure
+ as illustration, the headline numbers in a closing line block.]
+```
+
 **Document structure guidance:**
 
 - **Three-layer separation for protocol showcases:** protocol background → INET implementation → specific scenarios. This prevents INET details from being scattered across config sections. Simpler showcases (e.g., a feature demo with no protocol background) can merge or skip layers.
@@ -460,11 +495,11 @@ The one rule is **readability for a first reader who has read the rest of the pa
 
 Everything below is a default that usually achieves that, taken from the human-written pages (`wireless/hiddennode`, `tsn/trafficshaping/timeawareshaper`, `wireless/qos`). Depart from a default when the reader-simulation test says the page reads better another way, and say so in the storyboard; never depart from the rule.
 
-**Reader-simulation test** (run on the storyboard's Results parts, and again on the draft, before anyone else reads it): read Results as that first reader, paragraph by paragraph, and write down what they hold after each one. The page fails where the reader must (a) restart the run (a new figure that begins the clock again), (b) hold a number before seeing what it measures, (c) jump to another configuration mid-part, (d) be told something they already hold, or (e) parse a timestamp or packet name that carries nothing the sentence needs. Each failure is a change to the draft, whatever shape the section has. One restart per part, no held numbers, no jumps, no repeats, and the numbers that remain are the ones the reader is meant to remember.
+**Reader-simulation test** (run on the storyboard's Results parts, and again on the draft, before anyone else reads it): read The Model and Results together as that first reader, paragraph by paragraph, and write down what they hold after each one. The page fails where the reader must (a) restart the run (a new figure that begins the clock again), (b) hold a number before seeing what it measures, (c) jump to another configuration mid-part, (d) be told something they already hold, (e) parse a timestamp or packet name that carries nothing the sentence needs, or (f) meet a configuration under a second heading when none of its figures needs another configuration (the layout should be interleaved), or scroll back across configurations to read a comparison (it should be split). Each failure is a change to the draft, whatever shape the section has. One restart per part, no held numbers, no jumps, no repeats, and the numbers that remain are the ones the reader is meant to remember.
 
 Defaults:
 
-- **One part per configuration, in The Model's order.** The reader built a mental model of each configuration in The Model; Results fills those slots in the same order. Do not group by evidence type (all charts, then the video, then all sequence charts, then packets): every regrouping makes the reader restart the run, and a reader who only cares about one configuration cannot stop after its part. Time order holds inside a part, never across the section. Remarks that hold for every run (a boot artifact on all charts, what the axes are) go in the one or two sentences that open the section, not under the first figure.
+- **One part per configuration, in The Model's order.** In the split layout the reader built a mental model of each configuration in The Model, and Results fills those slots in the same order; in the interleaved layout each part holds its configuration's excerpt and then its results, and everything below applies inside the part. Do not group by evidence type (all charts, then the video, then all sequence charts, then packets): every regrouping makes the reader restart the run, and a reader who only cares about one configuration cannot stop after its part. Time order holds inside a part, never across the section. Remarks that hold for every run (a boot artifact on all charts, what the axes are) go in the one or two sentences that open the section, not under the first figure.
 - **Prose first, figure as illustration.** Tell what happens in plain sentences: who acts, what message goes where, why, what changes. Then show the figure ("Here is ...", "The following sequence chart shows ..."). Spend at most one sentence on what is not obvious in the figure (the doubled labels in an access point's band, a periodic advertisement among the solicited ones); do not read the whole figure back. Figure-reading prose after a full prose telling is the same content twice. No primer on how to read a sequence chart; one clause in the lead-in of the first chart ("each horizontal line is one node, each arrow one hop") is enough.
 - **Tell the shared mechanism once.** When several configurations share a phase (the same handover, the same registration), tell it fully in the first part where it appears and refer back later in one clause ("the same up to the Binding Acknowledgement"). Never make the reader hop between configurations inside one part.
 - **Name the messages and the fields that matter.** Say which message it is, who sends it, who receives it, and the one or two fields that drive the behavior (a flag, a lifetime, a sequence number, an address). Give each message's action as a verb (see references/writing.md). Show the packet inspector or a sequence chart where the field is visible.
@@ -493,8 +528,8 @@ Spawn one fresh subagent with four paths and nothing else: the draft `doc/index.
 closest exemplar's `doc/index.rst`, and `references/exemplars.md` and `references/writing.md`
 from this skill. It returns a list of violations, each with the line, the convention or rule it
 breaks (with the exemplar count or the rule name), and a proposed replacement. It also
-compares the Results section's shape with the exemplar's, not only its sentences: one part
-per configuration, prose before each figure, how many times the reader's clock restarts
+compares the Results section's shape with the exemplar's, not only its sentences: the layout
+against the layout question (split or interleaved, see 2.3), one part per configuration, prose before each figure, how many times the reader's clock restarts
 (target: once per part), how many timestamps and packet names the prose carries, and whether
 each part closes with its headline line block. Apply them. Run the pass on every draft the
 user will read — the placeholder draft and the final page — so the user's review is spent on

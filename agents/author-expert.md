@@ -147,7 +147,7 @@ The shipped pages read as a guide walking the reader through a run (`exemplars.m
   The shape below is the default that usually delivers it (`inet-showcase-creator` §"Results section
   guidance" has the reader-simulation test and the cases where another shape passes it better).
   Default: one `~` part per configuration in The Model's order, from the storyboard's Results
-  parts. Time order holds inside a part, never across the section: do not group figures by
+  parts, in the storyboard's layout (split, or interleaved with each excerpt above its results). Time order holds inside a part, never across the section: do not group figures by
   evidence type. A phase shared by several configurations is told in the first part where it
   appears and referred back to later in one clause. Keep timestamps and packet names out of the
   prose unless the length of a wait is the point. Close each part with its headline numbers in a

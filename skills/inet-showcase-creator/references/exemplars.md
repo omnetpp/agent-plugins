@@ -25,7 +25,11 @@ to `showcases/`. Pages are 1162-4248 words (median 2542), 212-611 lines.
 - `Results` as its own `-` heading: 6 of 11 (txop, aggregation, fragmentation, coexistence,
   framepreemption, pcaprecording). The other 5 interleave config and results per example or per
   feature (blockack: one `~` per config; clockdrift: "Example:" chain; radiomediumactivity,
-  spectrum, analogmodel: one `-` section per feature/model).
+  spectrum, analogmodel: one `-` section per feature/model). The dividing line: the split pages'
+  figures compare configurations (a line per configuration, a before-and-after pair, a sweep) or
+  the page has one configuration; the interleaved pages' figures each need only their own
+  configuration. `wireless/directionalantennas` (outside the eleven) interleaves under one `The
+  Model and Results` heading, one `~` part per antenna.
 - `Sources:` line after the last result: 11 of 11; immediately followed by `Try It Yourself` in
   10 of 11 (radiomediumactivity inserts a "More information" section).
 - Last two sections are `Try It Yourself` then `Discussion`: 11 of 11.
