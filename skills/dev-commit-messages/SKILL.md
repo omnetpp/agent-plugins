@@ -4,8 +4,9 @@ description: >
   Commit subject format for any software project: area prefix, change-type
   markers (fix:, refactor:, cosmetics:, cleanup:, docs:, test:,
   chore:/build:/ci:; no marker for intended behavior changes), what each
-  marker claims, latent-bug fixes, the Fault/Fix message pattern, and group
-  prefixes for commit series. Use when writing or rewording commit messages,
+  marker claims, latent-bug fixes, the Fault/Fix body of fix commits (the
+  symptom in user terms first, with a concrete example), and group prefixes
+  for commit series. Use when writing or rewording commit messages,
   and when reviewing what commits claim.
 ---
 
@@ -54,8 +55,8 @@ still `fix:`, never `refactor:`. `refactor:` is reserved for changes whose
 behavior is identical in EVERY state, reachable or not; "nothing reaches the
 difference" does not make a change a refactoring. A preparatory change that
 removes a trap for the next commit is a fix, too. Say "latent" and
-"regression results unchanged" in the body, in the "Fault: ... Fix: ..." form
-below.
+"regression results unchanged" in the body, in the "Fault (latent): ...
+Fix: ..." form below.
 
 So the markers separate the risk classes: `fix:` and unmarked commits are
 where behavior (and thus regression baselines) may legitimately change;
@@ -64,12 +65,54 @@ and `ci:` commits must leave the regression results unchanged. They also
 make each class of change mechanically greppable when assembling release
 notes or auditing what moved between releases.
 
-## Fixes inside larger commits
+## Fix messages
+
+The body of every `fix:` commit has this form:
+
+```
+Fault: <the symptom, as the person who hits it sees it>
+<a concrete example: what they did, and what happened>
+
+<optional: the technical cause>
+
+Fix: <what changed, and why it was done this way>
+
+Test: <the regression test that reproduces the fault>
+```
+
+The `Fault:` part describes the bug as the person who hits it sees it: they
+do X, and Y happens. It comes FIRST. The technical cause may follow, but only
+after it. From the first paragraph alone, a reader must be able to tell
+whether they were affected, without reading any code. The subject names the
+symptom, too, not the mechanism.
+
+Who the user is depends on where the bug shows. It can be the person using a
+UI (the IDE, Qtenv), the model developer whose code, NED or ini file stops
+compiling or misbehaves, or the person running the build or a tool. X may be
+code or configuration that they wrote.
+
+The example is concrete and minimal. It names the action (a menu item, a
+field, an API call, a config option, or a code snippet of a few lines). It
+quotes the literal error message or wrong output, indented on its own line,
+because users search the history for the error text they got. Take the
+example from the regression test, or reproduce it. Never describe a symptom
+that nobody observed. If the symptom depends on the environment (a library
+version, the platform, the build mode), say which environment.
+
+A latent bug has no user scenario. Write "Fault (latent): ..." to say what
+would go wrong and under which conditions, and say "regression results
+unchanged". Do not invent a scenario.
+
+For a trivial fix (a typo in a message, a wrong label), the example alone can
+be the `Fault:` part.
+
+Leave out the `Test:` line only if an automated test is not practical, and
+say why. A `test:` commit that adds the reproducing test before the fix opens
+with the same user-terms description of the bug.
 
 A fix is normally its OWN commit. When a fix exceptionally rides inside a
-larger commit, the body must call out the fault and the fix, including the
-literal word "Fix:": "Fault, exposed by ...: <what was wrong and how it
-failed>" followed by "Fix: <what changed>". Deliberate exclusions from a
+larger commit, the same Fault/Fix block goes into that commit's body, as
+"Fault, exposed by <what exposed it>: ...". Deliberate exclusions from a
 change's scope also belong in the message of the commit that defines the
 change, so a reader cannot mistake them for omissions.
 
