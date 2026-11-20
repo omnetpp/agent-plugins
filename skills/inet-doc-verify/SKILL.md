@@ -94,6 +94,17 @@ Rules for this step:
 - Evidence or nothing: every finding quotes the page sentence and names the commit. A finding
   without both is dropped.
 - Report, do not edit. The user decides what to fix and what to waive.
+- Decide which side is wrong before calling a contradiction a page error. If the page describes
+  behavior a user would expect (an icon goes away on close, a statistic covers all packets) and
+  the code does not deliver it, suspect the code first: look for the missing half (a signal that
+  is emitted but not subscribed to, a removal function that nothing calls, a parameter that is
+  read but ignored). If it is there, report the item as **SRC-BUG**, not FIX: the page sentence
+  stays as it is, and the defect goes to the `inet-bug-report` pipeline. Never propose rewording
+  a page so that it describes a defect as intended behavior.
+- Every proposed page edit is checked in context: read the whole paragraph (and the section
+  heading) with the new wording in place, and make sure no other sentence still says the
+  opposite. Example of the failure: "displays icons above the endpoints of an active
+  connection" two lines above a new "the icons are not removed when it is closed".
 - Do not invent numbers. If a commit changed a result (list 2 or a direct change to a traffic
   parameter), say that the stated numbers must be re-measured; do not estimate new ones.
 - A re-recorded fingerprint row is not automatically "results moved". Compare the ingredients of
@@ -116,7 +127,10 @@ One table, one row per page, then details only for rows that are not PASS:
 | page | base | errors | warnings | commits (page/fp/direct) | verdict |
 
 Verdicts: **PASS** (no ERROR, no unresolved WARN, no contradicting commit), **FIX** (ERRORs or
-confirmed contradictions, each listed with file:line and the commit), **HUMAN** (snippet drift
+confirmed contradictions where the page is the wrong side, each listed with file:line and the
+commit), **SRC-BUG** (the page states intended behavior and the code fails it: name the source
+file:line and the missing piece; the page is not edited and not stamped until the source fix
+lands), **HUMAN** (snippet drift
 or a commit whose effect on the prose could not be settled from the text; list the open items).
 Give the report before touching any page.
 
