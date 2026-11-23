@@ -11,7 +11,7 @@ description: >
 
 # INET fingerprint testing
 
-First read [../omnetpp-model-fingerprint-testing/SKILL.md](../omnetpp-model-fingerprint-testing/SKILL.md)
+First load the `omnetpp-model-fingerprint-testing` skill
 (concepts, workflow, discipline). Everything below is INET-specific.
 
 ## Runner

@@ -1,15 +1,1 @@
-brain
-code_tracker
-implicit
-recipes
-cascade
-context_state
-installation_id
-onboarding.json
-codemaps
-database
-mcp_config.json
-onboarding.json.lock
-*.pb
-*.lock
 skills/synced/

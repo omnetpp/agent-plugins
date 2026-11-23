@@ -11,7 +11,7 @@ description: >
 
 # Simu5G fingerprint testing
 
-First read [../omnetpp-model-fingerprint-testing/SKILL.md](../omnetpp-model-fingerprint-testing/SKILL.md).
+First load the `omnetpp-model-fingerprint-testing` skill.
 Everything below is Simu5G-specific.
 
 ## Runner
