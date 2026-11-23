@@ -35,7 +35,8 @@ if (nodeMajor < 18) {
 // The lint hook runs after every edit of every file, so an edit that names no .ned, .msg or
 // .ini file (case-sensitive, as in opp_lint) ends here, before any tool starts. The hook
 // input is read up front for this and handed to the tool unchanged.
-const hookInput = tool === 'lint' && args.includes('--agent-hook') ? readStdin() : undefined;
+const isHook = args.some((a) => a === '--agent-hook' || a.startsWith('--agent-hook='));
+const hookInput = tool === 'lint' && isHook ? readStdin() : undefined;
 if (hookInput !== undefined && !/\.(ned|msg|ini)\b/.test(hookInput)) process.exit(0);
 
 function readStdin() {

@@ -52,4 +52,16 @@ if (process.platform !== 'win32') {
     failed++;
   }
 }
+// An edit of another file must end in the launcher, before any tool is looked up, also
+// when the agent is named: with an empty PATH, a lookup would fail with exit 1.
+for (const args of [['--agent-hook'], ['--agent-hook=cursor']]) {
+  const input = JSON.stringify({ cwd: project, ...write('README.md') });
+  const r = spawnSync(process.execPath, [launcher, 'lint', ...args], { input, encoding: 'utf8', env: { PATH: '' } });
+  const ok = r.status === 0;
+  console.log(`${ok ? 'ok  ' : 'FAIL'} fast exit with ${args}: exit ${r.status}`);
+  if (!ok) {
+    console.log(r.stderr);
+    failed++;
+  }
+}
 process.exit(failed ? 1 : 0);
