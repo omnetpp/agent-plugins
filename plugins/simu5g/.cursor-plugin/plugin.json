@@ -1,0 +1,19 @@
+{
+  "name": "simu5g",
+  "version": "1.0.0",
+  "description": "Skills for Simu5G development: architecture rules, code style, build and test rules, and the Simu5G fingerprint tests.",
+  "author": {
+    "name": "OpenSim Ltd.",
+    "url": "https://omnetpp.org"
+  },
+  "homepage": "https://github.com/omnetpp/ai-config",
+  "repository": "https://github.com/omnetpp/ai-config",
+  "license": "MIT",
+  "keywords": [
+    "omnetpp",
+    "simu5g",
+    "5g",
+    "network-simulation"
+  ],
+  "skills": "./skills/"
+}

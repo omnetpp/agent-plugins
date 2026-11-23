@@ -20,6 +20,33 @@ may refer to any skill in its own plugin or in a plugin it depends on. A skill m
 skill in a plugin that depends on it only as an optional pointer, e.g. "for INET, see
 `inet-fingerprint-testing` if installed".
 
+## Manifests and versions
+
+The manifests and marketplace catalogs of every harness are generated from `plugins.json`.
+Do not edit them by hand. After changing `plugins.json`, run:
+
+```bash
+node scripts/gen-manifests.mjs
+```
+
+All plugins share one version. Claude Code keeps an installed plugin until its version
+changes, so a release bumps it: `node scripts/bump-version.mjs <major|minor|patch>`. Then
+tag the release commit `vX.Y.Z`.
+
+A new skill needs no manifest change: every harness finds `plugins/<plugin>/skills/` by
+itself.
+
+## Trying out changes
+
+Load the plugins from the checkout for one session; edits take effect on the next start:
+
+```bash
+claude --plugin-dir plugins
+```
+
+Or register the checkout as a marketplace (`claude plugin marketplace add .`) and install from
+it. That install reads the plugin folders in place.
+
 ## Rules for skills
 
 - **Refer to other skills by name**, never by a relative path such as

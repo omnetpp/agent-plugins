@@ -1,0 +1,56 @@
+{
+  "name": "omnetpp",
+  "interface": {
+    "displayName": "OMNeT++"
+  },
+  "plugins": [
+    {
+      "name": "omnetpp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/omnetpp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "omnetpp-dev",
+      "source": {
+        "source": "local",
+        "path": "./plugins/omnetpp-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "inet",
+      "source": {
+        "source": "local",
+        "path": "./plugins/inet"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "simu5g",
+      "source": {
+        "source": "local",
+        "path": "./plugins/simu5g"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    }
+  ]
+}

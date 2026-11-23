@@ -1,0 +1,79 @@
+{
+  "marketplace": {
+    "name": "omnetpp",
+    "displayName": "OMNeT++",
+    "description": "Agent plugins for developing OMNeT++ simulation models, the INET Framework and Simu5G.",
+    "version": "1.0.0",
+    "owner": {
+      "name": "OpenSim Ltd.",
+      "url": "https://omnetpp.org"
+    },
+    "homepage": "https://github.com/omnetpp/ai-config",
+    "repository": "https://github.com/omnetpp/ai-config",
+    "license": "MIT"
+  },
+  "plugins": [
+    {
+      "name": "omnetpp",
+      "displayName": "OMNeT++",
+      "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging and the OMNeT++ tools.",
+      "keywords": [
+        "omnetpp",
+        "ned",
+        "msg",
+        "ini",
+        "simulation",
+        "discrete-event"
+      ],
+      "category": "Coding",
+      "dependencies": []
+    },
+    {
+      "name": "omnetpp-dev",
+      "displayName": "OMNeT++ model maintainer",
+      "description": "Skills for maintainers of OMNeT++ model libraries: fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
+      "keywords": [
+        "omnetpp",
+        "fingerprint",
+        "refactoring",
+        "git",
+        "rebase",
+        "review"
+      ],
+      "category": "Coding",
+      "dependencies": [
+        "omnetpp"
+      ]
+    },
+    {
+      "name": "inet",
+      "displayName": "INET Framework",
+      "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases.",
+      "keywords": [
+        "omnetpp",
+        "inet",
+        "network-simulation"
+      ],
+      "category": "Coding",
+      "dependencies": [
+        "omnetpp",
+        "omnetpp-dev"
+      ]
+    },
+    {
+      "name": "simu5g",
+      "displayName": "Simu5G",
+      "description": "Skills for Simu5G development: architecture rules, code style, build and test rules, and the Simu5G fingerprint tests.",
+      "keywords": [
+        "omnetpp",
+        "simu5g",
+        "5g",
+        "network-simulation"
+      ],
+      "category": "Coding",
+      "dependencies": [
+        "inet"
+      ]
+    }
+  ]
+}

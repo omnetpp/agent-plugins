@@ -1,0 +1,34 @@
+{
+  "name": "omnetpp",
+  "owner": {
+    "name": "OpenSim Ltd.",
+    "url": "https://omnetpp.org"
+  },
+  "description": "Agent plugins for developing OMNeT++ simulation models, the INET Framework and Simu5G.",
+  "plugins": [
+    {
+      "name": "omnetpp",
+      "source": "./plugins/omnetpp",
+      "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging and the OMNeT++ tools.",
+      "category": "Coding"
+    },
+    {
+      "name": "omnetpp-dev",
+      "source": "./plugins/omnetpp-dev",
+      "description": "Skills for maintainers of OMNeT++ model libraries: fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
+      "category": "Coding"
+    },
+    {
+      "name": "inet",
+      "source": "./plugins/inet",
+      "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases.",
+      "category": "Coding"
+    },
+    {
+      "name": "simu5g",
+      "source": "./plugins/simu5g",
+      "description": "Skills for Simu5G development: architecture rules, code style, build and test rules, and the Simu5G fingerprint tests.",
+      "category": "Coding"
+    }
+  ]
+}

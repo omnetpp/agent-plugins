@@ -1,0 +1,24 @@
+{
+  "name": "omnetpp-dev",
+  "version": "1.0.0",
+  "description": "Skills for maintainers of OMNeT++ model libraries: fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
+  "author": {
+    "name": "OpenSim Ltd.",
+    "url": "https://omnetpp.org"
+  },
+  "homepage": "https://github.com/omnetpp/ai-config",
+  "repository": "https://github.com/omnetpp/ai-config",
+  "license": "MIT",
+  "keywords": [
+    "omnetpp",
+    "fingerprint",
+    "refactoring",
+    "git",
+    "rebase",
+    "review"
+  ],
+  "displayName": "OMNeT++ model maintainer",
+  "dependencies": [
+    "omnetpp"
+  ]
+}

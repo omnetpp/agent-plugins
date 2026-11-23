@@ -1,0 +1,5 @@
+{
+  "name": "simu5g",
+  "version": "1.0.0",
+  "description": "Skills for Simu5G development: architecture rules, code style, build and test rules, and the Simu5G fingerprint tests."
+}

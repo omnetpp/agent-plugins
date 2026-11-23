@@ -1,0 +1,5 @@
+{
+  "name": "omnetpp",
+  "version": "1.0.0",
+  "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging and the OMNeT++ tools."
+}
