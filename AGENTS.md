@@ -11,7 +11,8 @@ that folder.
 |---|---|---|
 | `omnetpp-model-*` | OMNeT++-based simulation models: INET, Simu5G, user models | `omnetpp` (everyday model work) or `omnetpp-dev` (regression testing, refactoring, history work) |
 | `omnetpp-tooling`, `omnetpp-model-doc-*` | the OMNeT++ command-line tools | `omnetpp` |
-| `dev-*` | any software project | `omnetpp-dev` (only the ones its skills build on) |
+| `dev-*` | any software project | `omnetpp-dev` |
+| `generic-*` | not tied to a simulator, used by INET work | `inet` |
 | `inet-*` | INET and INET-based libraries | `inet` |
 | `simu5g-*` | Simu5G only | `simu5g` |
 

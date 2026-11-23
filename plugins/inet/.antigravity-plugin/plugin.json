@@ -1,5 +1,5 @@
 {
   "name": "inet",
   "version": "1.0.0",
-  "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases."
+  "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, protocol conformance test planning, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases."
 }

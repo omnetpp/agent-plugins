@@ -15,8 +15,8 @@ const { plugins } = JSON.parse(readFileSync(join(root, 'plugins.json'), 'utf8'))
 
 // Skills that left the repository or were renamed; a mention would point nowhere.
 const RETIRED = [
-  'omnetpp-release-engineering', 'oppenv-dev', 'rst-editing', 'asd-ste100', 'dev-working-rules',
-  'generic-protocol-test-authoring', 'inet-protocol-conformance-review',
+  'omnetpp-release-engineering', 'oppenv-dev', 'rst-editing', 'asd-ste100',
+  'inet-protocol-conformance-review',
   'omnetpp-modeling', 'omnetpp-sim-debugging', 'omnetpp-coding-conventions',
   'omnetpp-fingerprint-testing', 'omnetpp-git-workflow', 'omnetpp-branch-cleanup',
   'omnetpp-branch-rebase',

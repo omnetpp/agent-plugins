@@ -36,7 +36,7 @@
     {
       "name": "omnetpp-dev",
       "displayName": "OMNeT++ model maintainer",
-      "description": "Skills for maintainers of OMNeT++ model libraries: fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
+      "description": "Skills for maintainers of OMNeT++ model libraries: working rules, fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
       "keywords": [
         "omnetpp",
         "fingerprint",
@@ -53,7 +53,7 @@
     {
       "name": "inet",
       "displayName": "INET Framework",
-      "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases.",
+      "description": "Skills for INET Framework development: build environment, module/unit/protocol test suites, protocol conformance test planning, fingerprint and statistical tests, module development, branch cleanup, release notes and showcases.",
       "keywords": [
         "omnetpp",
         "inet",
