@@ -110,9 +110,9 @@ function files() {
     });
     if (p.tools) {
       out[`${dir}/bin/opp-tools.json`] = json(oppTools);
-      // Claude and Codex read hooks/hooks.json, Devin the root hooks.json.
+      // Claude, Codex and Devin read hooks/hooks.json. Devin also reads a root hooks.json, so
+      // a second copy there would run the hook twice.
       out[`${dir}/hooks/hooks.json`] = json(LINT_HOOK);
-      out[`${dir}/hooks.json`] = json(LINT_HOOK);
       out[`${dir}/.lsp.json`] = json({
         omnetpp: { command: 'node', args: [LAUNCHER, 'lsp', '--stdio'], extensionToLanguage: NED_FILES },
       });
