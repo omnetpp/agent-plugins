@@ -16,6 +16,14 @@ Applies on top of dev-branch-cleanup; read that first (its `framework.md` and
 `interactive-walkthrough.md`). This skill supplies the simulation-model bindings for the
 places where the generic procedures say "regression tests", "baselines" and "test-impact map".
 
+## Prerequisite: opp_repl
+
+This skill needs [opp_repl](https://github.com/omnetpp/opp_repl) (`pip install opp_repl`,
+Python 3.10+), preferably connected to the agent through its MCP server (see its
+`doc/mcp_server.md`). The OMNeT++ agent plugins do not install or configure it. If it is not
+available, tell the user instead of improvising a replacement. For INET, the CLI-based
+`inet-branch-cleanup` playbook (if installed) needs no opp_repl.
+
 ## Test infrastructure
 
 - **opp_repl**, preferably through its MCP server, for running simulations, querying the

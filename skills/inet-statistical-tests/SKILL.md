@@ -30,6 +30,13 @@ if unsure. Run the full suite in the **foreground and wait** (it is large; see b
   (byte-identical → **writes nothing**). Records in **debug mode** by default. Use this to *commit*
   validated changes only.
 
+## Prerequisite: opp_repl
+
+This skill needs [opp_repl](https://github.com/omnetpp/opp_repl) (`pip install opp_repl`,
+Python 3.10+), connected to the agent through its MCP server (see its `doc/mcp_server.md`).
+The OMNeT++ agent plugins do not install or configure it. If it is not available, tell the
+user. REFERENCE.md has a CLI fallback for when the MCP session is unusable.
+
 ## Preconditions (verify before starting)
 
 - [ ] opp_repl reachable via MCP `execute_python`; `inet_project` is loaded.
@@ -92,7 +99,7 @@ update_statistical_test_results(simulation_project=inet_project,
    *only its first line, in quotes* (not the full body) so the statistics commit records which INET
    change it follows:
    ```bash
-   INET=/home/andras/projects/inet
+   INET="$INET_ROOT"
    SUBJ=$(git -C "$INET" log -1 --format='%s')
    HASH=$(git -C "$INET" rev-parse --short HEAD)
    git -C "$INET/statistics" commit \

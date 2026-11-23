@@ -15,6 +15,13 @@ Applies on top of dev-branch-rebase; read that first (its `framework.md`). This 
 supplies the simulation-model bindings for the places where the generic procedure says
 "regression tests", "baselines" and "test-impact map".
 
+## Prerequisite: opp_repl
+
+This skill needs [opp_repl](https://github.com/omnetpp/opp_repl) (`pip install opp_repl`,
+Python 3.10+), preferably connected to the agent through its MCP server (see its
+`doc/mcp_server.md`). The OMNeT++ agent plugins do not install or configure it. If it is not
+available, tell the user instead of improvising a replacement.
+
 ## Test infrastructure
 
 - **opp_repl** as the test infrastructure: fingerprint, statistical and chart tests. The

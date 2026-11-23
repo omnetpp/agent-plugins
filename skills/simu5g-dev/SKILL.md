@@ -55,8 +55,8 @@ git -> `dev-git-workflow` + `dev-commit-messages` + `omnetpp-model-git-workflow`
 
 Review briefs (`omnetpp-model-review-brief`) in Simu5G:
 
-- Write the brief to
-  `~/projects/ai-plans/reports/review-<branch-or-pr>-<YYYY-MM-DD>.md`.
+- Write the brief to `reports/review-<branch-or-pr>-<YYYY-MM-DD>.md` in the plans
+  repo (see "Plans, logbooks, designs and reports" below).
 - Pass `--external $INET_ROOT/src` to `ned_interface_diff.py`, and check
   that `INET_ROOT` points to the INET version the tip builds against.
 - Rule conflicts: check against the "Architecture red lines" and
@@ -385,11 +385,11 @@ never decide it yourself.
 - **Never edit WHATSNEW.md** unless the user asks for an entry -- not in the
   implementing commit, not in a follow-up commit. If a change is
   user-visible, say so in the report and offer draft text in chat.
-- **Plans, logbooks, designs and reports** live in the separate repo
-  `~/projects/ai-plans` (`executions/`, `designs/`, `plans/`, `reports/`;
-  `~/projects/ai-logs` is a symlink to it). Write to absolute paths there: a
-  relative `ai-logs/` path creates a stray directory in the Simu5G checkout.
-  Commit to ai-plans only when asked.
+- **Plans, logbooks, designs and reports** live in a plans repo outside the
+  Simu5G checkout (`executions/`, `designs/`, `plans/`, `reports/`). Its
+  location comes from the user's own instructions; if none names it, ask.
+  Write to absolute paths there: a relative path creates a stray directory in
+  the Simu5G checkout. Commit to the plans repo only when asked.
 - **Cite commits by hash AND abbreviated subject**, everywhere -- chat,
   commit bodies, plans, notes: `a6707eb81 ("a UE attaches by requesting an
   RRC connection")`. Branches are rebased often and old hashes stop
@@ -409,5 +409,5 @@ never decide it yourself.
   designing around it. State what Simu5G does without it, and the release
   constraint: Simu5G builds against an INET release, so an INET change is
   usable only after the next INET release or a base move -- sequence the
-  Simu5G work so it does not block on that. Record new INET gaps in
-  `~/projects/ai-plans/reports/inet-*.md`, in the report whose kind fits.
+  Simu5G work so it does not block on that. Record new INET gaps in the plans
+  repo's `reports/inet-*.md`, in the report whose kind fits.

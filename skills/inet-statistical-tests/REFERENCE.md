@@ -96,7 +96,7 @@ The statistics repo tracks `.sca` only. `.diff` (written on `UPDATE`) and `.csv`
 compare path) land inside the repo tree — keep them out:
 
 ```bash
-STATS=/home/andras/projects/inet/statistics
+STATS="$INET_ROOT/statistics"
 # one-time: ensure ignore rules
 printf '*.diff\n*.csv\n' >> "$STATS/.gitignore"   # then dedupe/sort as needed
 # clean strays + untrack any mistakenly committed
