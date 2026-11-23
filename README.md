@@ -53,11 +53,22 @@ codex plugin add omnetpp@omnetpp
 ```
 
 Codex starts a plugin's MCP server in the plugin directory, not in your project, so the
-`omnetpp` MCP server is registered separately (it needs the tools on `PATH`, see below):
+`omnetpp` MCP server is registered separately. With the tools on `PATH` (see below):
 
 ```bash
 codex mcp add omnetpp -- opp_ide_mcp
 ```
+
+Without them, or if `opp_ide_mcp` on `PATH` is a stale shim of the VS Code extension, run it
+through npx instead:
+
+```bash
+codex mcp add omnetpp -- npx --yes -p @omnetpp/opp-tools opp_ide_mcp
+```
+
+Codex runs a plugin's hooks only after you trust them, and asks again after every update
+of the plugin, because the trust is tied to the hook's content. Until then, the lint
+feedback after edits is missing.
 
 ### Other agents
 

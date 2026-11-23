@@ -6,7 +6,7 @@
 // code is passed through, because the harness talks LSP/MCP over stdio and reads the lint
 // hook's exit code.
 import { spawn } from 'node:child_process';
-import { accessSync, constants, existsSync, readFileSync, statSync } from 'node:fs';
+import { accessSync, constants, readFileSync, statSync } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,6 +30,20 @@ const nodeMajor = Number(process.versions.node.split('.')[0]);
 if (nodeMajor < 18) {
   console.error(`${command}: @omnetpp/opp-tools needs Node.js 18 or newer; this is ${process.version}.`);
   process.exit(1);
+}
+
+// The lint hook runs after every edit of every file, so an edit that names no .ned, .msg or
+// .ini file (case-sensitive, as in opp_lint) ends here, before any tool starts. The hook
+// input is read up front for this and handed to the tool unchanged.
+const hookInput = tool === 'lint' && args.includes('--agent-hook') ? readStdin() : undefined;
+if (hookInput !== undefined && !/\.(ned|msg|ini)\b/.test(hookInput)) process.exit(0);
+
+function readStdin() {
+  try {
+    return readFileSync(0, 'utf8');
+  } catch {
+    return '';
+  }
 }
 
 const pin = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'opp-tools.json'), 'utf8'));
@@ -60,30 +74,38 @@ function findOnPath(name) {
 // Windows refuses to spawn .cmd/.bat files directly (npm's shims are .cmd), so they go
 // through cmd.exe with each argument quoted. cmd.exe expands %VAR% also inside quotes; a %
 // outside the quotes and escaped with ^ ends any variable name before it can match one.
-function spawnTool(file, fileArgs, env) {
+function spawnTool(file, fileArgs, options) {
   if (isWindows && /\.(cmd|bat)$/i.test(file)) {
     const quote = (s) => `"${String(s).replace(/"/g, '""').replace(/%/g, '"^%"')}"`;
     const line = [file, ...fileArgs].map(quote).join(' ');
     return spawn(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', `"${line}"`], {
-      stdio: 'inherit',
-      env,
+      ...options,
       windowsVerbatimArguments: true,
     });
   }
-  return spawn(file, fileArgs, { stdio: 'inherit', env });
+  return spawn(file, fileArgs, options);
 }
 
-function run(file, fileArgs, env = process.env) {
+// input: text for the tool's stdin instead of inheriting it. holdStderr: collect stderr and
+// return it instead of passing it through, so that a stale shim's complaint can be dropped.
+function run(file, fileArgs, { env = process.env, input, holdStderr = false } = {}) {
   return new Promise((resolve) => {
-    const child = spawnTool(file, fileArgs, env);
+    const stdio = [input === undefined ? 'inherit' : 'pipe', 'inherit', holdStderr ? 'pipe' : 'inherit'];
+    const child = spawnTool(file, fileArgs, { stdio, env });
+    let stderr = '';
+    child.stderr?.on('data', (d) => (stderr += d));
+    if (input !== undefined) {
+      child.stdin.on('error', () => {});
+      child.stdin.end(input);
+    }
     const forward = (sig) => child.kill(sig);
     process.on('SIGINT', forward);
     process.on('SIGTERM', forward);
-    child.on('error', (err) => resolve({ code: NOT_FOUND, err }));
-    child.on('exit', (code, signal) => {
+    child.on('error', () => resolve({ code: NOT_FOUND, stderr }));
+    child.on('close', (code, signal) => {
       process.off('SIGINT', forward);
       process.off('SIGTERM', forward);
-      resolve({ code: code ?? 1, signal });
+      resolve({ code: code ?? 1, signal, stderr });
     });
   });
 }
@@ -98,10 +120,16 @@ function missing(detail) {
 
 const onPath = findOnPath(command);
 if (onPath) {
-  const result = await run(onPath, args);
+  // lint is not interactive, so its stderr can wait until it exits; the LSP and MCP servers
+  // log to stderr while they run, so theirs passes straight through.
+  const result = await run(onPath, args, { input: hookInput, holdStderr: tool === 'lint' });
   if (result.code !== NOT_FOUND) {
-    if (result.signal) process.kill(process.pid, result.signal);
-    process.exit(result.code);
+    // Writes to a pipe are asynchronous on Windows; exit only once the report is out.
+    process.stderr.write(result.stderr, () => {
+      if (result.signal) process.kill(process.pid, result.signal);
+      process.exit(result.code);
+    });
+    await new Promise(() => {});
   }
 }
 
@@ -117,7 +145,10 @@ const env = {
   npm_config_fund: 'false',
   npm_config_audit: 'false',
 };
-const result = await run(npx, ['--yes', '-p', `${pin.package}@${pin.version}`, command, ...args], env);
+const result = await run(npx, ['--yes', '-p', `${pin.package}@${pin.version}`, command, ...args], {
+  env,
+  input: hookInput,
+});
 if (result.code === NOT_FOUND) missing(`could not run it through npx`);
 if (result.signal) process.kill(process.pid, result.signal);
 process.exit(result.code);
