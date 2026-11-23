@@ -12,3 +12,4 @@ mcp_config.json
 onboarding.json.lock
 *.pb
 *.lock
+skills/synced/
