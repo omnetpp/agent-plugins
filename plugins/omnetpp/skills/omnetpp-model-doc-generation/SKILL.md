@@ -83,9 +83,9 @@ project already commits generated docs.
 ## In CI (GitHub Actions)
 
 ```yaml
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@v5
   with:
-    node-version: 20
+    node-version: 22
 - run: npm install -g @omnetpp/opp-tools
 - run: opp_docgen --format=html -o build/neddoc .
 ```

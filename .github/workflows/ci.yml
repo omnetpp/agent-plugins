@@ -8,10 +8,10 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: Manifests are up to date with plugins.json
         run: node scripts/gen-manifests.mjs --check
       - name: Skills follow the rules in AGENTS.md
@@ -23,7 +23,9 @@ jobs:
           for p in plugins/*/; do claude plugin validate --strict "$p"; done
 
   # The launcher runs the tools from PATH or through npx, with platform-specific spawning
-  # (npm's .cmd shims on Windows), so it is tested on every platform and both ways.
+  # (npm's .cmd shims on Windows), so it is tested on every platform and both ways. The
+  # steps are independent, so that a failure of one tool does not hide the others, and the
+  # first step runs opp_lint without the launcher, to tell plugin bugs from opp-tools bugs.
   tools:
     strategy:
       fail-fast: false
@@ -34,16 +36,29 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
-      - name: Lint hook, language server and MCP server through npx
+          node-version: 22
+      - name: opp_lint itself reports the broken fixture (directory and file mode)
         run: |
-          node tests/hook-smoke.mjs
-          node tests/tools-smoke.mjs
-      - name: The same with opp-tools installed on PATH
-        run: |
-          npm install -g "@omnetpp/opp-tools@$(node -p "require('./plugins.json').oppTools.version")"
-          node tests/hook-smoke.mjs
-          node tests/tools-smoke.mjs
+          pkg="@omnetpp/opp-tools@$(node -p "require('./plugins.json').oppTools.version")"
+          for target in tests/project tests/project/broken.ned; do
+            rc=0; npx --yes -p "$pkg" opp_lint "$target" || rc=$?
+            echo "opp_lint $target: exit $rc"; [ "$rc" -eq 1 ]
+          done
+      - name: Lint hook through the launcher and npx
+        if: ${{ !cancelled() }}
+        run: node tests/hook-smoke.mjs
+      - name: Language server and MCP server through the launcher and npx
+        if: ${{ !cancelled() }}
+        run: node tests/tools-smoke.mjs
+      - name: Install opp-tools on PATH
+        if: ${{ !cancelled() }}
+        run: npm install -g "@omnetpp/opp-tools@$(node -p "require('./plugins.json').oppTools.version")"
+      - name: Lint hook through the launcher and PATH
+        if: ${{ !cancelled() }}
+        run: node tests/hook-smoke.mjs
+      - name: Language server and MCP server through the launcher and PATH
+        if: ${{ !cancelled() }}
+        run: node tests/tools-smoke.mjs
