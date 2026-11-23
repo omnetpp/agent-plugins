@@ -1,0 +1,1 @@
+- AI agent skills and tools: the OMNeT++ agent plugins `omnetpp`, `omnetpp-dev`, `inet` and `simu5g` from the `omnetpp` marketplace ([github.com/omnetpp/ai-config](https://github.com/omnetpp/ai-config)); start every task with the `simu5g-dev` skill.

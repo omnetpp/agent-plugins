@@ -2,7 +2,7 @@
 name: inet
 description: >
   Entry point for developing the INET Framework in this repository: which AI skills apply
-  here, how to obtain them, always-on basics, and the plans workflow. Use at the start of any
+  here, how to install them, always-on basics, and the plans workflow. Use at the start of any
   INET development task (coding, testing, refactoring, preparing a branch or PR) before
   reaching for individual skills.
 ---
@@ -12,19 +12,25 @@ description: >
 <!-- Master copy lives in the shared skills repo under project-stubs/inet/;
      install into the INET repo as .claude/skills/inet/SKILL.md. -->
 
-## Get the shared skills
+## Get the plugins
 
-The detailed skills live in the shared skills repo (**TODO: final URL**, e.g.
-`github.com/omnetpp/ai-skills`). If
-`~/.claude/skills/omnetpp-model-fingerprint-testing` does not exist, they are not
-installed — clone the repo and run its `./install.sh`, then continue.
+The detailed skills come from the OMNeT++ agent plugins (marketplace `omnetpp`,
+github.com/omnetpp/ai-config). If the `inet-fingerprint-testing` skill is not available,
+they are not installed. Tell the user to install them (Claude Code):
+
+```bash
+claude plugin marketplace add omnetpp/ai-config
+claude plugin install inet@omnetpp
+```
+
+`inet` brings `omnetpp` and `omnetpp-dev` along. Other agents: see the README of
+that repository.
 
 ## Which skills apply here
 
-`dev-*` (universal rules), `omnetpp-model-*` (simulation-model mechanics and
-shared workflows) and `inet-*` (INET specifics — these AUGMENT the
-corresponding `omnetpp-model-*` skill and WIN on conflict). The other
-`omnetpp-*` skills (developing OMNeT++ itself) and `simu5g-*` do not apply.
+`dev-*` (universal rules), `omnetpp-model-*` and `omnetpp-tooling` (simulation-model
+mechanics and shared workflows) and `inet-*` (INET specifics — these AUGMENT the
+corresponding `omnetpp-model-*` skill and WIN on conflict). `simu5g-*` does not apply.
 By task:
 
 | Task | Skills |
@@ -40,7 +46,9 @@ By task:
 | Branch cleanup / big rebase | inet-branch-cleanup (CLI) or omnetpp-model-branch-cleanup / omnetpp-model-branch-rebase (opp_repl) |
 | Debugging a sim | omnetpp-model-debugging (+ omnetpp-model-development for flags) |
 | Cosmetic code cleanup | inet-cosmetic-cleanup |
-| Release notes / showcases / RST | inet-release-notes, inet-showcase-creator, rst-editing |
+| Querying or checking NED/MSG/INI files | omnetpp-tooling |
+| NED documentation (neddoc) | omnetpp-model-doc-generation |
+| Release notes / showcases | inet-release-notes, inet-showcase-creator |
 
 ## Always-on basics
 
@@ -51,17 +59,15 @@ By task:
   root and verify `$INET_ROOT` points at THIS checkout.
 - Develop on a topic branch in the main checkout, not in tool-managed
   worktrees.
-- Commit subjects: `Area: category: description` (categories: fix / refactor /
-  feature / test; omit when obvious from the wording). Apply as a final
+- Commit subjects follow dev-commit-messages. Apply them as a final
   message-only pass when history is otherwise final.
 - Run simulations via `inet` / `inet_dbg`, never `opp_run` directly.
 
 ## Plans workflow
 
-Keep design/implementation plans as Markdown files in the `plans` folder of
-the `ai-logs` repo (git@github.com:omnetpp/ai-logs.git, normally checked out
-as a sibling of `inet/`), status-by-folder: new plans in `plan/pending/`,
-completed ones moved to `plan/done/`. Name plans
-`YYYY-MM-DD_short-title.md`. While implementing: work incrementally, commit
-per completed step, mark progress in the plan, and record actual design
-decisions and discoveries back into it.
+Keep design/implementation plans as Markdown files in a plans repo outside the INET
+checkout; its location comes from the user's own instructions (ask if none names it).
+Status by folder: new plans in `plans/pending/`, completed ones moved to `plans/done/`.
+Name plans `YYYY-MM-DD_short-title.md`. While implementing: work incrementally, commit
+per completed step, mark progress in the plan, and record actual design decisions and
+discoveries back into it.

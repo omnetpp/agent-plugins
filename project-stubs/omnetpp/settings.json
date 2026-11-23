@@ -1,0 +1,14 @@
+{
+  "extraKnownMarketplaces": {
+    "omnetpp": {
+      "source": {
+        "source": "github",
+        "repo": "omnetpp/ai-config"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "omnetpp@omnetpp": true,
+    "omnetpp-dev@omnetpp": true
+  }
+}

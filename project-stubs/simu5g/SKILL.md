@@ -1,8 +1,8 @@
 ---
 name: simu5g
 description: >
-  Entry point for developing Simu5G in this repository: makes sure the shared AI skills
-  are installed, then hands over to the simu5g-dev skill, which holds all Simu5G rules.
+  Entry point for developing Simu5G in this repository: makes sure the OMNeT++ agent
+  plugins are installed, then hands over to the simu5g-dev skill, which holds all Simu5G rules.
   Use at the start of any Simu5G development task (coding, testing, refactoring,
   rebasing) before reaching for individual skills.
 ---
@@ -12,11 +12,19 @@ description: >
 <!-- Master copy lives in the shared skills repo under project-stubs/simu5g/;
      install into the Simu5G repo as .claude/skills/simu5g/SKILL.md. -->
 
-## Get the shared skills
+## Get the plugins
 
-The detailed skills live in the shared skills repo (**TODO: final URL**). If
-`~/.claude/skills/simu5g-dev` does not exist, clone the repo and run its
-`./install.sh`, then continue.
+The detailed skills come from the OMNeT++ agent plugins (marketplace `omnetpp`,
+github.com/omnetpp/ai-config). If the `simu5g-dev` skill is not available, they are not
+installed. Tell the user to install them (Claude Code):
+
+```bash
+claude plugin marketplace add omnetpp/ai-config
+claude plugin install simu5g@omnetpp
+```
+
+`simu5g` brings `inet`, `omnetpp-dev` and `omnetpp` along. Other agents: see the
+README of that repository.
 
 ## Then load `simu5g-dev`
 

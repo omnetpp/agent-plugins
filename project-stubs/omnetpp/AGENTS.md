@@ -1,0 +1,1 @@
+- AI agent skills and tools: the OMNeT++ agent plugin `omnetpp-dev` (which brings `omnetpp`) from the `omnetpp` marketplace ([github.com/omnetpp/ai-config](https://github.com/omnetpp/ai-config)); the `omnetpp` skill in `.claude/skills/` says which skill applies to which task.
