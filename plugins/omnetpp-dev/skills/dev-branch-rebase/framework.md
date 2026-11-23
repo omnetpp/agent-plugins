@@ -41,7 +41,7 @@ Before grouping, run a full upstream-gap and topic analysis:
 - file overlap between gap and topic
 - test-impact queries (where the project has a test-impact map): commits → affected tests
 
-Output: a **separate analysis file** at `ai-logs/executions/<date>_<rebase-name>.analysis.md`, containing SHAs of base/topic/main HEAD, upstream-gap summary, topic commit categorization, file overlap map, test-impact findings, and conflict prediction. The analysis file is the durable Phase 0 artefact; the state file references it but doesn't duplicate its contents.
+Output: a **separate analysis file**, `executions/<date>_<rebase-name>.analysis.md` in the plans repo (see "State file"), containing SHAs of base/topic/main HEAD, upstream-gap summary, topic commit categorization, file overlap map, test-impact findings, and conflict prediction. The analysis file is the durable Phase 0 artefact; the state file references it but doesn't duplicate its contents.
 
 ## Phase 1 — Grouping
 
@@ -144,7 +144,7 @@ When `Gn` reaches `Sk`:
 
 ## State file
 
-- **Location**: `ai-logs/executions/<date>_<rebase-name>.md` (separate from `ai-logs/plans/`; one file per rebase).
+- **Location**: `executions/<date>_<rebase-name>.md` in the plans repo, outside the checkout (separate from its `plans/`; one file per rebase). The plans repo's location comes from the user's own instructions; ask if none names it.
 - **Format**: single markdown file, curated head sections + append-only progress log.
 - **Resumable cold**: must contain enough to continue the rebase even if the AI conversation is lost.
 - **Timestamps**: every date or time written into the state file uses full ISO 8601 with seconds resolution (`YYYY-MM-DDThh:mm:ss`). The filename `<date>_<rebase-name>.md` keeps the date-only form for legibility; everything inside the file is full timestamp.

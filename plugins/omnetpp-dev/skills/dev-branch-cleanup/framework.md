@@ -133,7 +133,7 @@ Before partitioning, understand the whole change:
 - Record the **base/topic HEAD SHAs** and the **total-diff size** (files, +/- lines) as the
   ledger's starting magnitude.
 
-Output: a **separate analysis file** at `ai-logs/executions/<date>_<cleanup-name>.analysis.md`
+Output: a **separate analysis file**, `executions/<date>_<cleanup-name>.analysis.md` in the plans repo (see "State file")
 containing the SHAs, the hunk-level categorization, the dependency map, the test-impact findings,
 and a first-cut grouping proposal. The analysis file is the durable Phase 0 artefact; the state
 file references it rather than duplicating it.
@@ -314,8 +314,9 @@ When the coverage ledger reaches **empty**:
 
 ## State file
 
-- **Location**: `ai-logs/executions/<date>_<cleanup-name>.md` (one file per cleanup; separate
-  from `ai-logs/plans/`).
+- **Location**: `executions/<date>_<cleanup-name>.md` in the plans repo, outside the checkout
+  (one file per cleanup; separate from its `plans/`). The plans repo's location comes from the
+  user's own instructions; ask if none names it.
 - **Format**: single markdown file, curated head sections + append-only progress log.
 - **Resumable cold**: must contain enough — together with the `clean` branch and `git diff
   cleanHEAD topic` — to continue even if the AI conversation is lost.
