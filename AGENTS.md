@@ -48,6 +48,20 @@ claude --plugin-dir plugins
 Or register the checkout as a marketplace (`claude plugin marketplace add .`) and install from
 it. That install reads the plugin folders in place.
 
+## Checks
+
+CI (`.github/workflows/ci.yml`) runs these; run them before you commit:
+
+```bash
+node scripts/gen-manifests.mjs --check
+node scripts/check-skills.mjs
+claude plugin validate --strict . && for p in plugins/*/; do claude plugin validate --strict "$p"; done
+node tests/hook-smoke.mjs && node tests/tools-smoke.mjs
+```
+
+`check-skills.mjs` enforces the rules below. The smoke tests run the lint hook, the
+language server and the MCP server through `bin/opp-run.mjs`, against `tests/project/`.
+
 ## Rules for skills
 
 - **Refer to other skills by name**, never by a relative path such as

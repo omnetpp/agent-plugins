@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const launcher = join(root, 'plugins/omnetpp/bin/opp-run.mjs');
-const project = join(root, 'tests/hook-smoke/project');
+const project = join(root, 'tests/project');
 
 const write = (file) => ({ tool_name: 'Write', tool_input: { file_path: join(project, file) } });
 const patch = (file) => ({

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Manifests are up to date with plugins.json
+        run: node scripts/gen-manifests.mjs --check
+      - name: Skills follow the rules in AGENTS.md
+        run: node scripts/check-skills.mjs
+      - name: Claude Code validates the marketplace and the plugins
+        run: |
+          npm install -g @anthropic-ai/claude-code@2.1.330
+          claude plugin validate --strict .
+          for p in plugins/*/; do claude plugin validate --strict "$p"; done
+
+  # The launcher runs the tools from PATH or through npx, with platform-specific spawning
+  # (npm's .cmd shims on Windows), so it is tested on every platform and both ways.
+  tools:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Lint hook, language server and MCP server through npx
+        run: |
+          node tests/hook-smoke.mjs
+          node tests/tools-smoke.mjs
+      - name: The same with opp-tools installed on PATH
+        run: |
+          npm install -g "@omnetpp/opp-tools@$(node -p "require('./plugins.json').oppTools.version")"
+          node tests/hook-smoke.mjs
+          node tests/tools-smoke.mjs
