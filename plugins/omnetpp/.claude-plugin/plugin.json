@@ -17,5 +17,10 @@
     "simulation",
     "discrete-event"
   ],
-  "displayName": "OMNeT++"
+  "displayName": "OMNeT++",
+  "network": {
+    "hosts": [
+      "registry.npmjs.org"
+    ]
+  }
 }

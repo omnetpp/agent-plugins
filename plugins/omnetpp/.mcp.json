@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "omnetpp": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/opp-run.mjs",
+        "ide_mcp",
+        "${CLAUDE_PROJECT_DIR}"
+      ]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "lspServers": {
+    "omnetpp": {
+      "command": "node",
+      "args": [
+        "bin/opp-run.mjs",
+        "lsp",
+        "--stdio"
+      ],
+      "cwd": "${PLUGIN_ROOT}",
+      "fileExtensions": {
+        ".ned": "ned",
+        ".msg": "msg",
+        ".ini": "ini"
+      }
+    }
+  }
+}

@@ -12,6 +12,10 @@
     "repository": "https://github.com/omnetpp/ai-config",
     "license": "MIT"
   },
+  "oppTools": {
+    "package": "@omnetpp/opp-tools",
+    "version": "1.0.2"
+  },
   "plugins": [
     {
       "name": "omnetpp",
@@ -26,7 +30,8 @@
         "discrete-event"
       ],
       "category": "Coding",
-      "dependencies": []
+      "dependencies": [],
+      "tools": true
     },
     {
       "name": "omnetpp-dev",

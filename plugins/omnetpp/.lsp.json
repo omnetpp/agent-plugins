@@ -1,0 +1,15 @@
+{
+  "omnetpp": {
+    "command": "node",
+    "args": [
+      "${CLAUDE_PLUGIN_ROOT}/bin/opp-run.mjs",
+      "lsp",
+      "--stdio"
+    ],
+    "extensionToLanguage": {
+      ".ned": "ned",
+      ".msg": "msg",
+      ".ini": "ini"
+    }
+  }
+}
