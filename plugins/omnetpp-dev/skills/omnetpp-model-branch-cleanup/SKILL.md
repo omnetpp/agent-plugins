@@ -7,7 +7,7 @@ description: >
   (test selection, dependency-store scoping, baseline re-recording, validation messages).
   Use when asked to clean up, reorganize, or validate a feature/topic branch of a
   simulation project and opp_repl is available. For rebasing onto a moved main branch use
-  omnetpp-model-branch-rebase; for the INET CLI-based playbook see inet-branch-cleanup.
+  omnetpp-model-branch-rebase; for the INET CLI-based playbook see inet-branch-cleanup (if installed).
 ---
 
 # Branch cleanup for simulation models (opp_repl)

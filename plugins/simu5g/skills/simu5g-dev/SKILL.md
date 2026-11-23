@@ -20,8 +20,8 @@ apply in this order of precedence:
 3. `omnetpp-model-*` skills -- simulation-model mechanics and shared workflows.
 4. `dev-*` skills -- universal rules (design, git).
 
-The other `omnetpp-*` skills (e.g. `omnetpp-release-engineering`) are about
-developing OMNeT++ itself and do not apply.
+Skills about developing OMNeT++ itself (its release engineering, for example) do not
+apply.
 
 An INET rule stays in force here unless a Simu5G rule overrides it. Silence in
 the Simu5G skills means "INET's rule applies", not "no rule".

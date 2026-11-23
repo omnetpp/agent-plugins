@@ -20,7 +20,7 @@
     {
       "name": "omnetpp",
       "displayName": "OMNeT++",
-      "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging and the OMNeT++ tools.",
+      "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging, documentation generation and the OMNeT++ tools.",
       "keywords": [
         "omnetpp",
         "ned",

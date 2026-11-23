@@ -17,8 +17,9 @@ that folder.
 
 Dependencies point one way: `simu5g` → `inet` → `omnetpp-dev` → `omnetpp`. A skill
 may refer to any skill in its own plugin or in a plugin it depends on. A skill may mention a
-skill in a plugin that depends on it only as an optional pointer, e.g. "for INET, see
-`inet-fingerprint-testing` if installed".
+skill in a plugin that depends on it only as an example or an optional pointer, on a line
+that says "e.g." or "if installed": "the project's runner (e.g. `inet-fingerprint-testing`)",
+"see `inet-branch-cleanup` (if installed)".
 
 ## Manifests and versions
 

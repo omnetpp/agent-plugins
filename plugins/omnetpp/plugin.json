@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "omnetpp",
   "version": "1.0.0",
-  "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging and the OMNeT++ tools.",
+  "description": "OMNeT++ model development: NED/MSG/INI lint feedback after edits, a NED/MSG/INI language server, the omnetpp MCP server, and skills for model development, coding conventions, debugging, documentation generation and the OMNeT++ tools.",
   "author": {
     "name": "OpenSim Ltd.",
     "url": "https://omnetpp.org"

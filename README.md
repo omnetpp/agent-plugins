@@ -10,7 +10,7 @@ The repository is one plugin marketplace, `omnetpp`, with four plugins:
 
 | Plugin | For | Contents |
 |---|---|---|
-| `omnetpp` | Everyone who writes OMNeT++ models | Skills for model development, coding conventions, debugging and the NED/MSG/INI tools. The lint hook, the language server and the `omnetpp` MCP server. |
+| `omnetpp` | Everyone who writes OMNeT++ models | Skills for model development, coding conventions, debugging, documentation generation (`opp_docgen`) and the NED/MSG/INI tools. The lint hook, the language server and the `omnetpp` MCP server. |
 | `omnetpp-dev` | Maintainers of a model library | Fingerprint testing, behavior-preserving refactoring, git workflow, branch cleanup and rebase, review briefs, and the generic `dev-*` procedures they build on. |
 | `inet` | INET contributors | INET build environment, test suites, fingerprint and statistical tests, module development, release notes, showcases. |
 | `simu5g` | Simu5G contributors | Simu5G development rules and its fingerprint tests. |
