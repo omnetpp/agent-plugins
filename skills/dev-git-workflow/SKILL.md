@@ -64,6 +64,14 @@ What to run where:
 - **History rewrites** (cleanup, rebase) follow their own scoped per-commit
   procedures: dev-branch-cleanup, dev-branch-rebase.
 
+## Where tests go in the history
+
+- **A fix:** the test that reproduces the bug may go first, in its own
+  `test:` commit that fails without the fix; the fix commit makes it pass.
+  The history then demonstrates the bug before the commit that fixes it.
+- **A feature:** never put its tests first with expected failures: a failing
+  test of a feature that does not exist yet demonstrates nothing.
+
 Write subjects in the dev-commit-messages format from the start. While a
 branch is still being reshaped, recheck them in a final message-only pass
 when the history is otherwise final.

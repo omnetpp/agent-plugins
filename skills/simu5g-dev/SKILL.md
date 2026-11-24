@@ -114,6 +114,9 @@ commit must still COMPILE, and the test commit's message says plainly that
 the suite reports failures until the following fixes land, so a bisecting
 reader is not ambushed.
 
+This is for defects only. The tests of a new feature never go first (see
+"Where tests go in the history" in dev-git-workflow).
+
 # Architecture red lines (3GPP-mandated Control/Data Plane separation)
 
 - **Control Plane** = RRC and its submodules (e.g. `BearerManagement`) in the
