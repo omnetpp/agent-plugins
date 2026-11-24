@@ -22,6 +22,26 @@ comma-separated (`mac,phy:`). A commit that touches one KIND of thing across
 the whole tree names that kind instead of listing directories
 (`NED cosmetics: <topic>`).
 
+## Subject wording
+
+The topic names the action the commit performs, in the imperative mood, as
+git and the Linux kernel prescribe: "rename numBands to numResourceBlocks",
+"change the default of numResourceBlocks from 6 to 25", "make the deployment
+of a cell a parameter of the node". Do not state the resulting state instead
+("numBands is renamed to numResourceBlocks", "the default of
+numResourceBlocks is 25"): a statement of a state does not show that this
+commit changed it, nor what it was before, and it has no verb to search for.
+
+Two kinds of subject describe something other than the change, and are
+exceptions:
+- A `fix:` subject names the symptom (see Fix messages): "fix: a DL
+  retransmission on a second carrier was booked on the first carrier's
+  bands".
+- A `test:` subject that adds or changes a test may state what the test
+  checks: "test: the BLER lookup jumps to 0 at a curve's last point". A
+  `test:` commit that re-records baselines names the action: "test:
+  re-record the 51 rows moved by ...".
+
 ## Markers
 
 `fix:`, `refactor:`, `cosmetics:`, `cleanup:`, `docs:`, `test:`, `chore:`
