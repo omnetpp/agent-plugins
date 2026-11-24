@@ -3,7 +3,7 @@
     "omnetpp": {
       "source": {
         "source": "github",
-        "repo": "omnetpp/ai-config"
+        "repo": "omnetpp/agent-plugins"
       }
     }
   },

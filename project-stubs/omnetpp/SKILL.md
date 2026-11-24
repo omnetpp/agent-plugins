@@ -16,11 +16,11 @@ description: >
 ## Get the plugins
 
 The `dev-*` skills come from the `omnetpp-dev` plugin of the OMNeT++ agent plugins
-(marketplace `omnetpp`, github.com/omnetpp/ai-config). If the `dev-design` skill is not
+(marketplace `omnetpp`, github.com/omnetpp/agent-plugins). If the `dev-design` skill is not
 available, it is not installed. Tell the user to install it (Claude Code):
 
 ```bash
-claude plugin marketplace add omnetpp/ai-config
+claude plugin marketplace add omnetpp/agent-plugins
 claude plugin install omnetpp-dev@omnetpp
 ```
 

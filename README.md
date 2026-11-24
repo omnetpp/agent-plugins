@@ -33,7 +33,7 @@ Pick the row for your role.
 ### Claude Code
 
 ```bash
-claude plugin marketplace add omnetpp/ai-config
+claude plugin marketplace add omnetpp/agent-plugins
 ```
 
 ```bash
@@ -45,7 +45,7 @@ Install the other plugins of your row the same way, e.g. `claude plugin install 
 ### Codex CLI
 
 ```bash
-codex plugin marketplace add omnetpp/ai-config
+codex plugin marketplace add omnetpp/agent-plugins
 ```
 
 ```bash

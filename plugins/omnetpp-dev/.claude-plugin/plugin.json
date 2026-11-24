@@ -6,8 +6,8 @@
     "name": "OpenSim Ltd.",
     "url": "https://omnetpp.org"
   },
-  "homepage": "https://github.com/omnetpp/ai-config",
-  "repository": "https://github.com/omnetpp/ai-config",
+  "homepage": "https://github.com/omnetpp/agent-plugins",
+  "repository": "https://github.com/omnetpp/agent-plugins",
   "license": "MIT",
   "keywords": [
     "omnetpp",

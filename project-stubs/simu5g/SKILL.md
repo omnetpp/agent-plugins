@@ -15,11 +15,11 @@ description: >
 ## Get the plugins
 
 The detailed skills come from the OMNeT++ agent plugins (marketplace `omnetpp`,
-github.com/omnetpp/ai-config). If the `simu5g-dev` skill is not available, they are not
+github.com/omnetpp/agent-plugins). If the `simu5g-dev` skill is not available, they are not
 installed. Tell the user to install them (Claude Code):
 
 ```bash
-claude plugin marketplace add omnetpp/ai-config
+claude plugin marketplace add omnetpp/agent-plugins
 claude plugin install simu5g@omnetpp
 ```
 
