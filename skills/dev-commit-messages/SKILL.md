@@ -118,14 +118,17 @@ change, so a reader cannot mistake them for omissions.
 
 ## Group prefix
 
-A series of commits serving ONE goal that can be stated in one sentence (a
-plan, a feature, a refactoring, a tree-wide sweep) gets a group prefix naming
-that goal, so it reads as one block in `git log --oneline`. For a plan
-executed on a topic branch, the name is the branch name without `topic/`;
-otherwise a short name for the goal. The goal decides membership, not when or
-where a commit was made: the tests written for the goal and the `fix:`
-commits the work exposed or depends on belong to it; a commit made alongside
-it for an unrelated reason does not.
+A change that spans several commits -- a feature, a refactoring, a tree-wide
+sweep, a fix that needs preparatory steps -- gets a group prefix naming it, so
+it reads as one block in `git log --oneline`. The test: is there one goal,
+stated in one sentence, that each commit serves, and that is more than "fix
+these things"? Commits that merely share a plan, a branch or a session get NO
+prefix, however they were planned or merged: on independent commits the prefix
+is noise. When the change is developed on a topic branch, the prefix is usually
+the branch name without `topic/`; otherwise a short name for the change. The
+change decides membership, not when or where a commit was made: the tests
+written for it and the `fix:` commits it exposed or depends on belong to it; a
+commit made alongside it for an unrelated reason does not.
 
 ## Older history
 
