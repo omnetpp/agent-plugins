@@ -113,3 +113,9 @@ requires an [OMNEST](https://omnest.com) license.
 ## Contributing
 
 See [AGENTS.md](AGENTS.md) for the skill layout, naming and layering rules.
+
+CI checks the manifests and the skills, runs the lint hook, the language server and the
+MCP server through the launcher on Linux, macOS and Windows (`tests/hook-smoke.mjs`,
+`tests/tools-smoke.mjs`), and installs the plugins from the checkout into the latest
+Claude Code, Codex and Copilot CLI (`tests/agent-install-smoke.mjs`). It does not run an
+agent session.

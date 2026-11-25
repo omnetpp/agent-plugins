@@ -22,6 +22,20 @@ jobs:
           claude plugin validate --strict .
           for p in plugins/*/; do claude plugin validate --strict "$p"; done
 
+  # The latest agent CLIs, not pinned ones: the job is there to catch an agent changing how
+  # it reads the plugins.
+  agents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Claude Code, Codex and Copilot CLI
+        run: npm install -g @anthropic-ai/claude-code @openai/codex @github/copilot
+      - name: The agents install the plugins from this checkout
+        run: node tests/agent-install-smoke.mjs --require
+
   # The launcher runs the tools from PATH or through npx, with platform-specific spawning
   # (npm's .cmd shims on Windows), so it is tested on every platform and both ways. The
   # steps are independent, so that a failure of one tool does not hide the others, and the
