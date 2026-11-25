@@ -144,6 +144,9 @@ DIRECTIVE_RE = re.compile(r'^(\s*)\.\. (figure|image|video|literalinclude|includ
 OPTION_RE = re.compile(r'^\s+:([\w-]+):\s*(.*?)\s*$')
 STAMP_RE = re.compile(r'^\|\s*Verified with INET version:\s*``([^`]*)``')
 VERIFIED_COMMIT_RE = re.compile(r'^\.\. verified-commit:\s*([0-9a-fA-F]{7,40})\s*$')
+# Explicit markup that is none of: directive (`x::`), target (`_x:`),
+# substitution definition (`|x|`), footnote or citation (`[x]`).
+COMMENT_RE = re.compile(r'^(\s*)\.\.(?:\s+(?!_|\||\[|[\w:+.-]+::)(.*?))?\s*$')
 LITERAL_RE = re.compile(r'(?<!`)``([^`\n]+)``(?!`)')
 
 
@@ -194,6 +197,18 @@ def parse_rst(path):
             else:
                 i += 1
                 continue
+        c = COMMENT_RE.match(line)
+        if c:
+            # An RST comment: Sphinx renders nothing in it, so a directive,
+            # role or literal inside it is not a reference to check.
+            indent, text = c.group(1), (c.group(2) or '')
+            j = i + 1
+            if text or (j < len(lines) and lines[j].strip()):
+                while j < len(lines) and (not lines[j].strip()
+                                          or len(lines[j]) - len(lines[j].lstrip()) > len(indent)):
+                    j += 1
+            i = j
+            continue
         for r in ROLE_RE.finditer(line):
             out['roles'].append({'role': r.group(1), 'text': r.group(2), 'target': role_target(r.group(2)), 'line': i + 1})
         for l in LITERAL_RE.finditer(line):
