@@ -75,6 +75,54 @@ feedback after edits is missing.
 The plugins also have manifests for Copilot CLI, Cursor and Antigravity. These are untested.
 They carry the skills, plus the language server (Copilot CLI) and the MCP server (Cursor).
 
+### Development mode: plugins from a checkout
+
+To work on the plugins, install them from a clone of this repository instead of from
+GitHub. Claude Code and Copilot CLI then read the plugins straight from the checkout, so
+an edit takes effect in the next agent session; Codex copies them on install.
+
+```bash
+git clone https://github.com/omnetpp/agent-plugins.git ~/agent-plugins
+```
+
+The local marketplace has the same name, `omnetpp`, so first remove one that was added
+from GitHub. This also uninstalls its plugins.
+
+```bash
+claude plugin marketplace remove omnetpp
+codex plugin marketplace remove omnetpp
+copilot plugin marketplace remove omnetpp --force
+```
+
+Then add the checkout as the marketplace and install the plugins of your row as above:
+
+```bash
+claude plugin marketplace add ~/agent-plugins
+claude plugin install omnetpp@omnetpp
+```
+
+```bash
+codex plugin marketplace add ~/agent-plugins
+codex plugin add omnetpp@omnetpp
+```
+
+```bash
+copilot plugin marketplace add ~/agent-plugins
+copilot plugin install omnetpp@omnetpp
+```
+
+- **Claude Code** and **Copilot CLI** pick up every change in the next session, also new
+  skills and another git branch checked out.
+- **Codex** keeps a copy of each plugin. After a change, install the changed plugin again
+  (`codex plugin add omnetpp@omnetpp`). It then asks again to trust a changed hook.
+- After editing `plugins.json`, regenerate the manifests with
+  `node scripts/gen-manifests.mjs`; CI fails on stale ones.
+- `node tests/agent-install-smoke.mjs` installs the checkout into each agent CLI it finds,
+  in a throwaway home, and checks what the agent reports. Your own setup is not touched.
+
+To go back to the released plugins, remove the marketplace again and add
+`omnetpp/agent-plugins`.
+
 ## Requirements
 
 - **Node.js 18 or newer**, for the command-line tools from the
