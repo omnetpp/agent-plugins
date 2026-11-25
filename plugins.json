@@ -3,7 +3,7 @@
     "name": "omnetpp",
     "displayName": "OMNeT++",
     "description": "Agent plugins for developing OMNeT++ simulation models, the INET Framework and Simu5G.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "owner": {
       "name": "OpenSim Ltd.",
       "url": "https://omnetpp.org"

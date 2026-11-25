@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "omnetpp-dev",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Skills for maintainers of OMNeT++ model libraries: working rules, fingerprint testing, behavior-preserving refactoring, git workflow, test-driven branch cleanup and rebase, and reviewer's briefs.",
   "author": {
     "name": "OpenSim Ltd.",
