@@ -24,6 +24,10 @@ nowhere is an ERROR because it was most likely renamed or removed.
 
 `page_deps.py` direct-type sources: `:ned:` roles, declarers of every `:par:` name, submodule
 and channel types used by the page's own .ned files (including `<default("X")> like I` forms),
-and ini `typename` values. A simple module or channel maps to its .ned plus the same-named
+ini `typename` values, and ini parameter keys whose submodule segment names a type that declares
+the parameter (`*.router*.rip.mode` → `Rip`: catches protocols switched on by a `has<X>` flag).
+Roles are read from every `doc/*.rst` of the page, not only `index.rst`. Fingerprint commits come
+from the parsed `store.json` of each commit and its first parent: a textual diff of the store has no
+`working_directory` in its hunk context, so it cannot attribute rows to pages. A simple module or channel maps to its .ned plus the same-named
 (or `@class`-named) .cc/.h/.msg beside it; a compound module maps to its .ned only, its
 submodules are the indirect set.

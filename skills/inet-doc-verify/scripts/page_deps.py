@@ -9,10 +9,12 @@ v<version>.0 of its "Verified with INET version" line.
 
 Output per page (Markdown):
   1. commits touching the page directory itself (someone edited the showcase)
-  2. commits that changed this page's rows in tests/fingerprint/*.csv (the
-     simulation's behavior changed and the baseline was re-recorded)
+  2. commits that changed this page's rows in tests/fingerprint/store.json
+     (or in tests/fingerprint/*.csv on releases before the store), with the
+     ingredient sets that moved (the simulation's behavior changed and the
+     baseline was re-recorded)
   3. DIRECT commits: files implementing the NED types the page names
-     (:ned: roles, :par: declarers, the page's own NED submodule types,
+     (:ned: roles in doc/index.rst and every other doc/*.rst, e.g. tutorial steps, :par: declarers, the page's own NED submodule types,
      ini typename values)
   4. INDIRECT commits: directories of every type reachable from those through
      submodules / extends / like-defaults (compound modules pull in a lot)
@@ -32,7 +34,7 @@ from nedindex import NedIndex, parse_rst, parse_ini  # noqa: E402
 
 
 def git(root, *args):
-    return subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True)
+    return subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True, errors='replace')
 
 
 def rel(root, p):
@@ -53,8 +55,13 @@ def resolve_since(root, rst):
     return None, None
 
 
+def page_rst_files(page_dir):
+    """index.rst first, then the other .rst files of doc/ (tutorial steps live beside index.rst)."""
+    doc = page_dir / 'doc'
+    return [doc / 'index.rst'] + sorted(p for p in doc.glob('*.rst') if p.name != 'index.rst')
+
+
 def direct_types(index, page_dir, rst):
-    page = parse_rst(rst)
     names, why = set(), {}
 
     def add(n, reason):
@@ -63,14 +70,16 @@ def direct_types(index, page_dir, rst):
             names.add(n)
             why.setdefault(n, reason)
 
-    for r in page['roles']:
-        if r['role'] == 'ned':
-            add(r['target'], f':ned: role, line {r["line"]}')
-        elif r['role'] == 'par':
-            pname = r['target'].split('.')[-1]
-            if re.fullmatch(r'\w+', pname):
-                for t in index.types_declaring(pname):
-                    add(t.name, f':par:`{pname}` line {r["line"]}')
+    for f in page_rst_files(page_dir):
+        where = '' if f.name == 'index.rst' else f' in {f.name}'
+        for r in parse_rst(f)['roles']:
+            if r['role'] == 'ned':
+                add(r['target'], f':ned: role, line {r["line"]}{where}')
+            elif r['role'] == 'par':
+                pname = r['target'].split('.')[-1]
+                if re.fullmatch(r'\w+', pname):
+                    for t in index.types_declaring(pname):
+                        add(t.name, f':par:`{pname}` line {r["line"]}{where}')
     for ned in page_dir.rglob('*.ned'):
         for t in index.types.values():
             if Path(t.file).resolve() == ned.resolve():
@@ -85,6 +94,15 @@ def direct_types(index, page_dir, rst):
                 v = e['value'].strip().strip('"')
                 if v and '$' not in v:
                     add(v, f'typename in {ini.name}:{e["line"]}')
+            elif e['kind'] == 'param':
+                # "*.router*.rip.mode": a submodule named like a type that declares the parameter.
+                # Catches protocols switched on by a has<X> flag and configured by key only.
+                parts = e['key'].split('.')
+                if len(parts) >= 2:
+                    sub = re.sub(r'\[.*?\]$', '', parts[-2])
+                    for t in index.types_declaring(e['last']):
+                        if t.name.lower() == sub.lower():
+                            add(t.name, f'{sub}.{e["last"]} in {ini.name}:{e["line"]}')
     return names, why
 
 
@@ -116,9 +134,56 @@ def commits(root, rng, paths, with_files=False):
     return out
 
 
+STORE = 'tests/fingerprint/store.json'
+
+
+def _load_store(root, rev):
+    r = git(root, 'show', f'{rev}:{STORE}')
+    if r.returncode:
+        return {}
+    return {(e['working_directory'], e['ini_file'], e['config'], e['run_number'], e['ingredients']):
+            (e.get('fingerprint'), e.get('test_result')) for e in json.loads(r.stdout)}
+
+
+def store_changes(root, rng):
+    """Per commit touching store.json in rng: the rows it changed, from the parsed JSON of the commit and
+    its first parent (a textual diff has no working_directory in its hunk context). Computed once for all
+    pages. Returns [{'sha','date','subject','rows': [(wd, ini, config, run, ingredients, how)]}]."""
+    r = git(root, 'log', '--reverse', '--first-parent', '--format=%H%x00%h%x00%ad%x00%s', '--date=short', rng, '--', STORE)
+    out = []
+    for line in r.stdout.splitlines():
+        full, h, d, s = line.split('\0')
+        old, new = _load_store(root, full + '^'), _load_store(root, full)
+        rows = []
+        for k in old.keys() | new.keys():
+            if old.get(k) != new.get(k):
+                how = 'added' if k not in old else 'removed' if k not in new else 'changed'
+                rows.append((*k, how))
+        if rows:
+            out.append({'sha': h, 'date': d, 'subject': s, 'rows': rows})
+    return out
+
+
+def store_fingerprint_commits(changes, page_rel):
+    """Filter store_changes() to this page's rows; report the ingredient sets that moved, because the
+    review rule depends on them (tplx alone vs ~tNl/~tND)."""
+    out = []
+    for c in changes:
+        mine = [row for row in c['rows'] if row[0] == page_rel or row[0].startswith(page_rel + '/')]
+        if mine:
+            ingr = sorted({row[4] + ('' if row[5] == 'changed' else f' ({row[5]})') for row in mine})
+            configs = sorted({f'{row[2]}#{row[3]}' for row in mine})
+            out.append({'sha': c['sha'], 'date': c['date'], 'subject': c['subject'], 'rows': len(mine),
+                        'ingredients': ingr, 'configs': configs})
+    return out
+
+
 def fingerprint_commits(root, rng, page_rel):
-    """Commits whose diff of the fingerprint CSVs adds/removes rows naming this page's directory."""
+    """Commits whose diff of the fingerprint CSVs adds/removes rows naming this page's directory.
+    Releases before 3f0aee1c11 only; master keeps the fingerprints in store.json (store_changes)."""
     csvs = [str(p) for p in (root / 'tests' / 'fingerprint').glob('*.csv')]
+    if not csvs:
+        return []  # without paths, 'git log -p' would scan the diff of every commit in the range
     r = git(root, 'log', '--format=%h%x00%ad%x00%s', '--date=short', '-p', rng, '--', *csvs)
     out, cur = [], None
     for line in r.stdout.splitlines():
@@ -146,7 +211,7 @@ def main():
     page_dirs = [Path(p).resolve() for p in args.pages]
     index = NedIndex().scan([root / 'src', root / 'showcases', root / 'tutorials'] + page_dirs)
 
-    results = []
+    results, store_cache = [], {}
     for page_dir in page_dirs:
         rst = page_dir / 'doc' / 'index.rst'
         page_rel = rel(root, page_dir)
@@ -175,7 +240,10 @@ def main():
         res['direct_types'] = {t: why[t] for t in sorted(direct)}
         res['indirect_type_count'] = len(indirect)
         res['page_commits'] = commits(root, rng, [page_rel])
-        res['fingerprint_commits'] = fingerprint_commits(root, rng, page_rel)
+        if rng not in store_cache:
+            store_cache[rng] = store_changes(root, rng)
+        res['fingerprint_commits'] = (fingerprint_commits(root, rng, page_rel)
+                                      + store_fingerprint_commits(store_cache[rng], page_rel))
         res['direct_commits'] = commits(root, rng, direct_paths, with_files=True)
         res['indirect_commits'] = commits(root, rng, indirect_dirs)
 
@@ -200,6 +268,9 @@ def main():
                 print(f'## {title}')
                 for c in res[key]:
                     print(f'- {c["sha"]} {c["date"]} {c["subject"]}')
+                    if c.get('ingredients'):
+                        print(f'    {c["rows"]} row(s), ingredients: {", ".join(c["ingredients"])}; '
+                              f'configs: {", ".join(c["configs"])}')
                 print()
         if res['direct_commits']:
             print('## Direct commits (files implementing types the page names)')

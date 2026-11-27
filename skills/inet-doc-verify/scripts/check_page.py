@@ -26,7 +26,7 @@ CAMEL_RE = re.compile(r'^[a-z][a-z0-9]*[A-Z]\w*$')
 
 
 def git(root, *args, check=False):
-    r = subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True)
+    r = subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True, errors='replace')
     if check and r.returncode:
         raise RuntimeError(r.stderr.strip())
     return r
@@ -64,16 +64,20 @@ def rel(root, p):
         return str(p)
 
 
-def check_rst(rep, root, page_dir, rst_path, index, since, want_literals):
+def check_rst(rep, root, page_dir, rst_path, index, since, want_literals, stamp=True):
     page = parse_rst(rst_path)
     docdir = rst_path.parent
     loc = lambda n: f'{rel(root, rst_path)}:{n}'
 
-    if page['stamp'] is None:
+    if not stamp:
+        pass  # a tutorial step or other non-index file: the stamp lives in index.rst
+    elif page['stamp'] is None:
         rep.add('ERROR', 'stamp', rel(root, rst_path), 'no "Verified with INET version" line')
     else:
         rep.add('INFO', 'stamp', loc(page['stamp_line']), f'verified with INET version {page["stamp"]}')
-    if page['verified_commit']:
+    if not stamp:
+        pass
+    elif page['verified_commit']:
         r = git(root, 'rev-parse', '--verify', '-q', page['verified_commit'] + '^{commit}')
         if r.returncode:
             rep.add('ERROR', 'stamp', loc(page['verified_commit_line']),
@@ -261,6 +265,8 @@ def main():
             continue
         since = args.since or parse_rst(rst)['verified_commit']
         check_rst(rep, root, page_dir, rst, index, since, args.literals)
+        for other in sorted(p for p in (page_dir / 'doc').glob('*.rst') if p.name != 'index.rst'):
+            check_rst(rep, root, page_dir, other, index, since, args.literals, stamp=False)
         configs = check_ini(rep, root, page_dir, index)
         if args.run:
             run_configs(rep, root, page_dir, configs, args.timeout, args.omnetpp_root)

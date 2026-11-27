@@ -21,7 +21,7 @@ the scripts narrow down to the relevant commits. The stamp moves only after the 
 the report.
 
 Scripts live in `scripts/` (Python 3, no dependencies; run from inside the INET repo or pass
-`--inet-root`). `PAGE_DIR` is the directory holding the simulation and `doc/index.rst`
+`--inet-root`). `PAGE_DIR` is the directory holding the simulation and `doc/index.rst` (the other `doc/*.rst` files, e.g. tutorial steps, are checked as part of the page; the stamp lives in `index.rst` only)
 (e.g. `showcases/wireless/hiddennode`, `tutorials/bgp`).
 
 ## Step 0: scope and base commit
@@ -73,9 +73,11 @@ scripts/page_deps.py PAGE_DIR...            # Markdown; --json for machine-reada
 
 Per page it prints the base..target range and four commit lists:
 1. commits touching the page directory (someone edited the showcase itself);
-2. commits that changed this page's rows in `tests/fingerprint/*.csv` (behavior changed and
-   the baseline was re-recorded: the prose about results must be re-read);
-3. **direct** commits: files implementing the NED types the page names, with the files touched;
+2. commits that changed this page's rows in `tests/fingerprint/store.json` (the `*.csv` files on
+   releases before the store), each with the ingredient sets that moved and the configs: behavior
+   changed and the baseline was re-recorded (apply the ingredient rule of Step 3);
+3. **direct** commits: files implementing the NED types the page names in any `doc/*.rst`
+   (tutorial steps included) or sets parameters of by ini key, with the files touched;
 4. **indirect** commits: directories of every type reachable through submodules (large; scan
    subjects only, open one when its subject names something the page explains).
 
